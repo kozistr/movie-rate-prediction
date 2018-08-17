@@ -1,0 +1,7 @@
+tensorflow-gpu >= 1.8.0
+numpy
+keras
+scikit-image
+opencv-python
+h5py
+tqdm
