@@ -1,7 +1,5 @@
-tensorflow-gpu >= 1.8.0
+tensorflow-gpu
 numpy
-keras
-scikit-image
-opencv-python
-h5py
+gensim
+konlpy
 tqdm
