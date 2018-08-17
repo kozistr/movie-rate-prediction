@@ -1,5 +1,9 @@
 # NAVER Movie Rate Prediction
-NAVER Movie Rate Prediction with Tensorflow
+네이버 영화 평점 예측 with Tensorflow
+
+## About
+
+지난 NAVER A.I Hackathon 2018 에서 진행한
 
 ## Environments
 ### Preferred Environment
@@ -20,16 +24,17 @@ NAVER Movie Rate Prediction with Tensorflow
 * Internet :)
 
 ## DataSets
-* NAVER Movie Review (parsed from [movie.naver.com](http://movie.naver.com))
+
+| DataSet  |  Language  | Sentences | Size |
+|:---:|:---:|:---:|:---:|
+| [NAVER Movie Review](http://movie.naver.com) | *Korean* | ``` ``` | ```About 557MB``` | 
 
 ## Usage
-### Dependency Install
+### Installing Dependencies
     $ sudo python3 -m pip install -r requirements.txt
-### DataSet Parsing
+### Parsing the DataSet
     $ python3 movie-parse.py
-### Training 
-    (Before running train.py, MAKE SURE run after downloading DataSet & changing DataSet's directory in xxx_train.py)
-    just after it, RUN train.py
+### Training a Model
     $ python3 xxx_train.py
 
 ## Repo Tree
