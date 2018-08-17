@@ -6,23 +6,29 @@ from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 
 import urllib
-import urllib.request
 import urllib.parse
-import bs4
+import urllib.request
+
 import re
 import os
+import bs4
 import time
+import argparse
+
+
+parser = argparse.ArgumentParser(description='Parsing NAVER Movie Review')
+parser.add_argument('--n_threads', type=int, help='the number of threads for parsing')
 
 
 def get_comments(code):
-    def make_args(code, page):
+    def make_args(c, p):
         params = {
-            'code': code,
+            'code': c,
             'type': 'after',
             'isActualPointWriteExecute': 'false',
             'isMileageSubscriptionAlready': 'false',
             'isMileageSubscriptionReject': 'false',
-            'page': page
+            'page': p
         }
         return urllib.parse.urlencode(params)
  
@@ -40,10 +46,9 @@ def get_comments(code):
             return inner_html(s[0]).strip()
         return ''
  
-    retList = []
-    colSet = set()
-    # print("Processing: %d" % code)
-    
+    ret_list = []
+    col_set = set()
+
     page = 1
     while 1:
         try:
@@ -52,6 +57,7 @@ def get_comments(code):
             data = f.read().decode('utf-8')
         except:
             break
+
         soup = bs4.BeautifulSoup(re.sub("&#(?![0-9])", "", data), "html.parser")
         cs = soup.select(".score_result li")
         if not len(cs):
@@ -63,26 +69,25 @@ def get_comments(code):
             except:
                 print(page)
                 print(data)
-                raise ""
+                raise ValueError
 
             m = re.search('[0-9]+', url)
-            if m:
-                url = m.group(0)
-            else:
-                url = ''
+            url = m.group(0) if m else ''
 
-            if url in colSet:
-                return retList
+            if url in col_set:
+                return ret_list
 
-            colSet.add(url)
+            col_set.add(url)
+
             cat = f_text(link.select('.star_score em'))
             cont = f_text(link.select('.score_reple p'))
             cont = re.sub('<span [^>]+>.+?</span>', '', cont)
-            retList.append((url, cat, cont))
+
+            ret_list.append((url, cat, cont))
 
         page += 1
  
-    return retList
+    return ret_list
  
  
 def fetch(idx):
@@ -113,8 +118,12 @@ def fetch(idx):
     time.sleep(0.5)
 
 
-# 영화 고유 ID값의 범위를 몰라서 대략 아래처럼 잡았습니다.
-n_threads = 8
-with ThreadPoolExecutor(max_workers=n_threads) as executor:
-    for i in tqdm(range(10000, 200000)):
-        executor.submit(fetch, i)
+if __name__ == '__main__':
+    args = parser.parse_args()
+
+    n_threads = args.n_threads
+
+    with ThreadPoolExecutor(max_workers=n_threads) as executor:
+        # 영화 고유 ID 값의 범위를 몰라서 대략 아래처럼 잡았습니다.
+        for i in tqdm(range(10000, 200000)):
+            executor.submit(fetch, i)
