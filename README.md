@@ -1,12 +1,7 @@
 # NAVER Movie Rate Prediction
 네이버 영화 평점 예측 with Tensorflow
 
-## About
-
-지난 NAVER A.I Hackathon 2018 에서 진행한
-
 ## Environments
-### Preferred Environment
 * OS  : Windows 10 / Linux Ubuntu x86-64 ~
 * CPU : any (quad core ~)
 * GPU : GTX 1060 6GB ~
@@ -55,11 +50,18 @@
 
 Here's a **google drive link**. You can download pre-trained models from [~~here~~]() !
 
+## Models
+
+soon!
+
+## Results
+
+soon!
+
 ## To-Do
 1. Download DataSet
 2. Pre-Processing DataSet
 3. 
-
 
 ## ETC
 
