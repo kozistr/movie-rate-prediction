@@ -28,7 +28,7 @@
 ### Installing Dependencies
     $ sudo python3 -m pip install -r requirements.txt
 ### Parsing the DataSet
-    $ python3 movie-parse.py
+    $ python3 movie-parse.py --n_threads 8
 ### Training a Model
     $ python3 xxx_train.py
 
