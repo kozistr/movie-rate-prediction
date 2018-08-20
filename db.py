@@ -68,12 +68,7 @@ with conn.cursor() as cur:
 conn.close()
 
 # New DB Connection
-conn = pymysql.connect(host=db_infos['host'],
-                       user=db_infos['user'],
-                       password=db_infos['password'],
-                       db=db_infos['db'],
-                       charset=db_infos['charset']
-                       )
+conn = pymysql.connect(**db_infos)
 
 n_query, n_success = 0, 0
 with conn.cursor() as cur:
