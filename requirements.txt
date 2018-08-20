@@ -3,3 +3,4 @@ numpy
 gensim
 konlpy
 tqdm
+pymysql
