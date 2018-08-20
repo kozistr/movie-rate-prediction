@@ -14,6 +14,7 @@
 * tensorflow 1.x
 * numpy
 * gensim or konlpy or soylp
+* pymysql
 * tqdm
 * Internet :)
 
