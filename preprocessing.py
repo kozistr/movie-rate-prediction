@@ -1,9 +1,7 @@
-import time
-import json
 import pymysql
 
-from multiprocessing import Pool
-from soynlp.word import WordExtractor
+from konlpy.tag import Hannanum
+from gensim.models import word2vec
 
 
 db_infos = {
@@ -15,47 +13,58 @@ db_infos = {
     'cursorclass': pymysql.cursors.DictCursor,
 }
 
-db_conn = None
+java_home = "C:\\Program Files\\Java\\jre-9\\bin\\server\\jvm.dll"
+
+fn = "data"
+save_ext = '.csv'
 
 
-def db_connection():
-    global db_conn
-
+def get_review_data() -> dict:
     db_conn = pymysql.connect(**db_infos)
 
-
-def get_data() -> dict:
-    global db_conn
-
-    data_query = "select rate, comment from movie"  # "select comment from movie where rate=%d" % rate
+    data_query = "select rate, comment from movie"
     with db_conn.cursor() as cur:
-        start = time.time()
         cur.execute(data_query)
-        end = time.time()
-
-        print("[*] Took %ds" % (end - start))
 
         rows = cur.fetchall()
 
     return rows
 
 
-db_connection()
+def to_json(data: list, fn: str) -> bool:
+    import json
+    try:
+        with open(fn, 'w', encoding='utf8') as f:
+            for d in data:
+                f.write(json.dumps(d, ensure_ascii=False))
+    except Exception as e:
+        raise Exception(e)
+    return True
 
-"""
-p = Pool(10)
-print(p.map(get_data, list(range(1, 11))))
 
-with open('data.json', 'w', encoding='utf8') as f:
-    f.write(json.dumps(data))
-"""
-dict_data = get_data()
+def to_csv(data: list, fn: str) -> bool:
+    import unicodecsv as csv
 
-with open('data.json', 'w', encoding='utf8') as f:
-    f.write(json.dumps(dict_data, ensure_ascii=False))
+    try:
+        with open(fn, 'w', encoding='utf8', newline='') as f:
+            w = csv.DictWriter(f, fieldnames=['rate', 'comment'])
 
-"""
-word_extractor = WordExtractor(min_count=100,
-                               min_cohesion_forward=.05,
-                               min_right_branching_entropy=.0)
-"""
+            w.writeheader()
+            for d in data:
+                w.writerow(d)
+    except Exception as e:
+        raise Exception(e)
+    return True
+
+
+# Getting Review Data from DB
+dict_data = get_review_data()
+
+# Saving into ...
+if save_ext == '.csv':
+    to_csv(dict_data, fn + save_ext)
+elif save_ext == '.json':
+    to_json(dict_data, fn + save_ext)
+else:
+    print("[-] Not Supporting Yet :(")
+
