@@ -29,7 +29,9 @@
     $ sudo python3 -m pip install -r requirements.txt
 ### Parsing the DataSet
     $ python3 movie-parse.py --n_threads 8
-### Training a Model
+### Making DataSet DB
+    $ python3 db.py
+### Training a M.L Model
     $ python3 xxx_train.py
 
 ## Repo Tree
