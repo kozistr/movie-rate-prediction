@@ -20,6 +20,8 @@ fn = "data"
 save_ext = '.'  # '.csv'
 load_ext = '.csv'
 
+w2v_model = "./ko_embeddings.model"
+
 
 def get_review_data() -> list:
     db_conn = pymysql.connect(**db_infos)
@@ -72,6 +74,30 @@ def from_csv(fn: str) -> dict:
     return data
 
 
+def word_processing(data: list) -> list:
+    # Hannanum Pos Tagger
+    hannanum = Hannanum(jvmpath=jvm_path)
+
+    emo_f = lambda x: emoticon_normalize(x, n_repeats=3)
+    rep_f = lambda x: repeat_normalize(x, n_repeats=2)
+    morphs_data = [list(map(lambda x: "/".join(x), hannanum.pos(rep_f(emo_f(d['comment']))))) for d in data]
+    return morphs_data
+
+
+def w2v_training(data: list) -> bool:
+    # word2vec Training
+    embeddings = word2vec.Word2Vec(sentences=data,
+                                   window=5,
+                                   max_vocab_size=300,
+                                   min_count=5,
+                                   negative=3,
+                                   seed=1337,
+                                   workers=8)
+
+    embeddings.wv.save_word2vec_format(w2v_model, binary=False)
+    return True
+
+
 # Getting Review Data from DB
 dict_data = get_review_data()
 
@@ -83,26 +109,14 @@ elif save_ext == '.json':
 else:
     print("[-] Not Supporting Yet :(")
 
-# Hannanum Pos Tagger
-hannanum = Hannanum(jvmpath=jvm_path)
-
 # Analyze morphs # concat like... word/pos
 # To-Do
 # 1. Text Normalization # https://github.com/open-korean-text/open-korean-text - Done
 # 2. Text Tokenization  #
 # 3. Text Stemming
+morphs_data = word_processing(dict_data)
 
-emo_f = lambda x: emoticon_normalize(x, n_repeats=3)
-rep_f = lambda x: repeat_normalize(x, n_repeats=2)
-morphs_data = [list(map(lambda x: "/".join(x), rep_f(emo_f(d['comment'])))) for d in dict_data]
+for i in range(10):
+    print("[*] %d : " % i, morphs_data[i])
 
-# word2vec Training
-embeddings = word2vec.Word2Vec(sentences=morphs_data,
-                               window=5,
-                               max_vocab_size=300,
-                               min_count=5,
-                               negative=3,
-                               seed=1337,
-                               workers=8)
-
-embeddings.wv.save_word2vec_format('./ko_embeddings.model', binary=False)
+w2v_training(morphs_data)
