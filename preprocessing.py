@@ -27,8 +27,6 @@ def db_connection():
 def get_data() -> dict:
     global db_conn
 
-    data = dict()
-
     data_query = "select rate, comment from movie"  # "select comment from movie where rate=%d" % rate
     with db_conn.cursor() as cur:
         start = time.time()
@@ -37,10 +35,9 @@ def get_data() -> dict:
 
         print("[*] Took %ds" % (end - start))
 
-        for row in cur:
-            data.update(row)
+        rows = cur.fetchall()
 
-    return data
+    return rows
 
 
 db_connection()
