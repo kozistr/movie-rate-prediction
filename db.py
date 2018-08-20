@@ -1,3 +1,4 @@
+import sys
 import pymysql
 
 from glob import glob
@@ -19,54 +20,82 @@ db_infos = {
 
 
 # MySQL DB Connection
-try:
-    conn = pymysql.connect(host=db_infos['host'],
-                           user=db_infos['user'],
-                           password=db_infos['password'],
-                           db=db_infos['db'],
-                           charset=db_infos['charset']
-                           )
+conn = pymysql.connect(host=db_infos['host'],
+                       user=db_infos['user'],
+                       password=db_infos['password'],
+                       charset=db_infos['charset']
+                       )
 
-except Exception as e:  # If there's no 'movie' DB
-    print(e)
+# Delete previous database
+with conn.cursor() as cur:
+    try:
+        database_query = "drop schema movie"
+        cur.execute(database_query)
+        conn.commit()
+    except pymysql.Warning as w:
+        pass
+    except pymysql.err.InternalError as e:
+        pass  # Database doesn't exist
+    except pymysql.err.ProgrammingError as e:
+        raise pymysql.err.ProgrammingError(e)
 
-    conn = pymysql.connect(host=db_infos['host'],
-                           user=db_infos['user'],
-                           charset=db_infos['charset']
-                           )
-
-    with conn.cursor() as cur:
-        # Making 'movie' DB
+# Make new 'movie' database
+with conn.cursor() as cur:
+    try:
         database_query = "create database movie"
         cur.execute(database_query)
         conn.commit()
+    except pymysql.Warning as w:
+        pass
+    except pymysql.err.InternalError as e:
+        pass  # Database exists
+    except pymysql.err.ProgrammingError as e:
+        raise pymysql.err.ProgrammingError(e)
 
+with conn.cursor() as cur:
+    try:
         with open(query_paths['table_query'], 'r') as f:
             table_query = f.read()
 
         # Making 'movie' table
-        cur.execute(table_query)
+        conn.cursor().execute(table_query)
         conn.commit()
+    except pymysql.Warning as w:
+        pass
+    except Exception as e:
+        raise Exception(e)
 
-cur = conn.cursor()
+conn.close()
+
+# New DB Connection
+conn = pymysql.connect(host=db_infos['host'],
+                       user=db_infos['user'],
+                       password=db_infos['password'],
+                       db=db_infos['db'],
+                       charset=db_infos['charset']
+                       )
 
 n_query, n_success = 0, 0
-for qp in tqdm(glob(query_paths['data_query'])):
-    # Read SQL Query
-    with open(qp, 'r', encoding='utf8') as f:
-        query = f.read()
+with conn.cursor() as cur:
+    for qp in tqdm(glob(query_paths['data_query'])):
+        # Read SQL Query
+        with open(qp, 'r', encoding='utf8') as f:
+            query = f.read()
 
-    try:
-        cur.execute(query=query)  # Execute SQL Query
-        conn.commit()             # Commit Changes
+        try:
+            cur.execute(query=query)  # Execute SQL Query
+            conn.commit()             # Commit Changes
 
-        n_success += 1
-    except pymysql.Warning as w:
-        pass  # Most of warnings are about "Data truncated ~~"
-    except Exception as e:
-        print("[-] ", qp, " ", e)
+            n_success += 1
+        except pymysql.Warning as w:
+            pass  # Most of warnings are about "Data truncated ~~"
+        except Exception as e:
+            print("[-]", qp, e)
 
-    n_query += 1
+            if e.args[0] == 1146 or e.args[0] == 1046:  # Table/Database Doesn't exist
+                sys.exit(-1)
+
+        n_query += 1
 
 print("[+] Total %d/%d Queries Success!" % (n_success, n_query))
 
