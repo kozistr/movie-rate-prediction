@@ -52,7 +52,7 @@ with open('data.json', 'w', encoding='utf8') as f:
 dict_data = get_data()
 
 with open('data.json', 'w', encoding='utf8') as f:
-    f.write(json.dumps(dict_data))
+    f.write(json.dumps(dict_data, ensure_ascii=False))
 
 """
 word_extractor = WordExtractor(min_count=100,
