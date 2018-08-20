@@ -13,8 +13,7 @@
 * python 3.x
 * tensorflow 1.x
 * numpy
-* gensim
-* konlpy
+* gensim or konlpy or soylp
 * tqdm
 * Internet :)
 
@@ -38,14 +37,14 @@
 ```
 │
 ├── comments
-│    ├── 10000.txt
+│    ├── 10000.sql
 │    ├── ...
-│    └── 200000.txt   (NAVER Movie Review DataSets)
+│    └── 200000.sql   (NAVER Movie Review DataSets)
 ├── movie-parser.py   (NAVER Movie Review Parser)
+├── db.py             (DataBase processing)
 ├── preprocessing.py  (Korean NLP verctoize)
 ├── train.py          (for model training)
-├── test.py           (for evaluation)
-└── datasets.py       (DataSet loader)
+└── test.py           (for evaluation)
 ```
 
 ## Pre-Trained Models
