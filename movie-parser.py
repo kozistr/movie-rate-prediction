@@ -91,7 +91,7 @@ def get_comments(code):
  
  
 def fetch(idx):
-    out_name = 'comments/%d.txt' % idx
+    out_name = 'comments/%d.sql' % idx
 
     try:
         if os.stat(out_name).st_size > 0:
