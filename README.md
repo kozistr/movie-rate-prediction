@@ -30,6 +30,7 @@
 ### Parsing the DataSet
     $ python3 movie-parse.py --n_threads 8
 ### Making DataSet DB
+    # you need to edit 'db_infos' at line 13, fitting in your env.
     $ python3 db.py
 ### Making w2v dictionary
     $ python3 preprocessing.py
