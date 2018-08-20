@@ -31,6 +31,8 @@
     $ python3 movie-parse.py --n_threads 8
 ### Making DataSet DB
     $ python3 db.py
+### Making w2v dictionary
+    $ python3 preprocessing.py
 ### Training a M.L Model
     $ python3 xxx_train.py
 
@@ -61,9 +63,8 @@ soon!
 soon!
 
 ## To-Do
-1. Download DataSet
-2. Pre-Processing DataSet
-3. 
+1. Pre-Processing DataSet
+2. Implement Models
 
 ## ETC
 
