@@ -12,28 +12,24 @@ db_infos = {
     'password': 'autoset',
     'db': 'movie',
     'charset': 'utf8',
+    'cursorclass': pymysql.cursors.DictCursor,
 }
 
-data = dict()
 db_conn = None
 
 
 def db_connection():
     global db_conn
 
-    db_conn = pymysql.connect(host=db_infos['host'],
-                              user=db_infos['user'],
-                              password=db_infos['password'],
-                              db=db_infos['db'],
-                              charset=db_infos['charset'],
-                              cursorclass=pymysql.cursors.DictCursor
-                              )
+    db_conn = pymysql.connect(**db_infos)
 
 
-def get_data(rate: int) -> bool:
-    global db_conn, data
+def get_data() -> dict:
+    global db_conn
 
-    data_query = "select comment from movie where rate=%d" % rate
+    data = dict()
+
+    data_query = "select rate, comment from movie"  # "select comment from movie where rate=%d" % rate
     with db_conn.cursor() as cur:
         start = time.time()
         cur.execute(data_query)
@@ -42,18 +38,24 @@ def get_data(rate: int) -> bool:
         print("[*] Took %ds" % (end - start))
 
         for row in cur:
-            data.update({"rate": rate, "comment": row})
+            data.update(row)
 
-    return True
+    return data
 
 
 db_connection()
 
+"""
 p = Pool(10)
 print(p.map(get_data, list(range(1, 11))))
 
 with open('data.json', 'w', encoding='utf8') as f:
     f.write(json.dumps(data))
+"""
+dict_data = get_data()
+
+with open('data.json', 'w', encoding='utf8') as f:
+    f.write(json.dumps(dict_data))
 
 """
 word_extractor = WordExtractor(min_count=100,
