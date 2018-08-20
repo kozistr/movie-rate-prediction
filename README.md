@@ -22,7 +22,7 @@
 
 | DataSet  |  Language  | Sentences | Size |
 |:---:|:---:|:---:|:---:|
-| [NAVER Movie Review](http://movie.naver.com) | *Korean* | ``` ``` | ```About 557MB``` | 
+| [NAVER Movie Review](http://movie.naver.com) | *Korean* | ```5.36M``` | ```About 557MB``` | 
 
 ## Usage
 ### Installing Dependencies
