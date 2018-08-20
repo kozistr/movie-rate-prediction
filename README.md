@@ -13,7 +13,7 @@
 * python 3.x
 * tensorflow 1.x
 * numpy
-* gensim or konlpy or soylp
+* gensim or konlpy or soynlp
 * pymysql
 * tqdm
 * Internet :)

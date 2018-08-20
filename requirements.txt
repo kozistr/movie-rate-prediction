@@ -1,6 +1,7 @@
 tensorflow-gpu
 numpy
 gensim
+soynlp
 konlpy
 tqdm
 pymysql
