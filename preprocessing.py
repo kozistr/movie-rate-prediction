@@ -1,5 +1,6 @@
 import pymysql
 
+from tqdm import tqdm
 from soynlp.normalizer import *
 from konlpy.tag import Hannanum
 from gensim.models import word2vec
@@ -61,26 +62,36 @@ def to_csv(data: list, fn: str) -> bool:
     return True
 
 
-def from_csv(fn: str) -> dict:
-    import unicodecsv as csv
+def from_csv(fn: str) -> list:
+    import csv
 
-    data = dict()
-    try:
-        with open(fn, 'r', encoding='utf8') as f:
-            for w in csv.DictReader(f):
-                data.update(w)
-    except Exception as e:
-        raise Exception(e)
+    data = []
+    with open(fn, 'r', encoding='utf8') as f:
+        reader = csv.DictReader(f)
+        try:
+            for w in tqdm(reader):
+                data.append(w['comment'])
+        except Exception as e:
+            raise Exception(e)
     return data
 
 
 def word_processing(data: list) -> list:
+    global jvm_path
+
     # Hannanum Pos Tagger
     hannanum = Hannanum(jvmpath=jvm_path)
 
-    emo_f = lambda x: emoticon_normalize(x, n_repeats=3)
-    rep_f = lambda x: repeat_normalize(x, n_repeats=2)
-    morphs_data = [list(map(lambda x: "/".join(x), hannanum.pos(rep_f(emo_f(d['comment']))))) for d in data]
+    def emo(x: str) -> str:
+        return emoticon_normalize(x, n_repeats=3)
+
+    def rep(x: str) -> str:
+        return repeat_normalize(x, n_repeats=3)
+
+    def normalize(x: str) -> str:
+        return rep(emo(x))
+
+    morphs_data = [list(map(lambda x: "/".join(x), hannanum.pos(normalize(d['comment'])))) for d in tqdm(data)]
     return morphs_data
 
 
@@ -99,8 +110,10 @@ def w2v_training(data: list) -> bool:
 
 
 # Getting Review Data from DB
-dict_data = get_review_data()
 
+data = get_review_data()
+
+"""
 # Saving into ...
 if save_ext == '.csv':
     to_csv(dict_data, fn + save_ext)
@@ -108,15 +121,17 @@ elif save_ext == '.json':
     to_json(dict_data, fn + save_ext)
 else:
     print("[-] Not Supporting Yet :(")
+"""
+# data = from_csv(fn + load_ext)
 
 # Analyze morphs # concat like... word/pos
 # To-Do
 # 1. Text Normalization # https://github.com/open-korean-text/open-korean-text - Done
 # 2. Text Tokenization  #
 # 3. Text Stemming
-morphs_data = word_processing(dict_data)
+m_data = word_processing(data)
 
 for i in range(10):
-    print("[*] %d : " % i, morphs_data[i])
+    print("[*] %d : " % i, m_data[i])
 
-w2v_training(morphs_data)
+w2v_training(m_data)
