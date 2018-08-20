@@ -102,6 +102,7 @@ embeddings = word2vec.Word2Vec(sentences=morphs_data,
                                max_vocab_size=300,
                                min_count=5,
                                negative=3,
+                               seed=1337,
                                workers=8)
 
-embeddings.save_word2vec_format('korean_embeddings.model', binary=False)
+embeddings.wv.save_word2vec_format('./ko_embeddings.model', binary=False)
