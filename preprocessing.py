@@ -18,10 +18,8 @@ db_infos = {
 jvm_path = "C:\\Program Files\\Java\\jre-9\\bin\\server\\jvm.dll"
 
 fn = "data"
-save_ext = '.'  # '.csv'
-load_ext = '.csv'
-
-w2v_model = "./ko_embeddings.model"
+ext = '.csv'
+w2v_model = "ko_embeddings.model"
 
 
 def get_review_data() -> list:
@@ -34,17 +32,6 @@ def get_review_data() -> list:
         rows = cur.fetchall()
 
     return rows
-
-
-def to_json(data: list, fn: str) -> bool:
-    import json
-    try:
-        with open(fn, 'w', encoding='utf8') as f:
-            for d in data:
-                f.write(json.dumps(d, ensure_ascii=False))
-    except Exception as e:
-        raise Exception(e)
-    return True
 
 
 def to_csv(data: list, fn: str) -> bool:
@@ -114,15 +101,9 @@ def w2v_training(data: list) -> bool:
 data = get_review_data()
 
 """
-# Saving into ...
-if save_ext == '.csv':
-    to_csv(dict_data, fn + save_ext)
-elif save_ext == '.json':
-    to_json(dict_data, fn + save_ext)
-else:
-    print("[-] Not Supporting Yet :(")
+to_csv(data, fn + ext)
+data = from_csv(fn + ext)
 """
-# data = from_csv(fn + load_ext)
 
 # Analyze morphs # concat like... word/pos
 # To-Do
