@@ -39,8 +39,9 @@ def tsne_plot(model):
         y.append(v[1])
     
     # font
-    path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
-    font_name= fm.FontProperties(fname=path, size=16).get_name()
+    # path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
+    path = 'C:\\Windows\\Fonts\\NanumGothic.ttf'
+    font_name = fm.FontProperties(fname=path, size=16).get_name()
     plt.rc('font', family=font_name)
     
     plt.figure(figsize=(32, 32))
@@ -49,12 +50,11 @@ def tsne_plot(model):
     for i in range(len(x)):
         plt.scatter(x[i], y[i]) 
         plt.annotate(labels[i], xy=(x[i], y[i]), xytext=(5, 2),
-                     textcoords='offset points',
-                     ha='right', va='bottom')
+                     textcoords='offset points', ha='right', va='bottom')
     plt.show()
 
 
 model = Word2Vec.load('ko_w2v.model')
 print("[+] w2v model loaded!")
-tsne_plot(model)
 
+tsne_plot(model)
