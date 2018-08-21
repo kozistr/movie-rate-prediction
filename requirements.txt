@@ -6,3 +6,4 @@ konlpy
 tqdm
 pymysql
 unicodecsv
+MulticoreTSNE
