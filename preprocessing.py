@@ -122,11 +122,11 @@ def word_processing(data: list) -> list:
 
 
 def w2v_training(data: list) -> bool:
-    # loggin
+    # logging
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     
-    dictionary_ko = corpora.Dictionary(data)
-    dictionary_ko.save('ko.dict')
+    # dictionary_ko = corpora.Dictionary(data)
+    # dictionary_ko.save('ko.dict')
     
     # word2vec Training
     config = {
@@ -134,11 +134,10 @@ def w2v_training(data: list) -> bool:
         'batch_words': 10000,
         'size': 300,
         'window': 5,
-        'min_count': 2,
+        'min_count': 3,
         'negative': 3,
         'sg': 1,
-        'iter': 10,
-        'downsample': 1e-3,
+        'iter': 10, 
         'seed': 1337,
         'workers': 8,
     }
@@ -163,7 +162,7 @@ gc.collect()
 # Analyze morphs # concat like... word/pos
 # To-Do
 # 1. Text Normalization # https://github.com/open-korean-text/open-korean-text - Done
-# 2. Text Tokenization  #
+# 2. Text Tokenization - Done
 # 3. Text Stemming
 
 ts = len(data) // n_threads  # 5366474
@@ -180,7 +179,7 @@ gc.collect()
  
 print("[*] Total data : %d" % len(datas))   
 
-for i in range(5):
+for i in range(0, 200000, 10000):
     print("[*] %d : " % i, datas[i])
         
 w2v_training(datas)
