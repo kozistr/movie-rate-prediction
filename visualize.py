@@ -40,8 +40,8 @@ def tsne_plot(model):
     
     # font
     path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
-    fontprop = fm.FontProperties(fname=path, size=16)
-    plt.rc('font', family=fontprop.get_name())
+    font_name= fm.FontProperties(fname=path, size=16).get_name()
+    plt.rc('font', family=font_name)
     
     plt.figure(figsize=(32, 32))
     plt.title('w2v embeddings vis')
