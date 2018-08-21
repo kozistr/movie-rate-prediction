@@ -50,6 +50,7 @@
 ├── db.py             (DataBase processing)
 ├── preprocessing.py  (Korean NLP verctoize)
 ├── train.py          (for model training)
+├── visualize.py      (for visualizing w2v)
 └── test.py           (for evaluation)
 ```
 
