@@ -27,6 +27,9 @@
 |:---:|:---:|:---:|:---:|
 | [NAVER Movie Review](http://movie.naver.com) | *Korean* | ```5.36M``` | ```About 557MB``` | 
 
+> Word Embeddings : 2.5M <br/>
+> Train/Test : 4.00M/1.36M <br/>
+
 ## Usage
 ### 1. Installing Dependencies
     $ sudo python3 -m pip install -r requirements.txt
