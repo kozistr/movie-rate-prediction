@@ -77,7 +77,7 @@
 │    └── 200000.sql   (NAVER Movie Review DataSets)
 ├── movie-parser.py   (NAVER Movie Review Parser)
 ├── db.py             (DataBase processing)
-├── preprocessing.py  (Korean NLP verctoize)
+├── preprocessing.py  (Korean normalize/tokenize)
 ├── train.py          (for model training)
 ├── test.py           (for model evaluation)
 ├── visualize.py      (for visualizing w2v)
