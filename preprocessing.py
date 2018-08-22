@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='Parsing NAVER Movie Review')
 parser.add_argument('--n_threads', type=int, help='the number of threads for parsing', default=5)
 parser.add_argument('--n_mem_limit', type=int, help='ram limitation', default=256)
 parser.add_argument('--max_sentences', type=int, help='the number of sentences to train', default=2500000)
-parser.add_argument('--save_model', type=str, help='trained w2v model file', default='ko_embeds.model')
+parser.add_argument('--save_model', type=str, help='trained w2v model file', default='ko_w2v.model')
 parser.add_argument('--save_file', type=str, help='movie review data file', default=None)
 parser.add_argument('--save_dict', type=bool, help='korean words dictionary', default=False)
 parser.add_argument('--load_from', type=str, help='load DataSet from DB or .csv', default='csv')
@@ -146,16 +146,15 @@ def w2v_training(data: list, save_dict: bool) -> bool:
     w2v_model = word2vec.Word2Vec(**config)
     w2v_model.wv.init_sims(replace=True)
     
-    w2v_model.save('ko_w2v.model')
-    w2v_model.wv.save_word2vec_format(w2v_model_name, binary=False)
+    w2v_model.save(w2v_model_name)
+    # w2v_model.wv.save_word2vec_format(w2v_model_name, binary=False)
     return True
 
 
 # Getting Review Data from DB/CSV
 if load_from == 'db':
     data = get_review_data()
-    # save to .csv
-    if fn:
+    if fn:  # save to .csv
         to_csv(data, fn)
 elif load_from == 'csv':
     data = from_csv(fn)
