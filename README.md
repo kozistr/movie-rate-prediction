@@ -19,6 +19,7 @@
 * pymysql
 * tqdm
 * (Optional) MultiTSNE (for visualization)
+* (Optional) matplotlib (for visualization)
 
 ## DataSet
 
