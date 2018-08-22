@@ -16,7 +16,7 @@ from gensim.models import word2vec
 parser = argparse.ArgumentParser(description='Parsing NAVER Movie Review')
 parser.add_argument('--n_threads', type=int, help='the number of threads for parsing', default=5)
 parser.add_argument('--n_mem_limit', type=int, help='ram limitation', default=256)
-parser.add_argument('--max_sentences', type=int, help='the number of sentences to train', default=2500000)
+parser.add_argument('--max_sentences', type=int, help='the number of sentences to train (0: all)', default=2500000)
 parser.add_argument('--save_model', type=str, help='trained w2v model file', default='ko_w2v.model')
 parser.add_argument('--save_file', type=str, help='movie review data file', default=None)
 parser.add_argument('--save_dict', type=bool, help='korean words dictionary', default=False)
