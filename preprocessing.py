@@ -17,8 +17,6 @@ parser = argparse.ArgumentParser(description='Parsing NAVER Movie Review')
 parser.add_argument('--n_threads', type=int, help='the number of threads for parsing', default=5)
 parser.add_argument('--n_mem_limit', type=int, help='ram limitation', default=256)
 parser.add_argument('--max_sentences', type=int, help='the number of sentences to train', default=2500000)
-parser.add_argument('--jvm_path', type=str, help='jvm path',
-                    default="C:\\Program Files\\Java\\jre-9\\bin\\server\\jvm.dll")
 parser.add_argument('--save_model', type=str, help='trained w2v model file', default='ko_embeds.model')
 parser.add_argument('--save_file', type=str, help='movie review data file', default=None)
 parser.add_argument('--save_dict', type=bool, help='korean words dictionary', default=False)
@@ -37,7 +35,6 @@ db_infos = {
 
 fn = args.save_file
 ko_dict = args.save_dict
-jvm_path = args.jvm_path
 load_from = args.load_from
 w2v_model_name = args.save_model
 
@@ -92,10 +89,6 @@ def from_csv(fn: str) -> list:
 
 
 def word_processing(data: list) -> list:
-    global jvm_path
-
-    # Hannanum Pos Tagger
-    # hannanum = Hannanum()
     # Mecab Pos Tagger
     mecab = Mecab()
     
