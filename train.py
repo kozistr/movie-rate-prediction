@@ -4,23 +4,23 @@ import tensorflow as tf
 
 class CharCNN:
 
-    def __init__(self, n_classes=10, batch_size=128,
+    def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
                  vocab_size=251, dims=300, seed=1337, use_w2v=False, w2v_model=None,
                  filter_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
-                 lr=5e-4, l2_reg=1e-3, th=1e-6):
+                 lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6):
+        self.s = s
         self.n_dims = dims
         self.n_classes = n_classes
         self.w2v_model = w2v_model
         self.vocab_size = vocab_size
         self.batch_size = batch_size
+        self.epochs = epochs
 
         self.seed = seed
         self.use_w2v = use_w2v
 
         if use_w2v:
             assert w2v_model
-
-        self.lr = lr
 
         self.filter_sizes = filter_sizes
         self.n_filters = n_filters
@@ -56,7 +56,28 @@ class CharCNN:
         ))
 
         # Optimizer
+        self.global_step = tf.Variable(0, name="global_step", trainable=False)
+        learning_rate = tf.train.exponential_decay(lr,
+                                                   self.global_step,
+                                                   self.epochs * self.batch_size,
+                                                   lr_decay,
+                                                   staircase=True)
+        self.lr = tf.clip_by_value(learning_rate,
+                                   clip_value_min=lr_lower_boundary,
+                                   clip_value_max=1e-3,
+                                   name='lr-clipped')
+
         self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr).minimize(self.loss)
+
+        # Mode Saver/Summary
+        tf.summary.scalar('loss', self.loss)
+
+        # Merge summary
+        self.merged = tf.summary.merge_all()
+
+        # Model saver
+        self.saver = tf.train.Saver(max_to_keep=1)
+        self.writer = tf.summary.FileWriter('./model/', self.s.graph)
 
     def build_model(self):
         with tf.name_scope('embeddings'):
@@ -101,7 +122,7 @@ class CharCNN:
                 kernel_regularizer=self.reg,
                 name='fc1'
             )
-            x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)\
+            x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)
 
             x = tf.layers.dense(
                 x,
