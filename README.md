@@ -11,14 +11,15 @@
 
 ## Prerequisites
 * python 3.x
+* java 1.7+
 * tensorflow 1.x
 * numpy
-* gensim or konlpy or soynlp
+* gensim and konlpy and soynlp
 * pymysql
 * tqdm
 * Internet :)
 
-## DataSets
+## DataSet
 
 | DataSet  |  Language  | Sentences | Size |
 |:---:|:---:|:---:|:---:|
@@ -32,7 +33,7 @@
 ### 3. Making DataSet DB
     # you need to edit 'db_infos' at line 13, fitting in your env.
     $ python3 db.py
-### 4. Making w2v dictionary
+### 4. Making w2v embeddings
     $ python3 preprocessing.py
 ### 5. Training a M.L Model
     $ python3 train.py
