@@ -9,7 +9,7 @@ from gensim import corpora
 from konlpy.tag import Mecab
 from soynlp.normalizer import *
 from multiprocessing import Pool
-from gensim.models import word2vec
+from gensim.models import word2vec, Doc2Vec
 
 
 # Argument parser
@@ -123,31 +123,32 @@ def word_processing(data: list) -> list:
     return p_data
 
 
-def w2v_training(data: list, save_dict: bool) -> bool:
+def w2v_training(data: list, save_dict: bool, use_w2v: bool) -> bool:
     # logging
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
     if save_dict:
         corpora.Dictionary(data).save('ko.dict')
-    
-    # word2vec Training
-    config = {
-        'sentences': data,
-        'batch_words': 10000,
-        'size': 300,
-        'window': 5,
-        'min_count': 3,
-        'negative': 3,
-        'sg': 1,
-        'iter': 10, 
-        'seed': 1337,
-        'workers': 8,
-    }
-    w2v_model = word2vec.Word2Vec(**config)
-    w2v_model.wv.init_sims(replace=True)
-    
-    w2v_model.save(w2v_model_name)
-    # w2v_model.wv.save_word2vec_format(w2v_model_name, binary=False)
+
+    if use_w2v:
+        # word2vec Training
+        config = {
+            'sentences': data,
+            'batch_words': 10000,
+            'size': 300,
+            'window': 5,
+            'min_count': 3,
+            'negative': 3,
+            'sg': 1,
+            'iter': 10,
+            'seed': 1337,
+            'workers': 8,
+        }
+        w2v_model = word2vec.Word2Vec(**config)
+        w2v_model.wv.init_sims(replace=True)
+
+        w2v_model.save(w2v_model_name)
+
     return True
 
 
@@ -180,7 +181,7 @@ del data
 gc.collect()
 
 # W2V Training
-w2v_training(datas, ko_dict)
+w2v_training(datas, ko_dict, False)
 
 del datas
 gc.collect()
