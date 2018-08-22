@@ -20,7 +20,7 @@ parser.add_argument('--max_sentences', type=int, help='the number of sentences t
 parser.add_argument('--save_model', type=str, help='trained w2v model file', default='ko_w2v.model')
 parser.add_argument('--save_file', type=str, help='movie review data file', default=None)
 parser.add_argument('--save_dict', type=bool, help='korean words dictionary', default=False)
-parser.add_argument('--load_from', type=str, help='load DataSet from DB or .csv', default='csv')
+parser.add_argument('--load_from', type=str, help='load DataSet from db or csv', default='db')
 args = parser.parse_args()
 
 db_infos = {
