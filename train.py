@@ -6,8 +6,8 @@ class CharCNN:
 
     def __init__(self, n_classes=10, batch_size=128,
                  vocab_size=251, dims=300, seed=1337, use_w2v=False, w2v_model=None,
-                 filter_size=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
-                 l2_reg=1e-3)
+                 filter_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
+                 l2_reg=1e-3, th=1e-6):
         self.n_dims = dims
         self.n_classes = n_classes
         self.w2v_model = w2v_model
@@ -20,10 +20,11 @@ class CharCNN:
         if use_w2v:
             assert w2v_model
 
-        self.filter_size = filter_size
+        self.filter_sizes = filter_sizes
         self.n_filters = n_filters
         self.fc_unit = fc_unit
         self.l2_reg = l2_reg
+        self.th = th
 
         # set random seed
         np.random.seed(self.seed)
@@ -54,9 +55,35 @@ class CharCNN:
             embeds = spatial_do(embeds)
 
         pooled_outs = []
-        for i, fs in enumerate(self.filter_size):
-            pass
+        for i, fs in enumerate(self.filter_sizes):
+            with tf.variable_scope("conv_layer-%d-%d" % (fs, i)):
+                """
+                Conv1D-ThresholdReLU-drop_out-k_max_pool
+                """
 
+                x = tf.layers.conv1d(
+                    embeds,
+                    filters=self.n_filters,
+                    kernel_size=fs,
+                    kernel_initializer=self.he_uni,
+                    kernel_regularizer=self.reg,
+                    padding='VALID',
+                    name='conv1d'
+                )
+                x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)
+                x = tf.layers.dropout(x, self.do_rate)
+
+                x = tf.nn.top_k(tf.transpose(x, [0, 2, 1]), k=3, sorted=False)[0]
+                x = tf.transpose(x, [0, 2, 1])
+
+                pooled_outs.append(x)
+
+        x = tf.concat(pooled_outs, 1)
+        x = tf.layers.flatten(x)
+        x = tf.layers.dropout(x, self.do_rate)
+
+        with tf.variable_scope("outputs"):
+            x =
 
 if __name__ == '__main__':
     pass
