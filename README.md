@@ -63,11 +63,7 @@
                             korean words dictionary
       --load_from LOAD_FROM
                             load DataSet from DB or .csv
-### 5. Training a M.L Model
-    $ python3 train.py
-### 6. Testing a M.L Model
-    $ python3 test.py
-### x. Training/Testing a Model
+### 5. Training/Testing a Model
     $ python3 main.py --mode [train or test] --w2v_model ko_w2v.model
 
 
