@@ -40,7 +40,7 @@
     $ python3 preprocessing.py --save_model ko_w2v.model
 
     # loading from csv
-    $ python3 preprocessing.py --load_from csv --save_model ko_w2v.model
+    $ python3 preprocessing.py --load_from csv --data_file data.csv --save_model ko_w2v.model
         
     Parsing NAVER Movie Review
     
@@ -54,7 +54,7 @@
                             the number of sentences to train (0: all)
       --save_model SAVE_MODEL
                             trained w2v model file
-      --save_file SAVE_FILE
+      --data_file SAVE_FILE
                             movie review data file
       --save_dict SAVE_DICT
                             korean words dictionary
