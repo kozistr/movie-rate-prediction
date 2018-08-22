@@ -2,6 +2,7 @@ import gc
 import psutil
 import pymysql
 import logging
+import argparse
 
 from tqdm import tqdm
 from gensim import corpora
@@ -10,6 +11,18 @@ from soynlp.normalizer import *
 from multiprocessing import Pool
 from gensim.models import word2vec
 
+
+# Argument parser
+parser = argparse.ArgumentParser(description='Parsing NAVER Movie Review')
+parser.add_argument('--n_threads', type=int, help='the number of threads for parsing', default=5)
+parser.add_argument('--n_mem_limit', type=int, help='ram limitation', default=256)
+parser.add_argument('--max_sentences', type=int, help='the number of sentences to train', default=2500000)
+parser.add_argument('--jvm_path', type=str, help='jvm path',
+                    default="C:\\Program Files\\Java\\jre-9\\bin\\server\\jvm.dll")
+parser.add_argument('--save_model', type=str, help='trained w2v model file', default='ko_embeds.model')
+parser.add_argument('--save_file', type=str, help='movie review data file', default='data.csv')
+parser.add_argument('--save_dict', type=bool, help='korean words dictionary', default=False)
+args = parser.parse_args()
 
 db_infos = {
     'host': 'localhost',
@@ -20,15 +33,15 @@ db_infos = {
     'cursorclass': pymysql.cursors.DictCursor,
 }
 
-jvm_path = "C:\\Program Files\\Java\\jre-9\\bin\\server\\jvm.dll"
 
-fn = "data"
-ext = '.csv'
-w2v_model_name = "ko_embeddings.model"
+fn = args.save_file
+ko_dict = args.save_dict
+jvm_path = args.jvm_path
+w2v_model_name = args.save_model
 
-n_threads = 5
-mem_limit = 256  # 256MB
-max_sentences = 2500000
+n_threads = args.n_threads
+mem_limit = args.n_mem_limit
+max_sentences = args.max_sentences
 
 
 def get_review_data() -> list:
@@ -117,16 +130,15 @@ def word_processing(data: list) -> list:
         del pos
         idx += 1
 
-    print("[+] Done!")
     return p_data
 
 
-def w2v_training(data: list) -> bool:
+def w2v_training(data: list, save_dict: bool) -> bool:
     # logging
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-    
-    # dictionary_ko = corpora.Dictionary(data)
-    # dictionary_ko.save('ko.dict')
+
+    if save_dict:
+        corpora.Dictionary(data).save('ko.dict')
     
     # word2vec Training
     config = {
@@ -150,20 +162,18 @@ def w2v_training(data: list) -> bool:
 
 
 # Getting Review Data from DB
-"""
 data = get_review_data()
 
-to_csv(data, fn + ext)
-"""
-data = from_csv(fn + ext)
+to_csv(data, fn)
+
+data = from_csv(fn)
 
 gc.collect()
 
 # Analyze morphs # concat like... word/pos
 # To-Do
-# 1. Text Normalization # https://github.com/open-korean-text/open-korean-text - Done
-# 2. Text Tokenization - Done
-# 3. Text Stemming
+# * Text Normalizing
+# * Text Stemming
 
 ts = len(data) // n_threads  # 5366474
 
@@ -176,13 +186,9 @@ with Pool(n_threads) as p:
  
 del data
 gc.collect()
- 
-print("[*] Total data : %d" % len(datas))   
 
-for i in range(0, 200000, 10000):
-    print("[*] %d : " % i, datas[i])
-        
-w2v_training(datas)
+# W2V Training
+w2v_training(datas, ko_dict)
 
 del datas
 gc.collect()
