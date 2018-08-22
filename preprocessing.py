@@ -16,7 +16,7 @@ from gensim.models import word2vec, Doc2Vec
 parser = argparse.ArgumentParser(description='Parsing NAVER Movie Review')
 parser.add_argument('--n_threads', type=int, help='the number of threads', default=5)
 parser.add_argument('--n_mem_limit', type=int, help='ram limitation', default=256)
-parser.add_argument('--max_sentences', type=int, help='the number of sentences to train (0: all)', default=2500000)
+parser.add_argument('--max_sentences', type=int, help='the number of sentences to train (0: all)', default=2560000)
 parser.add_argument('--save_model', type=str, help='trained w2v model file', default='ko_w2v.model')
 parser.add_argument('--data_file', type=str, help='movie review data file', default=None)
 parser.add_argument('--save_dict', type=bool, help='korean words dictionary', default=False)
@@ -77,7 +77,8 @@ def from_csv(fn: str) -> list:
             d = line.split(',')
             try:
                 # remove dirty stuffs
-                data.append({'rate': d[0], 'comment': ','.join(d[1:]).replace('\x00', '').replace('\xa0', '').replace('\n', '').strip('"')})
+                data.append({'rate': d[0], 'comment': ','.join(d[1:]).replace('\x00', '').replace('\n', '').
+                            replace('<span class=""ico_penel""></span>', '').strip('"').strip()})
             except Exception as e:
                 print(e, line)
             del d
@@ -181,7 +182,7 @@ del data
 gc.collect()
 
 # W2V Training
-w2v_training(datas, ko_dict, False)
+w2v_training(datas, ko_dict, True)
 
 del datas
 gc.collect()
