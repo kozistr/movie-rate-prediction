@@ -18,7 +18,7 @@ parser.add_argument('--n_threads', type=int, help='the number of threads for par
 parser.add_argument('--n_mem_limit', type=int, help='ram limitation', default=256)
 parser.add_argument('--max_sentences', type=int, help='the number of sentences to train (0: all)', default=2500000)
 parser.add_argument('--save_model', type=str, help='trained w2v model file', default='ko_w2v.model')
-parser.add_argument('--save_file', type=str, help='movie review data file', default=None)
+parser.add_argument('--data_file', type=str, help='movie review data file', default=None)
 parser.add_argument('--save_dict', type=bool, help='korean words dictionary', default=False)
 parser.add_argument('--load_from', type=str, help='load DataSet from db or csv', default='db')
 args = parser.parse_args()
@@ -33,7 +33,7 @@ db_infos = {
 }
 
 
-fn = args.save_file
+fn = args.data_file
 ko_dict = args.save_dict
 load_from = args.load_from
 w2v_model_name = args.save_model
