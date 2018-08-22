@@ -47,7 +47,7 @@
     optional arguments:
       -h, --help            show this help message and exit
       --n_threads N_THREADS
-                            the number of threads for parsing
+                            the number of threads
       --n_mem_limit N_MEM_LIMIT
                             ram limitation
       --max_sentences MAX_SENTENCES
