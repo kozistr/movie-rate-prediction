@@ -7,7 +7,7 @@ class CharCNN:
     def __init__(self, n_classes=10, batch_size=128,
                  vocab_size=251, dims=300, seed=1337, use_w2v=False, w2v_model=None,
                  filter_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
-                 l2_reg=1e-3, th=1e-6):
+                 lr=5e-4, l2_reg=1e-3, th=1e-6):
         self.n_dims = dims
         self.n_classes = n_classes
         self.w2v_model = w2v_model
@@ -19,6 +19,8 @@ class CharCNN:
 
         if use_w2v:
             assert w2v_model
+
+        self.lr = lr
 
         self.filter_sizes = filter_sizes
         self.n_filters = n_filters
@@ -45,7 +47,16 @@ class CharCNN:
         self.do_rate = tf.placeholder(tf.float32, name='do-rate')
 
         # build CharCNN Model
-        self.build_model()
+        self.rate = self.build_model()
+
+        # loss
+        self.loss = tf.reduce_mean(tf.losses.mean_squared_error(
+            labels=self.y,
+            predictions=self.rate
+        ))
+
+        # Optimizer
+        self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr).minimize(self.loss)
 
     def build_model(self):
         with tf.name_scope('embeddings'):
@@ -83,7 +94,26 @@ class CharCNN:
         x = tf.layers.dropout(x, self.do_rate)
 
         with tf.variable_scope("outputs"):
-            x =
+            x = tf.layers.dense(
+                x,
+                units=self.fc_unit,
+                kernel_initializer=self.he_uni,
+                kernel_regularizer=self.reg,
+                name='fc1'
+            )
+            x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)\
+
+            x = tf.layers.dense(
+                x,
+                units=1,
+                kernel_initializer=self.he_uni,
+                kernel_regularizer=self.reg,
+                name='fc2'
+            )
+            rate = tf.nn.sigmoid(x)
+            rate = rate * 9. + 1.  # 1 ~ 10
+            return rate
+
 
 if __name__ == '__main__':
     pass
