@@ -51,3 +51,13 @@ if __name__ == '__main__':
     trained_w2v_model = args.w2v_model
 
     w2v = LoadW2VEmbeddings(trained_w2v_model, n_dims)
+
+    if mode == 'train':
+        model = tr.CharCNN(dims=n_dims,
+                           use_w2v=True,
+                           w2v_model=w2v.embeds)
+
+    elif mode == 'test':
+        pass
+    else:
+        raise ValueError('[-] mode should be train or test')
