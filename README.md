@@ -65,7 +65,7 @@
 ### 6. Testing a M.L Model
     $ python3 test.py
 ### x. Training/Testing a Model
-    $ python3 main.p --mode [train or test] --
+    $ python3 main.py --mode [train or test] --w2v_model ko_w2v.model
 
 
 ## Repo Tree
