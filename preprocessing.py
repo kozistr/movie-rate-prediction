@@ -155,7 +155,8 @@ def w2v_training(data: list, save_dict: bool) -> bool:
 if load_from == 'db':
     data = get_review_data()
     # save to .csv
-    to_csv(data, fn) if fn else pass
+    if fn:
+        to_csv(data, fn)
 elif load_from == 'csv':
     data = from_csv(fn)
 else:
