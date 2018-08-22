@@ -20,8 +20,9 @@ parser.add_argument('--max_sentences', type=int, help='the number of sentences t
 parser.add_argument('--jvm_path', type=str, help='jvm path',
                     default="C:\\Program Files\\Java\\jre-9\\bin\\server\\jvm.dll")
 parser.add_argument('--save_model', type=str, help='trained w2v model file', default='ko_embeds.model')
-parser.add_argument('--save_file', type=str, help='movie review data file', default='data.csv')
+parser.add_argument('--save_file', type=str, help='movie review data file', default=None)
 parser.add_argument('--save_dict', type=bool, help='korean words dictionary', default=False)
+parser.add_argument('--load_from', type=str, help='load DataSet from DB or .csv', default='csv')
 args = parser.parse_args()
 
 db_infos = {
@@ -37,6 +38,7 @@ db_infos = {
 fn = args.save_file
 ko_dict = args.save_dict
 jvm_path = args.jvm_path
+load_from = args.load_from
 w2v_model_name = args.save_model
 
 n_threads = args.n_threads
@@ -123,13 +125,8 @@ def word_processing(data: list) -> list:
                 print("[-] not enough memory < 256MB, ", remain_ram)
                 sys.exit(-1)
 
-        if idx == n_data - 1:
-            for idx, p in enumerate(p_data[:3]):
-                print("[*] %d" % idx, p)
-
         del pos
         idx += 1
-
     return p_data
 
 
@@ -161,12 +158,15 @@ def w2v_training(data: list, save_dict: bool) -> bool:
     return True
 
 
-# Getting Review Data from DB
-data = get_review_data()
-
-to_csv(data, fn)
-
-data = from_csv(fn)
+# Getting Review Data from DB/CSV
+if load_from == 'db':
+    data = get_review_data()
+    # save to .csv
+    to_csv(data, fn) if fn else pass
+elif load_from == 'csv':
+    data = from_csv(fn)
+else:
+    raise ValueError("[-] load_from argument must be 'db' or 'csv")
 
 gc.collect()
 
@@ -175,15 +175,14 @@ gc.collect()
 # * Text Normalizing
 # * Text Stemming
 
-ts = len(data) // n_threads  # 5366474
-
 datas = []
+ts = len(data) // n_threads  # 5366474
 with Pool(n_threads) as p:
     pp_data = [p.apply_async(word_processing, (data[ts * i:ts * (i + 1)],)) for i in range(n_threads)]
     
     for d in pp_data:
         datas += d.get()
- 
+
 del data
 gc.collect()
 
