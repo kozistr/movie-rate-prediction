@@ -18,7 +18,7 @@
 * mecab-ko
 * pymysql
 * tqdm
-* Internet :)
+* (Optional) MultiTSNE (for visualization)
 
 ## DataSet
 
@@ -36,6 +36,25 @@
     $ python3 db.py
 ### 4. Making w2v embeddings
     $ python3 preprocessing.py
+
+    Parsing NAVER Movie Review
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      --n_threads N_THREADS
+                            the number of threads for parsing
+      --n_mem_limit N_MEM_LIMIT
+                            ram limitation
+      --max_sentences MAX_SENTENCES
+                            the number of sentences to train
+      --save_model SAVE_MODEL
+                            trained w2v model file
+      --save_file SAVE_FILE
+                            movie review data file
+      --save_dict SAVE_DICT
+                            korean words dictionary
+      --load_from LOAD_FROM
+                            load DataSet from DB or .csv
 ### 5. Training a M.L Model
     $ python3 train.py
 ### 6. Testing a M.L Model
@@ -69,8 +88,7 @@ soon!
 soon!
 
 ## To-Do
-1. Pre-Processing DataSet
-2. Implement Models
+1. Implement Classification Models
 
 ## ETC
 
