@@ -60,6 +60,9 @@
     $ python3 train.py
 ### 6. Testing a M.L Model
     $ python3 test.py
+### x. Training/Testing a Model
+    $ python3 main.p --mode [train or test] --
+
 
 ## Repo Tree
 ```
@@ -72,8 +75,9 @@
 ├── db.py             (DataBase processing)
 ├── preprocessing.py  (Korean NLP verctoize)
 ├── train.py          (for model training)
+├── test.py           (for model evaluation)
 ├── visualize.py      (for visualizing w2v)
-└── test.py           (for evaluation)
+└── main.py           (for easy use)
 ```
 
 ## Pre-Trained Models
