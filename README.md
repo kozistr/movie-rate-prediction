@@ -36,8 +36,12 @@
     # you need to edit 'db_infos' at line 13, fitting in your env.
     $ python3 db.py
 ### 4. Making w2v embeddings
-    $ python3 preprocessing.py
+    # loading from db
+    $ python3 preprocessing.py --save_model ko_w2v.model
 
+    # loading from csv
+    $ python3 preprocessing.py --load_from csv --save_model ko_w2v.model
+        
     Parsing NAVER Movie Review
     
     optional arguments:
@@ -47,7 +51,7 @@
       --n_mem_limit N_MEM_LIMIT
                             ram limitation
       --max_sentences MAX_SENTENCES
-                            the number of sentences to train
+                            the number of sentences to train (0: all)
       --save_model SAVE_MODEL
                             trained w2v model file
       --save_file SAVE_FILE
