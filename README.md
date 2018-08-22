@@ -96,7 +96,7 @@ soon!
 soon!
 
 ## To-Do
-1. Implement Classification Models
+1. Doc2Vec Testing
 
 ## ETC
 
