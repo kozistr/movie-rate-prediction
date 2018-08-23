@@ -38,7 +38,7 @@
 ### 3. Making DataSet DB
     # you need to edit 'db_infos' at line 13, fitting in your env.
     $ python3 db.py
-### 4. Making w2v embeddings
+### 4. Making w2v/d2v embeddings
     # loading from db
     $ python3 preprocessing.py --save_model ko_w2v.model
 
@@ -57,12 +57,13 @@
                             the number of sentences to train (0: all)
       --save_model SAVE_MODEL
                             trained w2v model file
-      --data_file SAVE_FILE
+      --data_file DATA_FILE
                             movie review data file
       --save_dict SAVE_DICT
                             korean words dictionary
       --load_from LOAD_FROM
-                            load DataSet from DB or .csv
+                            load DataSet from db or csv
+      --vector VECTOR       w2v or d2v
 ### 5. Training/Testing a Model
     $ python3 main.py --mode [train or test] --w2v_model ko_w2v.model
 
