@@ -131,7 +131,7 @@ class CharCNN:
                 kernel_regularizer=self.reg,
                 name='fc2'
             )
-            rate = tf.nn.sigmoid(x)
+            rate = tf.nn.sigmoid(x)  # To-Do : replace with another scale function to avoid saturation
             rate = rate * 9. + 1.  # 1 ~ 10
             return rate
 
