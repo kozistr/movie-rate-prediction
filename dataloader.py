@@ -56,5 +56,7 @@ class Doc2VecEmbeddings:
 
 class DataLoader:
 
-    def __init__(self,):
-        pass
+    def __init__(self, path, save_to_file=False):
+        self.path = path
+
+        self.save_to_file = save_to_file
