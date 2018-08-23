@@ -14,8 +14,8 @@ from MulticoreTSNE import MulticoreTSNE as TSNE
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 # font
-# path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
-path = 'C:\\Windows\\Fonts\\NanumGothic.ttf'
+path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
+# path = 'C:\\Windows\\Fonts\\NanumGothic.ttf'
 font_name = fm.FontProperties(fname=path, size=16).get_name()
 plt.rc('font', family=font_name)
 
@@ -58,7 +58,7 @@ def tsne_plot(model):
         plt.annotate(labels[i], xy=(x[i], y[i]), xytext=(5, 2),
                      textcoords='offset points', ha='right', va='bottom')
 
-    plt.imsave('tsne-w2v.png')
+    plt.savefig('tsne-w2v.png')
     plt.show()
 
 
