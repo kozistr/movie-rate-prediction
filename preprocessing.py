@@ -147,22 +147,30 @@ def w2v_training(data: list) -> bool:
     return True
 
 
-def d2v_training(data: list) -> bool:
+def d2v_training(data: list, epochs=10) -> bool:
     config = {
         'dm': 1,
         'dm_concat': 1,
         'size': 300,
         'negative': 5,
         'hs': 0,
+        'alpha': 0.025,
+        'min_alpha': 0.025,
         'min_count': 2,
         'window': 5,
-        'iter': 100,
+        'seed': 1337,
         'workers': 8,
     }
     d2v_model = Doc2Vec(**config)
     d2v_model.build_vocab(data)
 
-    d2v_model.train(data)
+    for _ in tqdm(range(epochs)):
+        # D2V training
+        d2v_model.train(data)
+
+        # LR Scheduler
+        d2v_model.alpha -= 2e-3
+        d2v_model.min_alpha = d2v_model.alpha
 
     d2v_model.save(model_name)
     return True
@@ -211,4 +219,3 @@ else:
 
 del datas
 gc.collect()
-
