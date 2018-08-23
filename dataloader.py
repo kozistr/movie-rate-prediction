@@ -60,7 +60,7 @@ class Doc2VecEmbeddings:
 
 class DataLoader:
 
-    def __init__(self, file, save_to_file=False, n_threads=8, mem_limit=256):
+    def __init__(self, file, save_to_file=False, save_file=None, n_threads=8, mem_limit=256):
         self.file = file
         assert self.file in '.csv'
 
@@ -70,12 +70,15 @@ class DataLoader:
         self.labels = []
 
         self.save_to_file = save_to_file
+        self.save_file = save_file
         self.n_threads = n_threads
         self.mem_limit = mem_limit
 
         self.remove_dirty()
-
         self.build_data()
+
+        if self.save_to_file:
+            self.save()
 
     def remove_dirty(self):
         with open(self.file, 'r', encoding='utf8') as f:
@@ -130,3 +133,18 @@ class DataLoader:
 
         del self.data
         gc.collect()
+
+    def save(self):
+        import unicodecsv as csv
+
+        assert self.save_file
+
+        try:
+            with open(fn, 'w', encoding='utf8', newline='') as f:
+                w = csv.DictWriter(f, fieldnames=['rate', 'comment'])
+
+                w.writeheader()
+                for rate, comment in tqdm(zip(self.labels, self.sentences)):
+                    w.writerow({'rate': rate, 'comment': ' '.join(comment)})
+        except Exception as e:
+            raise Exception(e)
