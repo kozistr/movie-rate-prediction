@@ -93,7 +93,7 @@ def from_csv(fn: str) -> list:
     return data
 
 
-def word_processing(data: list) -> list:
+def word_processing(data: list) -> (list, list):
     # Mecab Pos Tagger
     mecab = Mecab()
     
@@ -107,11 +107,14 @@ def word_processing(data: list) -> list:
         return rep(emo(x))
 
     idx = 0
-    p_data = []
     n_data = len(data)
+    p_data, l_data = [], []
     for d in data:
         pos = list(map(lambda x: '/'.join(x), mecab.pos(normalize(d['comment']))))
+
+        # append sentence & rate
         p_data.append(pos)
+        l_data.append(d['rate'])
 
         if idx > 0 and idx % (n_data // (100 * n_threads)) == 0:
             print("[*] %d/%d" % (idx, n_data), pos)
@@ -125,7 +128,7 @@ def word_processing(data: list) -> list:
 
         del pos
         idx += 1
-    return p_data
+    return p_data, l_data
 
 
 def w2v_training(data: list) -> bool:
@@ -149,11 +152,11 @@ def w2v_training(data: list) -> bool:
     return True
 
 
-def d2v_training(data: list, epochs=10) -> bool:
+def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
     # data processing to fit in Doc2Vec
     taggedDocs = namedtuple('TaggedDocument', 'words tags')
 
-    data = [taggedDocs(d['']) for d in data]
+    tagged_data = [taggedDocs(s, r) for s, r in zip(sentences, rates)]
 
     config = {
         'dm': 1,
@@ -169,11 +172,11 @@ def d2v_training(data: list, epochs=10) -> bool:
         'workers': 8,
     }
     d2v_model = Doc2Vec(**config)
-    d2v_model.build_vocab(data)
+    d2v_model.build_vocab(tagged_data)
 
     for _ in tqdm(range(epochs)):
         # D2V training
-        d2v_model.train(data)
+        d2v_model.train(tagged_data)
 
         # LR Scheduler
         d2v_model.alpha -= 2e-3
@@ -200,13 +203,14 @@ gc.collect()
 # * Text Normalizing
 # * Text Stemming
 
-datas = []
+x_data, y_data = [], []
 ts = len(data) // n_threads  # 5366474
 with Pool(n_threads) as p:
     pp_data = [p.apply_async(word_processing, (data[ts * i:ts * (i + 1)],)) for i in range(n_threads)]
     
     for d in pp_data:
-        datas += d.get()
+        x_data += d.get()[0]
+        y_data += d.get()[1]
 
 del data
 gc.collect()
@@ -215,14 +219,15 @@ gc.collect()
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 if ko_dict:
-    corpora.Dictionary(datas).save('ko.dict')
+    corpora.Dictionary(x_data).save('ko.dict')
 
 if vec == 'd2v':
-    d2v_training(datas)
+    d2v_training(x_data, y_data)
 elif vec == 'w2v':
-    w2v_training(datas)  # w2v Training
+    w2v_training(x_data)  # w2v Training
 else:
     raise ValueError("[-] vec should be w2v or d2v")
 
-del datas
+del x_data
+del y_data
 gc.collect()
