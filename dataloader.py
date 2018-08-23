@@ -34,8 +34,8 @@ class Word2VecEmbeddings:
 
 class Doc2VecEmbeddings:
 
-    def __init__(self, w2v_model, dims=300):
-        self.model = w2v_model
+    def __init__(self, d2v_model, dims=300):
+        self.model = d2v_model
 
         self.dims = dims
 
@@ -52,3 +52,9 @@ class Doc2VecEmbeddings:
 
     def __len__(self):
         return len(self.d2v_model.wv.vocab)
+
+
+class DataLoader:
+
+    def __init__(self,):
+        pass
