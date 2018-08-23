@@ -1,11 +1,10 @@
 import argparse
 import numpy as np
 
-import test as te
-import train as tr
-
 from tqdm import tqdm
 from gensim.models import Word2Vec, Doc2Vec
+
+from .model import charcnn
 
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
@@ -82,9 +81,9 @@ if __name__ == '__main__':
         raise ValueError("[-] vector must be w2v or d2v")
 
     if mode == 'train':
-        model = tr.CharCNN(dims=n_dims,
-                           use_w2v=True,
-                           w2v_model=vec.embeds)
+        model = charcnn.CharCNN(dims=n_dims,
+                                use_w2v=True,
+                                w2v_model=vec)
 
     elif mode == 'test':
         pass
