@@ -71,17 +71,19 @@
 ## Repo Tree
 ```
 │
-├── comments
+├── comments          (NAVER Movie Review DataSets)
 │    ├── 10000.sql
 │    ├── ...
-│    └── 200000.sql   (NAVER Movie Review DataSets)
+│    └── 200000.sql   
+├── model             (Movie Review Rate ML Models)
+│    ├── charcnn.py
+│    ├── ...
+│    └── charrnn.py
 ├── movie-parser.py   (NAVER Movie Review Parser)
 ├── db.py             (DataBase processing)
 ├── preprocessing.py  (Korean normalize/tokenize)
-├── train.py          (for model training)
-├── test.py           (for model evaluation)
 ├── visualize.py      (for visualizing w2v)
-└── main.py           (for easy use)
+└── main.py           (for easy use of train/test)
 ```
 
 ## Pre-Trained Models
