@@ -56,18 +56,12 @@ class LoadD2VEmbeddings:
         self.embeds = None
 
         self.load_model()
-        self.build_embeds()
 
     def load_model(self):
         self.d2v_model = Doc2Vec.load(self.model)
 
-    def build_embeds(self):
-        self.embeds = np.zeros((len(self.d2v_model.wv.vocab), self.dims))
-
-        for i in tqdm(range(len(self.d2v_model.wv.vocab))):
-            vec = self.d2v_model.wv[self.d2v_model.wv.index2word[i]]
-            if vec is not None:
-                self.embeds[i] = vec
+    def sentence_to_vector(self, input_sentence: str) -> np.array:
+        return self.d2v_model.infer_vector(input_sentence)
 
     def __len__(self):
         return len(self.d2v_model.wv.vocab)
