@@ -16,7 +16,7 @@ from gensim.models import word2vec, Doc2Vec
 parser = argparse.ArgumentParser(description='Parsing NAVER Movie Review')
 parser.add_argument('--n_threads', type=int, help='the number of threads', default=5)
 parser.add_argument('--n_mem_limit', type=int, help='ram limitation', default=256)
-parser.add_argument('--max_sentences', type=int, help='the number of sentences to train (0: all)', default=2560000)
+parser.add_argument('--max_sentences', type=int, help='the number of sentences to train (0: all)', default=2500000)
 parser.add_argument('--save_model', type=str, help='trained w2v model file', default='ko_w2v.model')
 parser.add_argument('--data_file', type=str, help='movie review data file', default=None)
 parser.add_argument('--save_dict', type=bool, help='korean words dictionary', default=False)
@@ -73,9 +73,14 @@ def to_csv(data: list, fn: str) -> bool:
 
 
 def from_csv(fn: str) -> list:
-    data = []
+    global max_sentences
+
+    if max_sentences == 0:
+        max_sentences = -1
+    
+    data = []   
     with open(fn, 'r', encoding='utf8') as f:
-        for line in tqdm(f.readlines()[1:]):
+        for line in tqdm(f.readlines()[1:max_sentences]):
             d = line.split(',')
             try:
                 # remove dirty stuffs
@@ -84,11 +89,7 @@ def from_csv(fn: str) -> list:
             except Exception as e:
                 print(e, line)
             del d
-
-    if max_sentences == 0:
-        return data
-    else:
-        return data[:max_sentences]
+    return data            
 
 
 def word_processing(data: list) -> list:
@@ -151,7 +152,7 @@ def d2v_training(data: list, epochs=10) -> bool:
     config = {
         'dm': 1,
         'dm_concat': 1,
-        'size': 300,
+        'vector_size': 300,
         'negative': 5,
         'hs': 0,
         'alpha': 0.025,
