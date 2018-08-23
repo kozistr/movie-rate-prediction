@@ -88,6 +88,7 @@
 ├── movie-parser.py   (NAVER Movie Review Parser)
 ├── db.py             (DataBase processing)
 ├── preprocessing.py  (Korean normalize/tokenize)
+├── dataloader.py     (Doc/Word2Vec model loader)
 ├── visualize.py      (for visualizing w2v)
 └── main.py           (for easy use of train/test)
 ```
