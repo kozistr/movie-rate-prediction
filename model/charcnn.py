@@ -38,7 +38,7 @@ class CharCNN:
         if use_w2v:  # use w2v initialization
             self.embeddings = tf.Variable(initial_value=tf.constant(self.w2v_model),
                                           trainable=False)
-        else:
+        else:        # use random initialization
             self.embeddings = tf.get_variable('lookup-w', shape=[self.vocab_size, self.n_dims],
                                               initializer=self.he_uni)
 
