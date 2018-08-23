@@ -92,6 +92,12 @@ Here's a **google drive link**. You can download pre-trained models from [~~here
 
 ## Models
 
+* CharCNN (optimized)
+
+soon!
+
+* CharRNN (planned)
+
 soon!
 
 ## Results
@@ -99,7 +105,7 @@ soon!
 soon!
 
 ## To-Do
-1. Doc2Vec Testing
+1. Generous DataLoader & Inference
 
 ## ETC
 
