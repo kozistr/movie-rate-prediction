@@ -5,22 +5,18 @@ import tensorflow as tf
 class CharCNN:
 
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
-                 vocab_size=251, dims=300, seed=1337, use_w2v=False, w2v_model=None,
+                 vocab_size=251, dims=300, seed=1337, use_d2v=True,
                  filter_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
                  lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6):
         self.s = s
         self.n_dims = dims
         self.n_classes = n_classes
-        self.w2v_model = w2v_model
         self.vocab_size = vocab_size
         self.batch_size = batch_size
         self.epochs = epochs
 
+        self.use_d2v = use_d2v
         self.seed = seed
-        self.use_w2v = use_w2v
-
-        if use_w2v:
-            assert w2v_model
 
         self.filter_sizes = filter_sizes
         self.n_filters = n_filters
@@ -35,10 +31,7 @@ class CharCNN:
         self.he_uni = tf.contrib.layers.variance_scaling_initializer(factor=1., mode='FAN_AVG', uniform=True)
         self.reg = tf.contrib.layers.l2_regularizer(self.l2_reg)
 
-        if use_w2v:  # use w2v initialization
-            self.embeddings = tf.Variable(initial_value=tf.constant(self.w2v_model),
-                                          trainable=False)
-        else:        # use random initialization
+        if not use_d2v:  # use random initialization # use w2v initialization
             self.embeddings = tf.get_variable('lookup-w', shape=[self.vocab_size, self.n_dims],
                                               initializer=self.he_uni)
 
@@ -80,11 +73,14 @@ class CharCNN:
         self.writer = tf.summary.FileWriter('./model/', self.s.graph)
 
     def build_model(self):
-        with tf.name_scope('embeddings'):
-            spatial_do = tf.contrib.keras.layers.SpatialDropout1D(self.do_rate)
+        if not self.use_d2v:
+            with tf.name_scope('embeddings'):
+                spatial_do = tf.contrib.keras.layers.SpatialDropout1D(self.do_rate)
 
-            embeds = tf.nn.embedding_lookup(self.embeddings, self.x)
-            embeds = spatial_do(embeds)
+                embeds = tf.nn.embedding_lookup(self.embeddings, self.x)
+                embeds = spatial_do(embeds)
+        else:
+            embeds = self.x
 
         pooled_outs = []
         for i, fs in enumerate(self.filter_sizes):
@@ -126,15 +122,11 @@ class CharCNN:
 
             x = tf.layers.dense(
                 x,
-                units=1,
+                units=self.n_classes,
                 kernel_initializer=self.he_uni,
                 kernel_regularizer=self.reg,
                 name='fc2'
             )
             rate = tf.nn.sigmoid(x)  # To-Do : replace with another scale function to avoid saturation
-            rate = rate * 9. + 1.  # 1 ~ 10
+            rate = rate * 9. + 1.    # 1 ~ 10
             return rate
-
-
-if __name__ == '__main__':
-    pass
