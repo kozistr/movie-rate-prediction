@@ -174,9 +174,10 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
     d2v_model = Doc2Vec(**config)
     d2v_model.build_vocab(tagged_data)
 
+    total_examples = len(sentences)
     for _ in tqdm(range(epochs)):
         # D2V training
-        d2v_model.train(tagged_data)
+        d2v_model.train(tagged_data, total_examples=total_examples, epochs=d2v_model.iter)
 
         # LR Scheduler
         d2v_model.alpha -= 2e-3
