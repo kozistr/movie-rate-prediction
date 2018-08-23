@@ -158,6 +158,10 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
 
     tagged_data = [taggedDocs(s, r) for s, r in zip(sentences, rates)]
 
+    # for checking
+    for td in tagged_data[:10]:
+        print(td)
+
     config = {
         'dm': 1,
         'dm_concat': 1,
