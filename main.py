@@ -1,89 +1,43 @@
 import argparse
 import numpy as np
-
-from tqdm import tqdm
-from gensim.models import Word2Vec, Doc2Vec
+import tensorflow as tf
 
 from .model import charcnn
+from .dataloader import Doc2VecEmbeddings
 
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
 parser.add_argument('--mode', type=str, help='train or test', default='train')
-parser.add_argument('--n_threads', type=int, help='the number of threads for parsing', default=8)
-parser.add_argument('--model', type=str, help='trained w2v/d2v model file', default='ko_w2v.model')
+parser.add_argument('--n_threads', type=int, help='the number of threads', default=8)
+parser.add_argument('--model', type=str, help='trained w2v/d2v model file', default='ko_d2v.model')
 parser.add_argument('--n_dims', type=int, help='embeddings'' dimensions', default=300)
-parser.add_argument('--vector', type=str, help='word2vec or doc2vec', default='d2v')
+parser.add_argument('--seed', type=int, help='random seed', default=1337)
 args = parser.parse_args()
 
+# parsed args
+mode = args.mode
+seed = args.seed
+vector = args.vec
+n_dims = args.dims
+vec_model = args.vec_model
 
-class LoadW2VEmbeddings:
-
-    def __init__(self, w2v_model, dims=300):
-        self.model = w2v_model
-
-        self.dims = dims
-
-        self.w2v_model = None
-        self.embeds = None
-
-        self.load_model()
-        self.build_embeds()
-
-    def load_model(self):
-        self.w2v_model = Word2Vec.load(self.model)
-
-    def build_embeds(self):
-        self.embeds = np.zeros((len(self.w2v_model.wv.vocab), self.dims))
-
-        for i in tqdm(range(len(self.w2v_model.wv.vocab))):
-            vec = self.w2v_model.wv[self.w2v_model.wv.index2word[i]]
-            if vec is not None:
-                self.embeds[i] = vec
-
-    def __len__(self):
-        return len(self.w2v_model.wv.vocab)
-
-
-class LoadD2VEmbeddings:
-
-    def __init__(self, w2v_model, dims=300):
-        self.model = w2v_model
-
-        self.dims = dims
-
-        self.d2v_model = None
-        self.embeds = None
-
-        self.load_model()
-
-    def load_model(self):
-        self.d2v_model = Doc2Vec.load(self.model)
-
-    def sentence_to_vector(self, input_sentence: str) -> np.array:
-        return self.d2v_model.infer_vector(input_sentence)
-
-    def __len__(self):
-        return len(self.d2v_model.wv.vocab)
+np.random.seed(seed)
+tf.set_random_seed(seed)
 
 
 if __name__ == '__main__':
-    # parsed args
-    mode = args.mode
-    vector = args.vec
-    n_dims = args.dims
-    vec_model = args.vec_model
-
-    if vector == 'w2v':
-        vec = LoadW2VEmbeddings(vec_model, n_dims)
-    elif vector == 'd2v':
-        vec = LoadD2VEmbeddings(vec_model, n_dims)
-    else:
-        raise ValueError("[-] vector must be w2v or d2v")
+    # Doc2Vec Loader
+    vec = Doc2VecEmbeddings(vec_model, n_dims)
 
     if mode == 'train':
-        model = charcnn.CharCNN(dims=n_dims,
-                                use_w2v=True,
-                                w2v_model=vec)
+        # GPU configure
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+
+        with tf.Session(config=config) as s:
+            model = charcnn.CharCNN(s=s,
+                                    n_classes=10,
+                                    dims=n_dims)
 
     elif mode == 'test':
         pass
