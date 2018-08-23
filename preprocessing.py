@@ -21,6 +21,7 @@ parser.add_argument('--save_model', type=str, help='trained w2v model file', def
 parser.add_argument('--data_file', type=str, help='movie review data file', default=None)
 parser.add_argument('--save_dict', type=bool, help='korean words dictionary', default=False)
 parser.add_argument('--load_from', type=str, help='load DataSet from db or csv', default='db')
+parser.add_argument('--vector', type=str, help='w2v or d2v', default='d2v')
 args = parser.parse_args()
 
 db_infos = {
@@ -33,10 +34,11 @@ db_infos = {
 }
 
 
+vec = args.vector
 fn = args.data_file
 ko_dict = args.save_dict
 load_from = args.load_from
-w2v_model_name = args.save_model
+model_name = args.save_model
 
 n_threads = args.n_threads
 mem_limit = args.n_mem_limit
@@ -124,32 +126,45 @@ def word_processing(data: list) -> list:
     return p_data
 
 
-def w2v_training(data: list, save_dict: bool, use_w2v: bool) -> bool:
-    # logging
-    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+def w2v_training(data: list) -> bool:
+    # word2vec Training
+    config = {
+        'sentences': data,
+        'batch_words': 10000,
+        'size': 300,
+        'window': 5,
+        'min_count': 3,
+        'negative': 3,
+        'sg': 1,
+        'iter': 10,
+        'seed': 1337,
+        'workers': 8,
+    }
+    w2v_model = word2vec.Word2Vec(**config)
+    w2v_model.wv.init_sims(replace=True)
 
-    if save_dict:
-        corpora.Dictionary(data).save('ko.dict')
+    w2v_model.save(model_name)
+    return True
 
-    if use_w2v:
-        # word2vec Training
-        config = {
-            'sentences': data,
-            'batch_words': 10000,
-            'size': 300,
-            'window': 5,
-            'min_count': 3,
-            'negative': 3,
-            'sg': 1,
-            'iter': 10,
-            'seed': 1337,
-            'workers': 8,
-        }
-        w2v_model = word2vec.Word2Vec(**config)
-        w2v_model.wv.init_sims(replace=True)
 
-        w2v_model.save(w2v_model_name)
+def d2v_training(data: list) -> bool:
+    config = {
+        'dm': 1,
+        'dm_concat': 1,
+        'size': 300,
+        'negative': 5,
+        'hs': 0,
+        'min_count': 2,
+        'window': 5,
+        'iter': 100,
+        'workers': 8,
+    }
+    d2v_model = Doc2Vec(**config)
+    d2v_model.build_vocab(data)
 
+    d2v_model.train(data)
+
+    d2v_model.save(model_name)
     return True
 
 
@@ -181,8 +196,18 @@ with Pool(n_threads) as p:
 del data
 gc.collect()
 
-# W2V Training
-w2v_training(datas, ko_dict, True)
+# logging
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+
+if ko_dict:
+    corpora.Dictionary(datas).save('ko.dict')
+
+if vec == 'd2v':
+    d2v_training(datas)
+elif vec == 'w2v':
+    w2v_training(datas)  # w2v Training
+else:
+    raise ValueError("[-] vec should be w2v or d2v")
 
 del datas
 gc.collect()
