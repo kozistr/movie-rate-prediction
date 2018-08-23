@@ -9,6 +9,7 @@ from gensim import corpora
 from konlpy.tag import Mecab
 from soynlp.normalizer import *
 from multiprocessing import Pool
+from collections import namedtuple
 from gensim.models import word2vec, Doc2Vec
 
 
@@ -76,11 +77,11 @@ def from_csv(fn: str) -> list:
     global max_sentences
 
     if max_sentences == 0:
-        max_sentences = -1
-    
-    data = []   
+        max_sentences = -2
+
+    data = []
     with open(fn, 'r', encoding='utf8') as f:
-        for line in tqdm(f.readlines()[1:max_sentences]):
+        for line in tqdm(f.readlines()[1:max_sentences + 1]):
             d = line.split(',')
             try:
                 # remove dirty stuffs
@@ -89,7 +90,7 @@ def from_csv(fn: str) -> list:
             except Exception as e:
                 print(e, line)
             del d
-    return data            
+    return data
 
 
 def word_processing(data: list) -> list:
@@ -149,6 +150,11 @@ def w2v_training(data: list) -> bool:
 
 
 def d2v_training(data: list, epochs=10) -> bool:
+    # data processing to fit in Doc2Vec
+    taggedDocs = namedtuple('TaggedDocument', 'words tags')
+
+    data = []
+
     config = {
         'dm': 1,
         'dm_concat': 1,
