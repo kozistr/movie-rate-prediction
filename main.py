@@ -3,11 +3,12 @@ import numpy as np
 import tensorflow as tf
 
 from .model import charcnn
-from .dataloader import Doc2VecEmbeddings
+from .dataloader import Doc2VecEmbeddings, DataLoader
 
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
 parser.add_argument('--mode', type=str, help='train or test', default='train')
+parser.add_argument('--dataset', type=str, help='DataSet path', default='./data.csv')
 parser.add_argument('--n_threads', type=int, help='the number of threads', default=8)
 parser.add_argument('--model', type=str, help='trained w2v/d2v model file', default='ko_d2v.model')
 parser.add_argument('--n_dims', type=int, help='embeddings'' dimensions', default=300)
@@ -19,13 +20,21 @@ mode = args.mode
 seed = args.seed
 vector = args.vec
 n_dims = args.dims
+dataset = args.dataset
 vec_model = args.vec_model
+n_threads = args.n_threads
 
 np.random.seed(seed)
 tf.set_random_seed(seed)
 
 
 if __name__ == '__main__':
+    # DataSet Loader
+    ds = DataLoader(dataset,
+                    save_to_file=True,
+                    save_file='tagged_data.csv',
+                    n_threads=n_threads)
+
     # Doc2Vec Loader
     vec = Doc2VecEmbeddings(vec_model, n_dims)
 
