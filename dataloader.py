@@ -1,10 +1,10 @@
 import gc
-import psutil
 import numpy as np
 
 from tqdm import tqdm
 from konlpy.tag import Mecab
 from soynlp.normalizer import *
+from multiprocessing import Pool
 from gensim.models import Word2Vec, Doc2Vec
 
 
@@ -74,7 +74,8 @@ class DataLoader:
         self.mem_limit = mem_limit
 
         self.remove_dirty()
-        self.word_tokenize()
+
+        self.build_data()
 
     def remove_dirty(self):
         with open(self.file, 'r', encoding='utf8') as f:
@@ -88,7 +89,7 @@ class DataLoader:
                     print(e, line)
                 del d
 
-    def word_tokenize(self):
+    def word_tokenize(self) -> (list, list):
         # Mecab Pos Tagger
         mecab = Mecab()
 
@@ -102,20 +103,30 @@ class DataLoader:
             return rep(emo(x))
 
         n_data = len(self.data)
+        p_data, l_data = [], []
         for idx, d in enumerate(self.data):
             pos = list(map(lambda x: '/'.join(x), mecab.pos(normalize(d['comment']))))
 
             # append sentence & rate
-            self.sentences.append(pos)
-            self.labels.append(d['rate'])
+            p_data.append(pos)
+            l_data.append(d['rate'])
 
             if idx > 0 and idx % (n_data // (100 * self.n_threads)) == 0:
                 print("[*] %d/%d" % (idx, n_data), pos)
                 gc.collect()
-
-                remain_ram = psutil.virtual_memory().available / (2 ** 20)
-                if remain_ram < self.mem_limit:
-                    import sys
-                    print("[-] not enough memory < 256MB, ", remain_ram)
-                    sys.exit(-1)
             del pos
+
+        return p_data, l_data
+
+    def build_data(self):
+        ts = len(self.data) // self.n_threads  # 5366474
+        with Pool(self.n_threads) as p:
+            pp_data = [p.apply_async(self.word_tokenize, (self.data[ts * i:ts * (i + 1)],))
+                       for i in range(self.n_threads)]
+
+            for d in pp_data:
+                self.sentences += d.get()[0]
+                self.labels += d.get()[1]
+
+        del self.data
+        gc.collect()
