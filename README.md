@@ -39,11 +39,17 @@
     # you need to edit 'db_infos' at line 13, fitting in your env.
     $ python3 db.py
 ### 4. Making w2v/d2v embeddings
+    # Be careful, if your ram size is ...
+        RAM ==  8GB then, max_sentences = 1250000
+        RAM == 16GB then, max_sentences = 2500000
+        RAM == 32GB then, max_sentences = 5000000
+        RAM  > 32GB then, max_sentences = 0
+
     # loading from db
-    $ python3 preprocessing.py --save_model ko_w2v.model
+    $ python3 preprocessing.py --save_model ko_d2v.model
 
     # loading from csv
-    $ python3 preprocessing.py --load_from csv --data_file data.csv --save_model ko_w2v.model
+    $ python3 preprocessing.py --load_from csv --data_file data.csv --save_model ko_d2v.model
         
     Parsing NAVER Movie Review
     
