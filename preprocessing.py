@@ -227,9 +227,9 @@ if ko_dict:
     corpora.Dictionary(x_data).save('ko.dict')
 
 if vec == 'd2v':
-    d2v_training(x_data, y_data)
+    d2v_training(x_data, y_data)  # d2v Training
 elif vec == 'w2v':
-    w2v_training(x_data)  # w2v Training
+    w2v_training(x_data)          # w2v Training
 else:
     raise ValueError("[-] vec should be w2v or d2v")
 
