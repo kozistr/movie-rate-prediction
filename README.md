@@ -2,7 +2,7 @@
 네이버 영화 평점 예측 with Tensorflow
 
 ## Environments
-* OS  : Ubuntu x86-64 ~
+* OS  : Ubuntu 16.04/18.04 x86-64 ~
 * CPU : any (quad core ~)
 * GPU : GTX 1060 6GB ~
 * RAM : 16GB ~
