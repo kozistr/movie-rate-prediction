@@ -71,7 +71,7 @@
                             load DataSet from db or csv
       --vector VECTOR       w2v or d2v
 ### 5. Training/Testing a Model
-    $ python3 main.py --mode [train or test] --w2v_model ko_w2v.model
+    $ python3 main.py --mode [train or test] --model ko_d2v.model
 
 
 ## Repo Tree
