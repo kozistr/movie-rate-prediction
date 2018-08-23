@@ -113,7 +113,7 @@ def word_processing(data: list) -> list:
         pos = list(map(lambda x: '/'.join(x), mecab.pos(normalize(d['comment']))))
         p_data.append(pos)
 
-        if idx > 0 and idx % (n_data // 100) == 0:
+        if idx > 0 and idx % (n_data // (100 * n_threads)) == 0:
             print("[*] %d/%d" % (idx, n_data), pos)
             gc.collect()
             
@@ -153,7 +153,7 @@ def d2v_training(data: list, epochs=10) -> bool:
     # data processing to fit in Doc2Vec
     taggedDocs = namedtuple('TaggedDocument', 'words tags')
 
-    data = []
+    data = [taggedDocs(d['']) for d in data]
 
     config = {
         'dm': 1,
