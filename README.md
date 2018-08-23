@@ -111,7 +111,8 @@ soon!
 soon!
 
 ## To-Do
-1. Generous DataLoader & Inference
+1. implements Generous DataLoader & Inference
+2. try Doc2Vec DM + DBOW
 
 ## ETC
 
