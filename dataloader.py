@@ -75,8 +75,6 @@ class DataLoader:
         self.n_threads = n_threads
         self.mem_limit = mem_limit
 
-        self.mecab = Mecab()
-
         self.remove_dirty()
         self.build_data()
 
@@ -105,10 +103,12 @@ class DataLoader:
         def normalize(x: str) -> str:
             return rep(emo(x))
 
+        mecab = Mecab()
+
         n_data = len(data)
         p_data, l_data = [], []
         for idx, d in enumerate(data):
-            pos = list(map(lambda x: '/'.join(x), self.mecab.pos(normalize(d['comment']))))
+            pos = list(map(lambda x: '/'.join(x), mecab.pos(normalize(d['comment']))))
 
             # append sentence & rate
             p_data.append(pos)
@@ -123,7 +123,6 @@ class DataLoader:
                     import sys
                     print("[-] not enough memory %dMB < %dMB, " % (remain_ram, self.mem_limit))
                     sys.exit(-1)
-
             del pos
         return p_data, l_data
 
