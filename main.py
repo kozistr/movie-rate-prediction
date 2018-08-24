@@ -20,7 +20,7 @@ args = parser.parse_args()
 # parsed args
 mode = args.mode
 seed = args.seed
-n_dims = args.dims
+n_dims = args.n_dims
 dataset = args.dataset
 vec_model = args.vec_model
 n_threads = args.n_threads
