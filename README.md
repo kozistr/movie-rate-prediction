@@ -18,6 +18,7 @@
 * mecab-ko
 * pymysql
 * tqdm
+* PyKoSpacing
 * (Optional) MultiTSNE (for visualization)
 * (Optional) matplotlib (for visualization)
 
