@@ -92,7 +92,7 @@ class DataLoader:
                     print(e, line)
                 del d
 
-    def word_tokenize(self) -> (list, list):
+    def word_tokenize(self, data: list) -> (list, list):
         # Mecab Pos Tagger
         mecab = Mecab()
 
@@ -105,9 +105,9 @@ class DataLoader:
         def normalize(x: str) -> str:
             return rep(emo(x))
 
-        n_data = len(self.data)
+        n_data = len(data)
         p_data, l_data = [], []
-        for idx, d in enumerate(self.data):
+        for idx, d in enumerate(data):
             pos = list(map(lambda x: '/'.join(x), mecab.pos(normalize(d['comment']))))
 
             # append sentence & rate
@@ -118,7 +118,6 @@ class DataLoader:
                 print("[*] %d/%d" % (idx, n_data), pos)
                 gc.collect()
             del pos
-
         return p_data, l_data
 
     def build_data(self):
