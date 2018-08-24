@@ -62,41 +62,43 @@ class Doc2VecEmbeddings:
 
 class DataLoader:
 
-    def __init__(self, file, save_to_file=False, save_file=None, use_naive_save=False, max_sentences=-2,
+    def __init__(self, file, save_to_file=False, save_file=None, use_in_time_save=True, max_sentences=-2,
                  n_threads=5, mem_limit=512):
         self.file = file
-        assert self.file.find('.csv')
 
         self.data = []
-
         self.sentences = []
         self.labels = []
 
         self.max_sentences = max_sentences + 1
 
-        self.use_naive_save = use_naive_save
+        self.use_in_time_save = use_in_time_save
         self.save_to_file = save_to_file
         self.save_file = save_file
-        self.n_threads = n_threads
+        self.n_threads = n_threads  # currently, unsupported feature :(
         self.mem_limit = mem_limit
-        
-        # Stage 1 : remove dirty stuffs
-        self.remove_dirty()
-        
-        if self.save_file and not self.use_naive_save:
-            self.csv_file = open(self.save_file, 'w', encoding='utf8', newline='')
-            self.csv_file.writelines("rate,comment")  # csv header
 
+        self.mecab = Mecab()  # Korean Pos Tagger
+
+        assert self.file.find('.csv')
+        assert self.save_file
+
+        if self.use_in_time_save:
+            self.csv_file = open(self.save_file, 'w', encoding='utf8', newline='')
+            self.csv_file.writelines("rate,comment\n")  # csv header
             print("[*] %s is generated!" % self.save_file)
+
+        # Stage 1 : remove dirty stuffs / normalizing
+        self.remove_dirty()
 
         # Stage 2 : build the data (word processing)
         self.build_data()
 
-        if self.save_to_file:
-            if self.use_naive_save:  # if you have a enough memory
-                self.naive_save()
+        if not self.use_in_time_save:  # if you have a enough memory
+            self.naive_save()
 
     def remove_dirty(self):
+        # To-Do : dealing with spacing problem
         with open(self.file, 'r', encoding='utf8') as f:
             for line in tqdm(f.readlines()[1: self.max_sentences]):
                 d = line.split(',')
@@ -118,14 +120,12 @@ class DataLoader:
         def normalize(x: str) -> str:
             return rep(emo(x))
 
-        mecab = Mecab()
-
         n_data = len(self.data)
         for idx, cd in enumerate(self.data):
-            pos = list(map(lambda x: '/'.join(x), mecab.pos(normalize(cd['comment']))))
+            pos = list(map(lambda x: '/'.join(x), self.mecab.pos(normalize(cd['comment']))))
 
-            if not self.use_naive_save:
-                self.csv_file.writelines(str(cd['rate']) + ',' + ' '.join(pos))
+            if self.use_in_time_save:
+                self.csv_file.writelines(str(cd['rate']) + ',' + ' '.join(pos) + '\n')
 
             self.sentences.append(pos)
             self.labels.append(cd['rate'])
@@ -135,18 +135,13 @@ class DataLoader:
 
                 remain_ram = psutil.virtual_memory().available / (2 ** 20)
                 if remain_ram < self.mem_limit:
-                    print("[-] not enough memory %dMB < %dMB, " % (remain_ram, self.mem_limit))
-
-                    del pos
-                    gc.collect()
-
+                    raise MemoryError("[-] not enough memory %dMB < %dMB, " % (remain_ram, self.mem_limit))
             del pos
-
         gc.collect()
 
     def build_data(self):
-        # ts = len(self.data) // self.n_threads  # 5366474
         """
+            ts = len(self.data) // self.n_threads  # 5366474
             with Pool(self.n_threads) as pool:
                 print(pool.map(self.word_tokenize, [self.data[ts * i:ts * (i + 1)] for i in range(self.n_threads)]))
     
