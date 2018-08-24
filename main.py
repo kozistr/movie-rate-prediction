@@ -13,6 +13,8 @@ parser.add_argument('--n_threads', type=int, help='the number of threads', defau
 parser.add_argument('--model', type=str, help='trained w2v/d2v model file', default='ko_d2v.model')
 parser.add_argument('--n_dims', type=int, help='embeddings'' dimensions', default=300)
 parser.add_argument('--seed', type=int, help='random seed', default=1337)
+parser.add_argument('--save_to_file', type=bool, help='save DataSet into .csv file', default=True)
+parser.add_argument('--save_file', type=str, help='DataSet file name', default='tagged_data.csv')
 args = parser.parse_args()
 
 # parsed args
@@ -24,6 +26,9 @@ dataset = args.dataset
 vec_model = args.vec_model
 n_threads = args.n_threads
 
+save_to_file = args.save_to_file
+save_file = args.save_file
+
 np.random.seed(seed)
 tf.set_random_seed(seed)
 
@@ -31,8 +36,8 @@ tf.set_random_seed(seed)
 if __name__ == '__main__':
     # DataSet Loader
     ds = DataLoader(dataset,
-                    save_to_file=True,
-                    save_file='tagged_data.csv',
+                    save_to_file=save_to_file,
+                    save_file=save_file,
                     n_threads=n_threads)
 
     # Doc2Vec Loader
@@ -51,4 +56,4 @@ if __name__ == '__main__':
     elif mode == 'test':
         pass
     else:
-        raise ValueError('[-] mode should be train or test')
+        print('[-] mode should be train or test')
