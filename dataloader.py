@@ -62,7 +62,7 @@ class Doc2VecEmbeddings:
 
 class DataLoader:
 
-    def __init__(self, file, save_to_file=False, save_file=None, use_naive_save=False, max_sentences=5000000,
+    def __init__(self, file, save_to_file=False, save_file=None, use_naive_save=False, max_sentences=2500000,
                  n_threads=4, mem_limit=512):
         self.file = file
         assert self.file.find('.csv')
@@ -79,14 +79,17 @@ class DataLoader:
         self.save_file = save_file
         self.n_threads = n_threads
         self.mem_limit = mem_limit
-
+        
+        # Stage 1 : remove dirty stuffs
+        self.remove_dirty()
+        
         if self.save_file and not self.use_naive_save:
             self.csv_file = open(self.save_file, 'w', encoding='utf8', newline='')
 
             self.w = csv.DictWriter(self.csv_file, fieldnames=['rate', 'comment'])
             self.w.writeheader()
 
-        self.remove_dirty()
+        # Stage 2 : build the data (word processing)
         self.build_data()
 
         if self.save_to_file:
@@ -105,7 +108,7 @@ class DataLoader:
                     print(e, line)
                 del d
 
-    def word_tokenize(self, data: list) -> (list, list):
+    def word_tokenize(self, csv_data: list) -> (list, list):
         def emo(x: str) -> str:
             return emoticon_normalize(x, n_repeats=3)
 
@@ -117,17 +120,16 @@ class DataLoader:
 
         mecab = Mecab()
 
-        n_data = len(data)
+        n_data = len(csv_data)
         p_data, l_data = [], []
-        for idx, d in enumerate(data):
-            pos = list(map(lambda x: '/'.join(x), mecab.pos(normalize(d['comment']))))
+        for idx, cd in enumerate(csv_data):
+            pos = list(map(lambda x: '/'.join(x), mecab.pos(normalize(cd['comment']))))
 
-            # append sentence & rate
             if not self.use_naive_save:
-                self.w.writerow({'rate': d['rate'], 'comment': ' '.join(pos)})
+                self.w.writerow({'rate': cd['rate'], 'comment': ' '.join(pos)})
 
             p_data.append(pos)
-            l_data.append(d['rate'])
+            l_data.append(cd['rate'])
 
             if idx > 0 and idx % (n_data // 100) == 0:
                 print("[*] %d/%d" % (idx, n_data), pos)
@@ -141,6 +143,7 @@ class DataLoader:
 
                     return p_data, l_data
             del pos
+            gc.collect()
         return p_data, l_data
 
     def build_data(self):
@@ -153,8 +156,9 @@ class DataLoader:
                 self.sentences += pd.get()[0]
                 self.labels += pd.get()[1]
 
-        del self.data
-        gc.collect()
+            del pp_data
+            del self.data
+            gc.collect()
 
     def naive_save(self):
         assert self.save_file
