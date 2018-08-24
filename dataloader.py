@@ -61,7 +61,8 @@ class Doc2VecEmbeddings:
 
 class DataLoader:
 
-    def __init__(self, file, save_to_file=False, save_file=None, n_threads=8, mem_limit=512):
+    def __init__(self, file, save_to_file=False, save_file=None, max_sentences=5000000,
+                 n_threads=5, mem_limit=512):
         self.file = file
         assert self.file.find('.csv')
 
@@ -69,6 +70,8 @@ class DataLoader:
 
         self.sentences = []
         self.labels = []
+
+        self.max_sentences = max_sentences + 1
 
         self.save_to_file = save_to_file
         self.save_file = save_file
@@ -83,7 +86,7 @@ class DataLoader:
 
     def remove_dirty(self):
         with open(self.file, 'r', encoding='utf8') as f:
-            for line in tqdm(f.readlines()[1:]):
+            for line in tqdm(f.readlines()[1: self.max_sentences]):
                 d = line.split(',')
                 try:
                     # remove dirty stuffs
@@ -114,15 +117,18 @@ class DataLoader:
             p_data.append(pos)
             l_data.append(d['rate'])
 
-            if idx > 0 and idx % (n_data // (100 * self.n_threads)) == 0:
+            if idx > 0 and idx % (n_data // 100) == 0:
                 print("[*] %d/%d" % (idx, n_data), pos)
                 gc.collect()
 
                 remain_ram = psutil.virtual_memory().available / (2 ** 20)
                 if remain_ram < self.mem_limit:
-                    import sys
                     print("[-] not enough memory %dMB < %dMB, " % (remain_ram, self.mem_limit))
-                    sys.exit(-1)
+
+                    del pos
+                    gc.collect()
+
+                    return p_data, l_data
             del pos
         return p_data, l_data
 
