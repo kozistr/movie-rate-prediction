@@ -2,8 +2,8 @@ import argparse
 import numpy as np
 import tensorflow as tf
 
-from .model import charcnn
-from .dataloader import Doc2VecEmbeddings, DataLoader
+from model import charcnn
+from dataloader import Doc2VecEmbeddings, DataLoader
 
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
@@ -39,6 +39,9 @@ if __name__ == '__main__':
                     save_to_file=save_to_file,
                     save_file=save_file,
                     n_threads=n_threads)
+    if save_file:
+        import sys
+        sys.exit(0)
 
     # Doc2Vec Loader
     vec = Doc2VecEmbeddings(vec_model, n_dims)
