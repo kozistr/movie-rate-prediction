@@ -80,7 +80,7 @@ class DataLoader:
         self.n_threads = n_threads
         self.mem_limit = mem_limit
 
-        if not self.use_naive_save:
+        if self.save_file and not self.use_naive_save:
             self.f = open(self.save_file, 'w', encoding='utf8', newline='')
 
             self.w = csv.DictWriter(self.f, fieldnames=['rate', 'comment'])
