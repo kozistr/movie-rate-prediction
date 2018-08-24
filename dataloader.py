@@ -1,6 +1,7 @@
 import gc
 import psutil
 import numpy as np
+import unicodecsv as csv
 
 from tqdm import tqdm
 from konlpy.tag import Mecab
@@ -61,8 +62,8 @@ class Doc2VecEmbeddings:
 
 class DataLoader:
 
-    def __init__(self, file, save_to_file=False, save_file=None, max_sentences=5000000,
-                 n_threads=5, mem_limit=512):
+    def __init__(self, file, save_to_file=False, save_file=None, use_naive_save=False, max_sentences=5000000,
+                 n_threads=4, mem_limit=512):
         self.file = file
         assert self.file.find('.csv')
 
@@ -73,16 +74,24 @@ class DataLoader:
 
         self.max_sentences = max_sentences + 1
 
+        self.use_naive_save = use_naive_save
         self.save_to_file = save_to_file
         self.save_file = save_file
         self.n_threads = n_threads
         self.mem_limit = mem_limit
 
+        if not self.use_naive_save:
+            self.f = open(self.save_file, 'w', encoding='utf8', newline='')
+
+            self.w = csv.DictWriter(self.f, fieldnames=['rate', 'comment'])
+            self.w.writeheader()
+
         self.remove_dirty()
         self.build_data()
 
         if self.save_to_file:
-            self.save()
+            if self.use_naive_save:  # if you have a enough memory
+                self.naive_save()
 
     def remove_dirty(self):
         with open(self.file, 'r', encoding='utf8') as f:
@@ -114,12 +123,14 @@ class DataLoader:
             pos = list(map(lambda x: '/'.join(x), mecab.pos(normalize(d['comment']))))
 
             # append sentence & rate
+            if not self.use_naive_save:
+                self.w.writerow({'rate': d['rate'], 'comment': ' '.join(pos)})
+
             p_data.append(pos)
             l_data.append(d['rate'])
 
             if idx > 0 and idx % (n_data // 100) == 0:
                 print("[*] %d/%d" % (idx, n_data), pos)
-                gc.collect()
 
                 remain_ram = psutil.virtual_memory().available / (2 ** 20)
                 if remain_ram < self.mem_limit:
@@ -130,6 +141,8 @@ class DataLoader:
 
                     return p_data, l_data
             del pos
+
+        gc.collect()
         return p_data, l_data
 
     def build_data(self):
@@ -145,9 +158,7 @@ class DataLoader:
         del self.data
         gc.collect()
 
-    def save(self):
-        import unicodecsv as csv
-
+    def naive_save(self):
         assert self.save_file
 
         try:
@@ -156,6 +167,6 @@ class DataLoader:
 
                 w.writeheader()
                 for rate, comment in tqdm(zip(self.labels, self.sentences)):
-                    w.writerow({'rate': rate, 'comment': ' '.join(comment)})
+                    w.writerow({'rate': rate, 'comment': ' '.join(str(comment))})
         except Exception as e:
             raise Exception(e)
