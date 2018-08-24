@@ -62,8 +62,8 @@ class Doc2VecEmbeddings:
 
 class DataLoader:
 
-    def __init__(self, file, save_to_file=False, save_file=None, use_naive_save=False, max_sentences=2500000,
-                 n_threads=4, mem_limit=512):
+    def __init__(self, file, save_to_file=False, save_file=None, use_naive_save=False, max_sentences=-2,
+                 n_threads=5, mem_limit=512):
         self.file = file
         assert self.file.find('.csv')
 
@@ -85,9 +85,9 @@ class DataLoader:
         
         if self.save_file and not self.use_naive_save:
             self.csv_file = open(self.save_file, 'w', encoding='utf8', newline='')
+            self.csv_file.writelines("rate,comment")  # csv header
 
-            self.w = csv.DictWriter(self.csv_file, fieldnames=['rate', 'comment'])
-            self.w.writeheader()
+            print("[*] %s is generated!" % self.save_file)
 
         # Stage 2 : build the data (word processing)
         self.build_data()
@@ -108,7 +108,7 @@ class DataLoader:
                     print(e, line)
                 del d
 
-    def word_tokenize(self, csv_data: list) -> (list, list):
+    def word_tokenize(self):
         def emo(x: str) -> str:
             return emoticon_normalize(x, n_repeats=3)
 
@@ -120,16 +120,15 @@ class DataLoader:
 
         mecab = Mecab()
 
-        n_data = len(csv_data)
-        p_data, l_data = [], []
-        for idx, cd in enumerate(csv_data):
+        n_data = len(self.data)
+        for idx, cd in enumerate(self.data):
             pos = list(map(lambda x: '/'.join(x), mecab.pos(normalize(cd['comment']))))
 
             if not self.use_naive_save:
-                self.w.writerow({'rate': cd['rate'], 'comment': ' '.join(pos)})
+                self.csv_file.writelines(str(cd['rate']) + ',' + ' '.join(pos))
 
-            p_data.append(pos)
-            l_data.append(cd['rate'])
+            self.sentences.append(pos)
+            self.labels.append(cd['rate'])
 
             if idx > 0 and idx % (n_data // 100) == 0:
                 print("[*] %d/%d" % (idx, n_data), pos)
@@ -141,24 +140,28 @@ class DataLoader:
                     del pos
                     gc.collect()
 
-                    return p_data, l_data
             del pos
-            gc.collect()
-        return p_data, l_data
+
+        gc.collect()
 
     def build_data(self):
-        ts = len(self.data) // self.n_threads  # 5366474
-        with Pool(self.n_threads) as p:
-            pp_data = [p.apply_async(self.word_tokenize, (self.data[ts * i:ts * (i + 1)],))
-                       for i in range(self.n_threads)]
+        # ts = len(self.data) // self.n_threads  # 5366474
+        """
+            with Pool(self.n_threads) as pool:
+                print(pool.map(self.word_tokenize, [self.data[ts * i:ts * (i + 1)] for i in range(self.n_threads)]))
+    
+                pp_data = [pool.apply_async(self.word_tokenize, (self.data[ts * i:ts * (i + 1)],))
+                           for i in range(self.n_threads)]
+               
+                for pd in pp_data:
+                    self.sentences += pd.get()[0]
+                    self.labels += pd.get()[1]
+        """
 
-            for pd in pp_data:
-                self.sentences += pd.get()[0]
-                self.labels += pd.get()[1]
+        self.word_tokenize()
 
-            del pp_data
-            del self.data
-            gc.collect()
+        del self.data
+        gc.collect()
 
     def naive_save(self):
         assert self.save_file
