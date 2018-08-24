@@ -62,7 +62,7 @@ class DataLoader:
 
     def __init__(self, file, save_to_file=False, save_file=None, n_threads=8, mem_limit=256):
         self.file = file
-        assert self.file in '.csv'
+        assert self.file.find('.csv')
 
         self.data = []
 
