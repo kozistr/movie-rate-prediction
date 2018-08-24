@@ -1,4 +1,5 @@
 import gc
+import psutil
 import numpy as np
 
 from tqdm import tqdm
@@ -60,7 +61,7 @@ class Doc2VecEmbeddings:
 
 class DataLoader:
 
-    def __init__(self, file, save_to_file=False, save_file=None, n_threads=8, mem_limit=256):
+    def __init__(self, file, save_to_file=False, save_file=None, n_threads=8, mem_limit=512):
         self.file = file
         assert self.file.find('.csv')
 
@@ -73,6 +74,8 @@ class DataLoader:
         self.save_file = save_file
         self.n_threads = n_threads
         self.mem_limit = mem_limit
+
+        self.mecab = Mecab()
 
         self.remove_dirty()
         self.build_data()
@@ -93,9 +96,6 @@ class DataLoader:
                 del d
 
     def word_tokenize(self, data: list) -> (list, list):
-        # Mecab Pos Tagger
-        mecab = Mecab()
-
         def emo(x: str) -> str:
             return emoticon_normalize(x, n_repeats=3)
 
@@ -108,7 +108,7 @@ class DataLoader:
         n_data = len(data)
         p_data, l_data = [], []
         for idx, d in enumerate(data):
-            pos = list(map(lambda x: '/'.join(x), mecab.pos(normalize(d['comment']))))
+            pos = list(map(lambda x: '/'.join(x), self.mecab.pos(normalize(d['comment']))))
 
             # append sentence & rate
             p_data.append(pos)
@@ -117,6 +117,13 @@ class DataLoader:
             if idx > 0 and idx % (n_data // (100 * self.n_threads)) == 0:
                 print("[*] %d/%d" % (idx, n_data), pos)
                 gc.collect()
+
+                remain_ram = psutil.virtual_memory().available / (2 ** 20)
+                if remain_ram < self.mem_limit:
+                    import sys
+                    print("[-] not enough memory < 256MB, ", remain_ram)
+                    sys.exit(-1)
+
             del pos
         return p_data, l_data
 
