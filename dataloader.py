@@ -121,7 +121,7 @@ class DataLoader:
                 remain_ram = psutil.virtual_memory().available / (2 ** 20)
                 if remain_ram < self.mem_limit:
                     import sys
-                    print("[-] not enough memory < 256MB, ", remain_ram)
+                    print("[-] not enough memory %dMB < %dMB, " % (remain_ram, self.mem_limit))
                     sys.exit(-1)
 
             del pos
