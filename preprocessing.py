@@ -74,7 +74,7 @@ def to_csv(data: list, fn: str) -> bool:
     return True
 
 
-def from_csv(fn: str) -> list:
+def from_csv(fn: str, sent_spacing=False) -> list:
     global max_sentences
 
     if max_sentences == 0:
@@ -86,9 +86,15 @@ def from_csv(fn: str) -> list:
             d = line.split(',')
             try:
                 # remove dirty stuffs
-                data.append({'rate': d[0],
-                             'comment': spacing(','.join(d[1:]).replace('\x00', '').replace('\n', '').
-                                                replace('<span class=""ico_penel""></span>', '').strip('"').strip())})
+                if sent_spacing:
+                    data.append({'rate': d[0],
+                                 'comment': spacing(','.join(d[1:]).replace('\x00', '').replace('\n', '').
+                                                    replace('<span class=""ico_penel""></span>', '').strip('"').strip())
+                                 })
+                else:
+                    data.append({'rate': d[0],
+                                 'comment': ','.join(d[1:]).replace('\x00', '').replace('\n', '').
+                                replace('<span class=""ico_penel""></span>', '').strip('"').strip()})
             except Exception as e:
                 print(e, line)
             del d

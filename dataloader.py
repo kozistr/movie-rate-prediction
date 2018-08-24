@@ -98,17 +98,21 @@ class DataLoader:
         if not self.use_in_time_save:  # if you have a enough memory
             self.naive_save()
 
-    def remove_dirty(self):
+    def remove_dirty(self, sent_spacing=False):
         with open(self.file, 'r', encoding='utf8') as f:
             for line in tqdm(f.readlines()[1: self.max_sentences]):
                 d = line.split(',')
                 try:
                     # remove dirty stuffs
-                    self.data.append({'rate': d[0],
-                                      'comment': spacing(','.join(d[1:]).replace('\x00', '').replace('\n', '').
-                                                         replace('<span class=""ico_penel""></span>', '').
-                                                         strip('"').strip())}
-                                     )
+                    if sent_spacing:
+                        self.data.append({'rate': d[0],
+                                          'comment': spacing(','.join(d[1:]).replace('\x00', '').replace('\n', '').
+                                                             replace('<span class=""ico_penel""></span>', '').
+                                                             strip('"').strip())})
+                    else:
+                        self.data.append({'rate': d[0],
+                                          'comment': ','.join(d[1:]).replace('\x00', '').replace('\n', '').
+                                         replace('<span class=""ico_penel""></span>', '').strip('"').strip()})
                 except Exception as e:
                     print(e, line)
                 del d
