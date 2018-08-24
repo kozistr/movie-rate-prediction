@@ -22,7 +22,7 @@ mode = args.mode
 seed = args.seed
 n_dims = args.n_dims
 dataset = args.dataset
-vec_model = args.vec_model
+vec_model = args.model
 n_threads = args.n_threads
 
 save_to_file = args.save_to_file
