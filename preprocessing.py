@@ -8,6 +8,7 @@ from tqdm import tqdm
 from gensim import corpora
 from konlpy.tag import Mecab
 from soynlp.normalizer import *
+from pykospacing import spacing
 from multiprocessing import Pool
 from collections import namedtuple
 from gensim.models import word2vec, Doc2Vec
@@ -85,8 +86,9 @@ def from_csv(fn: str) -> list:
             d = line.split(',')
             try:
                 # remove dirty stuffs
-                data.append({'rate': d[0], 'comment': ','.join(d[1:]).replace('\x00', '').replace('\n', '').
-                            replace('<span class=""ico_penel""></span>', '').strip('"').strip()})
+                data.append({'rate': d[0],
+                             'comment': spacing(','.join(d[1:]).replace('\x00', '').replace('\n', '').
+                                                replace('<span class=""ico_penel""></span>', '').strip('"').strip())})
             except Exception as e:
                 print(e, line)
             del d

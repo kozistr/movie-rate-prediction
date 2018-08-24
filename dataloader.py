@@ -1,11 +1,12 @@
 import gc
+import csv
 import psutil
 import numpy as np
-import csv
 
 from tqdm import tqdm
 from konlpy.tag import Mecab
 from soynlp.normalizer import *
+from pykospacing import spacing
 from multiprocessing import Pool
 from gensim.models import Word2Vec, Doc2Vec
 
@@ -98,14 +99,16 @@ class DataLoader:
             self.naive_save()
 
     def remove_dirty(self):
-        # To-Do : dealing with spacing problem
         with open(self.file, 'r', encoding='utf8') as f:
             for line in tqdm(f.readlines()[1: self.max_sentences]):
                 d = line.split(',')
                 try:
                     # remove dirty stuffs
-                    self.data.append({'rate': d[0], 'comment': ','.join(d[1:]).replace('\x00', '').replace('\n', '').
-                                     replace('<span class=""ico_penel""></span>', '').strip('"').strip()})
+                    self.data.append({'rate': d[0],
+                                      'comment': spacing(','.join(d[1:]).replace('\x00', '').replace('\n', '').
+                                                         replace('<span class=""ico_penel""></span>', '').
+                                                         strip('"').strip())}
+                                     )
                 except Exception as e:
                     print(e, line)
                 del d
