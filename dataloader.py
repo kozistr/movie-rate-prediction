@@ -140,7 +140,7 @@ class DataLoader:
         assert self.save_file
 
         try:
-            with open(fn, 'w', encoding='utf8', newline='') as f:
+            with open(self.save_file, 'w', encoding='utf8', newline='') as f:
                 w = csv.DictWriter(f, fieldnames=['rate', 'comment'])
 
                 w.writeheader()
