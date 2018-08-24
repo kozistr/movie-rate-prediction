@@ -1,7 +1,7 @@
 import gc
 import psutil
 import numpy as np
-import unicodecsv as csv
+import csv
 
 from tqdm import tqdm
 from konlpy.tag import Mecab
@@ -81,9 +81,9 @@ class DataLoader:
         self.mem_limit = mem_limit
 
         if self.save_file and not self.use_naive_save:
-            self.f = open(self.save_file, 'w', encoding='utf8', newline='')
+            self.csv_file = open(self.save_file, 'w', encoding='utf8', newline='')
 
-            self.w = csv.DictWriter(self.f, fieldnames=['rate', 'comment'])
+            self.w = csv.DictWriter(self.csv_file, fieldnames=['rate', 'comment'])
             self.w.writeheader()
 
         self.remove_dirty()
@@ -141,8 +141,6 @@ class DataLoader:
 
                     return p_data, l_data
             del pos
-
-        gc.collect()
         return p_data, l_data
 
     def build_data(self):
@@ -151,9 +149,9 @@ class DataLoader:
             pp_data = [p.apply_async(self.word_tokenize, (self.data[ts * i:ts * (i + 1)],))
                        for i in range(self.n_threads)]
 
-            for d in pp_data:
-                self.sentences += d.get()[0]
-                self.labels += d.get()[1]
+            for pd in pp_data:
+                self.sentences += pd.get()[0]
+                self.labels += pd.get()[1]
 
         del self.data
         gc.collect()
@@ -162,11 +160,11 @@ class DataLoader:
         assert self.save_file
 
         try:
-            with open(self.save_file, 'w', encoding='utf8', newline='') as f:
-                w = csv.DictWriter(f, fieldnames=['rate', 'comment'])
+            with open(self.save_file, 'w', encoding='utf8', newline='') as csv_file:
+                w = csv.DictWriter(csv_file, fieldnames=['rate', 'comment'])
 
                 w.writeheader()
                 for rate, comment in tqdm(zip(self.labels, self.sentences)):
-                    w.writerow({'rate': rate, 'comment': ' '.join(str(comment))})
+                    w.writerow({'rate': rate, 'comment': ' '.join(comment)})
         except Exception as e:
             raise Exception(e)
