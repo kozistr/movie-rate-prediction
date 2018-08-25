@@ -63,9 +63,11 @@ class Doc2VecEmbeddings:
 
 class DataLoader:
 
-    def __init__(self, file, is_tagged_file=False, save_to_file=False, save_file=None, use_in_time_save=True,
+    def __init__(self, file, n_classes=10,
+                 is_tagged_file=False, save_to_file=False, save_file=None, use_in_time_save=True,
                  max_sentences=-2, n_threads=5, mem_limit=512):
         self.file = file
+        self.n_classes = n_classes
 
         self.data = []
         self.sentences = []
@@ -101,6 +103,10 @@ class DataLoader:
                 self.naive_save()
         else:
             self.naive_load()  # just load from .csv
+
+        # if it's not binary class, convert into one-hot vector
+        if not self.n_classes == 1:
+            self.to_one_hot()
 
     def remove_dirty(self, sent_spacing=False):
         with open(self.file, 'r', encoding='utf8') as f:
@@ -189,3 +195,9 @@ class DataLoader:
 
                 self.sentences.append(d[1].split(' '))
                 self.labels.append(d[0])
+
+    def to_one_hot(self):
+        arr = np.eye(self.n_classes)
+
+        for i in tqdm(range(len(self.labels))):
+            self.labels[i] = arr[self.labels[i] - 1]
