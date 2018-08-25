@@ -63,8 +63,8 @@ class Doc2VecEmbeddings:
 
 class DataLoader:
 
-    def __init__(self, file, save_to_file=False, save_file=None, use_in_time_save=True, max_sentences=-2,
-                 n_threads=5, mem_limit=512):
+    def __init__(self, file, is_tagged_file=False, save_to_file=False, save_file=None, use_in_time_save=True,
+                 max_sentences=-2, n_threads=5, mem_limit=512):
         self.file = file
 
         self.data = []
@@ -73,6 +73,7 @@ class DataLoader:
 
         self.max_sentences = max_sentences + 1
 
+        self.is_tagged_file = is_tagged_file
         self.use_in_time_save = use_in_time_save
         self.save_to_file = save_to_file
         self.save_file = save_file
@@ -89,14 +90,17 @@ class DataLoader:
             self.csv_file.writelines("rate,comment\n")  # csv header
             print("[*] %s is generated!" % self.save_file)
 
-        # Stage 1 : remove dirty stuffs / normalizing
-        self.remove_dirty()
+        if not self.is_tagged_file:
+            # Stage 1 : remove dirty stuffs / normalizing
+            self.remove_dirty()
 
-        # Stage 2 : build the data (word processing)
-        self.build_data()
+            # Stage 2 : build the data (word processing)
+            self.build_data()
 
-        if not self.use_in_time_save:  # if you have a enough memory
-            self.naive_save()
+            if not self.use_in_time_save:  # if you have a enough memory
+                self.naive_save()
+        else:
+            self.naive_load()  # just load from .csv
 
     def remove_dirty(self, sent_spacing=False):
         with open(self.file, 'r', encoding='utf8') as f:
@@ -177,3 +181,11 @@ class DataLoader:
                     w.writerow({'rate': rate, 'comment': ' '.join(comment)})
         except Exception as e:
             raise Exception(e)
+
+    def naive_load(self):
+        with open(self.file, 'r', encoding='utf8') as f:
+            for line in tqdm(f.readlines()[1:]):
+                d = line.split(',')
+
+                self.sentences.append(d[1].split(' '))
+                self.labels.append(d[0])
