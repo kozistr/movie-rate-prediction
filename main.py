@@ -8,6 +8,7 @@ from dataloader import Doc2VecEmbeddings, DataLoader
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
 parser.add_argument('--mode', type=str, help='train or test', default='train')
+parser.add_argument('--model_name', type=str, help='classification model', default='charcnn')
 parser.add_argument('--dataset', type=str, help='DataSet path', default='tagged_data.csv')
 parser.add_argument('--n_threads', type=int, help='the number of threads', default=8)
 parser.add_argument('--model', type=str, help='trained w2v/d2v model file', default='ko_d2v.model')
@@ -28,6 +29,7 @@ vec_model = args.model
 verbose = args.verbose
 n_classes = args.n_classes
 n_threads = args.n_threads
+model_name = args.model_name
 
 save_to_file = args.save_to_file
 save_file = args.save_file
@@ -39,11 +41,13 @@ tf.set_random_seed(seed)
 if __name__ == '__main__':
     # DataSet Loader
     ds = DataLoader(dataset,
+                    n_classes=n_classes,
                     is_tagged_file=True,
                     save_to_file=save_to_file,
                     use_in_time_save=False,
                     # save_file=save_file,
                     n_threads=n_threads)
+
     if verbose:
         print("[+] DataSet loaded! Total %d samples" % len(ds.labels))
 
@@ -58,9 +62,18 @@ if __name__ == '__main__':
         config.gpu_options.allow_growth = True
 
         with tf.Session(config=config) as s:
-            model = charcnn.CharCNN(s=s,
-                                    n_classes=n_classes,
-                                    dims=n_dims)
+            if model_name == 'charcnn':
+                # Model Loaded
+                model = charcnn.CharCNN(s=s,
+                                        n_classes=n_classes,
+                                        dims=n_dims)
+            else:
+                raise NotImplementedError("[-] Not Implemented Yet")
+
+            # Initializing
+            s.run(tf.global_variables_initializer())
+
+
 
     elif mode == 'test':
         pass
