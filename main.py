@@ -1,3 +1,4 @@
+import time
 import argparse
 import numpy as np
 import tensorflow as tf
@@ -80,9 +81,42 @@ if __name__ == '__main__':
             # To-Do
             # pre-trained model loader
 
+            start_time = time.time()
+
+            epochs = 10
             global_step = 0
-            for gs in range(global_step):
-                pass
+            logging_step = 1000
+            for epoch in range(epochs):
+                for x_train, y_train in di.iterate():
+                    # training
+                    loss = s.run([model.opt, model.loss],
+                                 feed_dict={
+                                     model.x: x_train,
+                                     model.y: y_train,
+                                     model.do_rate: .8,
+                                 })
+
+                    if global_step % logging_step == 0:
+                        print("[*] epoch %d step %d" % (epoch, global_step), " loss : {:.8f}" % loss)
+
+                        summary = s.run([model.merged],
+                                        feed_dict={
+                                            model.x: x_train,
+                                            model.y: y_train,
+                                            model.do_rate: .0,
+                                        })
+
+                        # Summary saver
+                        model.writer.add_summary(summary, global_step)
+
+                        # Model save
+                        model.saver.save(s, './model/%s.ckpt' % model_name, global_step=global_step)
+
+                    global_step += 1
+
+            end_time = time.time()
+
+            print("[+] Training Done! Elapsed {:.8f}s".format(end_time - start_time))
 
     elif mode == 'test':
         pass
