@@ -32,21 +32,28 @@ class CharCNN:
         self.reg = tf.contrib.layers.l2_regularizer(self.l2_reg)
 
         if not use_d2v:  # use random initialization # use w2v initialization
+            # uncompleted feature
             self.embeddings = tf.get_variable('lookup-w', shape=[self.vocab_size, self.n_dims],
                                               initializer=self.he_uni)
 
         self.x = tf.placeholder(tf.float32, shape=[None, self.n_dims], name='x-sentence')
-        self.y = tf.placeholder(tf.float32, shape=[None, self.n_classes], name='y-label')
+        self.y = tf.placeholder(tf.float32, shape=[None, self.n_classes], name='y-label')  # one-hot
         self.do_rate = tf.placeholder(tf.float32, name='do-rate')
 
         # build CharCNN Model
-        self.rate = self.build_model()
+        self.feat, self.rate = self.build_model()
 
         # loss
-        self.loss = tf.reduce_mean(tf.losses.mean_squared_error(
-            labels=self.y,
-            predictions=self.rate
-        ))
+        if self.n_classes == 1:
+            self.loss = tf.reduce_mean(tf.losses.mean_squared_error(
+                labels=self.y,
+                predictions=self.rate
+            ))
+        else:
+            self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
+                logits=self.feat,
+                labels=self.y
+            ))
 
         # Optimizer
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
@@ -127,6 +134,11 @@ class CharCNN:
                 kernel_regularizer=self.reg,
                 name='fc2'
             )
-            rate = tf.nn.sigmoid(x)  # To-Do : replace with another scale function to avoid saturation
-            rate = rate * 9. + 1.    # 1 ~ 10
-            return rate
+
+            # Rate
+            if not self.n_classes == 1:
+                rate = tf.nn.softmax(x)
+            else:
+                rate = tf.nn.sigmoid(x)
+                rate = rate * 9. + 1.  # To-Do : replace with another scale function to avoid saturation
+            return x, rate
