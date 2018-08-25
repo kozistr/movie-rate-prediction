@@ -12,9 +12,11 @@ parser.add_argument('--dataset', type=str, help='DataSet path', default='tagged_
 parser.add_argument('--n_threads', type=int, help='the number of threads', default=8)
 parser.add_argument('--model', type=str, help='trained w2v/d2v model file', default='ko_d2v.model')
 parser.add_argument('--n_dims', type=int, help='embeddings'' dimensions', default=300)
+parser.add_argument('--n_classes', type=int, help='the number of classes', default=10)
 parser.add_argument('--seed', type=int, help='random seed', default=1337)
 parser.add_argument('--save_to_file', type=bool, help='save DataSet into .csv file', default=True)
 parser.add_argument('--save_file', type=str, help='DataSet file name', default='tagged_data.csv')
+parser.add_argument('--verbose', type=bool, help='print progress', default=True)
 args = parser.parse_args()
 
 # parsed args
@@ -23,6 +25,8 @@ seed = args.seed
 n_dims = args.n_dims
 dataset = args.dataset
 vec_model = args.model
+verbose = args.verbose
+n_classes = args.n_classes
 n_threads = args.n_threads
 
 save_to_file = args.save_to_file
@@ -40,9 +44,13 @@ if __name__ == '__main__':
                     use_in_time_save=False,
                     # save_file=save_file,
                     n_threads=n_threads)
+    if verbose:
+        print("[+] DataSet loaded! Total %d samples" % len(ds.labels))
 
     # Doc2Vec Loader
     vec = Doc2VecEmbeddings(vec_model, n_dims)
+    if verbose:
+        print("[+] Doc2Vec loaded! Total %d pre-trained sentences, %d dims" % (len(vec), n_dims))
 
     if mode == 'train':
         # GPU configure
@@ -51,7 +59,7 @@ if __name__ == '__main__':
 
         with tf.Session(config=config) as s:
             model = charcnn.CharCNN(s=s,
-                                    n_classes=10,
+                                    n_classes=n_classes,
                                     dims=n_dims)
 
     elif mode == 'test':
