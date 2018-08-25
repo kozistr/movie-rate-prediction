@@ -70,7 +70,8 @@ class CharCNN:
         self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr).minimize(self.loss)
 
         # Mode Saver/Summary
-        tf.summary.scalar('loss', self.loss)
+        tf.summary.scalar('loss/loss', self.loss)
+        tf.summary.scalar('misc/lr', self.lr)
 
         # Merge summary
         self.merged = tf.summary.merge_all()
@@ -93,7 +94,7 @@ class CharCNN:
         for i, fs in enumerate(self.filter_sizes):
             with tf.variable_scope("conv_layer-%d-%d" % (fs, i)):
                 """
-                Conv1D-ThresholdReLU-drop_out-k_max_pool
+                Try 1 : Conv1D-ThresholdReLU-drop_out-k_max_pool
                 """
 
                 x = tf.layers.conv1d(
@@ -141,4 +142,5 @@ class CharCNN:
             else:
                 rate = tf.nn.sigmoid(x)
                 rate = rate * 9. + 1.  # To-Do : replace with another scale function to avoid saturation
+
             return x, rate
