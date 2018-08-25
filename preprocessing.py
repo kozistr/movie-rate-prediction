@@ -188,11 +188,11 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
 
     total_examples = len(sentences)
     for _ in tqdm(range(epochs)):
-        # D2V training
+        # Doc2Vec training
         d2v_model.train(tagged_data, total_examples=total_examples, epochs=d2v_model.iter)
 
         # LR Scheduler
-        d2v_model.alpha -= 2e-3
+        d2v_model.alpha -= 2e-3  # (decay)
         d2v_model.min_alpha = d2v_model.alpha
 
     d2v_model.save(model_name)

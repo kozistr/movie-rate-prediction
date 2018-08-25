@@ -54,7 +54,7 @@ class Doc2VecEmbeddings:
     def load_model(self):
         self.d2v_model = Doc2Vec.load(self.model)
 
-    def sentence_to_vector(self, input_sentence: str) -> np.array:
+    def sent_to_vec(self, input_sentence: str) -> np.array:
         return self.d2v_model.infer_vector(input_sentence)
 
     def __len__(self):
