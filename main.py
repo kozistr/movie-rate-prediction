@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 
 from model import charcnn
-from dataloader import Doc2VecEmbeddings, DataLoader
+from dataloader import Doc2VecEmbeddings, DataLoader, DataIterator
 
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
@@ -73,7 +73,16 @@ if __name__ == '__main__':
             # Initializing
             s.run(tf.global_variables_initializer())
 
+            # DataSet Iterator
+            di = DataIterator(x=ds.sentences, y=ds.labels,
+                              batch_size=model.batch_size)
 
+            # To-Do
+            # pre-trained model loader
+
+            global_step = 0
+            for gs in range(global_step):
+                pass
 
     elif mode == 'test':
         pass
