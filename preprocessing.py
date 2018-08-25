@@ -102,6 +102,9 @@ def from_csv(fn: str, sent_spacing=False) -> list:
 
 
 def word_processing(data: list) -> (list, list):
+    # Hannanum
+    # hannanum = Hannanum()
+
     # Mecab Pos Tagger
     mecab = Mecab()
     
