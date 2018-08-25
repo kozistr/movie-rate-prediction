@@ -97,7 +97,7 @@ if __name__ == '__main__':
                                  })
 
                     if global_step % logging_step == 0:
-                        print("[*] epoch %d step %d" % (epoch, global_step), " loss : {:.8f}" % loss)
+                        print("[*] epoch %d global step %d" % (epoch, global_step), " loss : {:.8f}",format(loss))
 
                         summary = s.run([model.merged],
                                         feed_dict={
