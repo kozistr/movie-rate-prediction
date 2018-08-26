@@ -60,6 +60,7 @@ nlp_model.add_argument('--lr_decay', type=float, default=2e-3)
 
 # Misc
 misc_arg = add_arg_group('Misc')
+misc_arg.add_argument('--query_path', type=str, default='./comments/')
 misc_arg.add_argument('--dataset', type=str, default='data.csv')
 misc_arg.add_argument('--tagged_dataset', type=str, default='tagged_data.csv',
                       help='already processed data file')
