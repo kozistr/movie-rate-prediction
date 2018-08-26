@@ -68,6 +68,7 @@ misc_arg.add_argument('--pretrained', type=str, default='./model/')
 misc_arg.add_argument('--w2v_model', type=str, default='ko_w2v.model')
 misc_arg.add_argument('--d2v_model', type=str, default='ko_d2v.model')
 misc_arg.add_argument('--seed', type=int, default=1337)
+misc_arg.add_argument('--jvm_path', type=str, default="C:\\Program Files\\Java\\jre-9\\bin\\server\\jvm.dll")
 misc_arg.add_argument('--verbose', type=bool, default=True)
 
 # DB
