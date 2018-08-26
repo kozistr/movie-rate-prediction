@@ -17,6 +17,10 @@ import bs4
 import time
 
 
+# get configuration
+cfg, _ = get_config()
+
+
 def get_comments(code):
     def make_args(c, p):
         params = {
@@ -79,7 +83,7 @@ def get_comments(code):
  
  
 def fetch(idx):
-    out_name = 'comments/%d.sql' % idx
+    out_name = cfg.query_path + '%d.sql' % idx
 
     try:
         if os.stat(out_name).st_size > 0:
@@ -108,8 +112,6 @@ def fetch(idx):
 
 
 if __name__ == '__main__':
-    cfg, _ = get_config()
-
     with ThreadPoolExecutor(max_workers=cfg.n_threads) as executor:
         # 영화 고유 ID 값의 범위를 몰라서 대략 아래처럼 잡았습니다.
         for i in tqdm(range(10000, 200000)):
