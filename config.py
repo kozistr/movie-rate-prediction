@@ -48,7 +48,7 @@ train_arg.add_argument('--lr', type=float, default=8e-4)
 train_arg.add_argument('--lr_lower_boundary', type=float, default=2e-5)
 
 # Korean words Pre-Processing
-nlp_model = add_arg_group('Ko-nlp')
+nlp_model = add_arg_group('NLP')
 nlp_model.add_argument('--analyzer', type=str, default='mecab', choices=['mecab', 'hannanum', 'twitter'],
                        help='korean pos analyzer')
 nlp_model.add_argument('--use_correct_spacing', type=bool, default=False,
@@ -68,3 +68,11 @@ misc_arg.add_argument('--w2v_model', type=str, default='ko_w2v.model')
 misc_arg.add_argument('--d2v_model', type=str, default='ko_d2v.model')
 misc_arg.add_argument('--seed', type=int, default=1337)
 misc_arg.add_argument('--verbose', type=bool, default=True)
+
+# DB
+db_arg = add_arg_group('DB')
+db_arg.add_argument('--host', type=str, default='localhost')
+db_arg.add_argument('--user', type=str, default='root')
+db_arg.add_argument('--password', type=str, default='autoset')
+db_arg.add_argument('--db', type=str, default='movie')
+db_arg.add_argument('--charset', type=str, default='utf8')
