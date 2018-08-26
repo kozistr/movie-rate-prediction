@@ -42,7 +42,6 @@ if config.use_correct_spacing:
         raise Exception(e)
 
 vec = args.vector
-fn = args.data_file
 load_from = args.load_from
 
 
@@ -99,6 +98,8 @@ def word_cleaning(w_data: list) -> list:
 
 
 def word_processing(w_data: list) -> (list, list):
+    global config
+
     def emo(x: str) -> str:
         return emoticon_normalize(x, n_repeats=3)
 
@@ -106,23 +107,21 @@ def word_processing(w_data: list) -> (list, list):
         return repeat_normalize(x, n_repeats=2)
 
     def normalize(x: str) -> str:
-        return rep(emo(x))
+        return rep(emo(x)) if config.use_normalize else x
 
-    idx = 0
-    n_data = len(w_data)
+    w_len = len(w_data)
     p_data, l_data = [], []
-    for wd in w_data:
-        pos = list(map(lambda x: '/'.join(x), analyzer.pos(normalize(wd['comment']))))
+    for w_idx in tqdm(range(w_len)):  # faster way than w_data iter:
+        pos = list(map(lambda x: '/'.join(x), analyzer.pos(normalize(w_data[w_idx]['comment']))))
 
         # append sentence & rate
         p_data.append(pos)
-        l_data.append(d['rate'])
+        l_data.append(w_data[w_idx]['rate'])
 
-        if idx > 0 and idx % (n_data // (100 * config.n_threads)) == 0:
-            print("[*] %d/%d" % (idx, n_data), pos)
+        if w_idx > 0 and w_idx % (w_len // (100 * config.n_threads)) == 0:
+            print("[*] %d/%d" % (w_idx, w_len), pos)
             gc.collect()
         del pos
-        idx += 1
     return p_data, l_data
 
 
@@ -148,14 +147,11 @@ def w2v_training(data: list) -> bool:
 
 
 def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
+    global config
+
     # data processing to fit in Doc2Vec
     taggedDocs = namedtuple('TaggedDocument', 'words tags')
-
     tagged_data = [taggedDocs(s, r) for s, r in zip(sentences, rates)]
-
-    # for checking
-    for td in tagged_data[:10]:
-        print(td)
 
     config = {
         'dm': 1,
@@ -163,11 +159,11 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
         'vector_size': 300,
         'negative': 5,
         'hs': 0,
-        'alpha': 0.025,
-        'min_alpha': 0.025,
+        'alpha': config.lr,
+        'min_alpha': config.min_lr,
         'min_count': 2,
         'window': 5,
-        'seed': 1337,
+        'seed': config.seed,
         'workers': 8,
     }
     d2v_model = Doc2Vec(**config)
@@ -182,7 +178,7 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
         d2v_model.alpha -= 2e-3  # (decay)
         d2v_model.min_alpha = d2v_model.alpha
 
-    d2v_model.save(model_name)
+    d2v_model.save(config.d2v_model)
     return True
 
 
@@ -200,11 +196,23 @@ def main():
     # Stage 3 : word processing
     x_data, y_data = word_processing(cleaned_data)
 
+    # logging
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+
+    if vec == 'd2v':
+        d2v_training(x_data, y_data)  # d2v Training
+    elif vec == 'w2v':
+        w2v_training(x_data)          # w2v Training
+
+    del x_data
+    del y_data
+    gc.collect()
+
 
 if __name__ == "__main__":
     main()
 
-
+"""
 x_data, y_data = [], []
 ts = len(data) // n_threads  # 5366474
 with Pool(n_threads) as p:
@@ -213,20 +221,4 @@ with Pool(n_threads) as p:
     for d in pp_data:
         x_data += d.get()[0]
         y_data += d.get()[1]
-
-del data
-gc.collect()
-
-# logging
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-
-if vec == 'd2v':
-    d2v_training(x_data, y_data)  # d2v Training
-elif vec == 'w2v':
-    w2v_training(x_data)          # w2v Training
-else:
-    raise ValueError("[-] vec should be w2v or d2v")
-
-del x_data
-del y_data
-gc.collect()
+"""
