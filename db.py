@@ -3,96 +3,75 @@ import pymysql
 
 from glob import glob
 from tqdm import tqdm
+from config import get_config
 
 
-query_paths = {
-    'data_query': "./comments/*.sql",
-    'table_query': "./table.sql",
-}
-
-db_infos = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'autoset',
-    'db': 'movie',
-    'charset': 'utf8',
-}
+def make_db_conn(db_info: dict):
+    db_conn = pymysql.connect(**db_info)
+    return db_conn
 
 
-# MySQL DB Connection
-conn = pymysql.connect(host=db_infos['host'],
-                       user=db_infos['user'],
-                       password=db_infos['password'],
-                       charset=db_infos['charset']
-                       )
-
-# Delete previous database
-with conn.cursor() as cur:
-    try:
-        database_query = "drop schema movie"
-        cur.execute(database_query)
-        conn.commit()
-    except pymysql.Warning as w:
-        pass
-    except pymysql.err.InternalError as e:
-        pass  # Database doesn't exist
-    except pymysql.err.ProgrammingError as e:
-        raise pymysql.err.ProgrammingError(e)
-
-# Make new 'movie' database
-with conn.cursor() as cur:
-    try:
-        database_query = "create database movie"
-        cur.execute(database_query)
-        conn.commit()
-    except pymysql.Warning as w:
-        pass
-    except pymysql.err.InternalError as e:
-        pass  # Database exists
-    except pymysql.err.ProgrammingError as e:
-        raise pymysql.err.ProgrammingError(e)
-
-with conn.cursor() as cur:
-    try:
-        with open(query_paths['table_query'], 'r') as f:
-            table_query = f.read()
-
-        # Making 'movie' table
-        conn.cursor().execute(table_query)
-        conn.commit()
-    except pymysql.Warning as w:
-        pass
-    except Exception as e:
-        raise Exception(e)
-
-conn.close()
-
-# New DB Connection
-conn = pymysql.connect(**db_infos)
-
-n_query, n_success = 0, 0
-with conn.cursor() as cur:
-    for qp in tqdm(glob(query_paths['data_query'])):
-        # Read SQL Query
-        with open(qp, 'r', encoding='utf8') as f:
-            query = f.read()
-
+def do_db(db_conn, qry: str):
+    with db_conn.cursor() as db_cur:
         try:
-            cur.execute(query=query)  # Execute SQL Query
-            conn.commit()             # Commit Changes
+            db_cur.execute(qry)
+            db_conn.commit()
+        except pymysql.Warning:
+            pass
+        except pymysql.err.InternalError:
+            pass  # Database doesn't exist
+        except pymysql.err.ProgrammingError as pe:
+            raise pymysql.err.ProgrammingError(pe)
+        except Exception as E:
+            print("[-]", qry, E)
 
-            n_success += 1
-        except pymysql.Warning as w:
-            pass  # Most of warnings are about "Data truncated ~~"
-        except Exception as e:
-            print("[-]", qp, e)
-
-            if e.args[0] == 1146 or e.args[0] == 1046:  # Table/Database Doesn't exist
+            if E.args[0] == 1146 or E.args[0] == 1046:  # Table/Database Doesn't exist
                 sys.exit(-1)
+        return True
 
+
+def main():
+    # get configuration
+    cfg, _ = get_config()
+
+    db_info = {
+        'host': cfg.host,
+        'user': cfg.user,
+        'password': cfg.password,
+        'charset': cfg.charset,
+    }
+
+    # Stage 1 : Initial DB Connection
+    db_con = make_db_conn(db_info)
+
+    # Stage 2 : Delete previous database
+    do_db(db_con, "drop schema movie")
+
+    # Stage 3 : Make 'movie' database
+    do_db(db_con, "create database movie")
+
+    # Stage 4 : Make 'movie.movie' table
+    with open('table.sql', 'r') as table_qry:
+        do_db(db_con, table_qry.read())
+
+    db_con.close()  # close db
+
+    db_info['db'] = 'movie'         # update db info
+    db_con = make_db_conn(db_info)  # db connect
+
+    # Stage 5 : Insert whole queries
+    n_query, n_success = 0, 0
+    for qp in tqdm(glob(cfg.query_path + "*.sql")):
+        item_qry = open(qp, 'r', encoding='utf8').read()
+
+        # insert item into movie.movie
+        if do_db(db_con, item_qry):
+            n_success += 1
         n_query += 1
 
-print("[+] Total %d/%d Queries Success!" % (n_success, n_query))
+    print("[+] Total %d/%d Queries Success!" % (n_success, n_query))
+    db_con.close()
 
-# Close DB Session
-conn.close()
+
+if __name__ == '__main__':
+    main()
