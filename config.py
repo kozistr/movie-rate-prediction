@@ -17,9 +17,13 @@ def get_config():
 
 
 # Network
+network_arg = add_arg_group('Network')
 
 # DataSet
+data_arg = add_arg_group('DataSet')
 
 # Train/Test hyper-parameters
+train_arg = add_arg_group('Training')
 
 # Misc
+misc_arg = add_arg_group('Misc')
