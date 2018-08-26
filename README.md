@@ -32,12 +32,13 @@
 > Train/Test : 4.00M/1.36M <br/>
 
 ## Usage
-### 1. Installing Dependencies
+### 1.1 Installing Dependencies
     $ sudo python3 -m pip install -r requirements.txt
+### 1.2 Configuration
+    # In ```config.py```, there're lots of params for scripts. plz re-setting
 ### 2. Parsing the DataSet
-    $ python3 movie-parse.py --n_threads 8
+    $ python3 movie-parse.py
 ### 3. Making DataSet DB
-    # you need to edit 'db_infos' at line 13, fitting in your env.
     $ python3 db.py
 ### 4. Making w2v/d2v embeddings
     # Be careful, if your ram size is ...
@@ -51,26 +52,7 @@
 
     # loading from csv
     $ python3 preprocessing.py --load_from csv --data_file data.csv --save_model ko_d2v.model
-        
-    Parsing NAVER Movie Review
-    
-    optional arguments:
-      -h, --help            show this help message and exit
-      --n_threads N_THREADS
-                            the number of threads
-      --n_mem_limit N_MEM_LIMIT
-                            ram limitation
-      --max_sentences MAX_SENTENCES
-                            the number of sentences to train (0: all)
-      --save_model SAVE_MODEL
-                            trained w2v model file
-      --data_file DATA_FILE
-                            movie review data file
-      --save_dict SAVE_DICT
-                            korean words dictionary
-      --load_from LOAD_FROM
-                            load DataSet from db or csv
-      --vector VECTOR       w2v or d2v
+
 ### 5. Training/Testing a Model
     $ python3 main.py --mode [train or test] --model ko_d2v.model
 
