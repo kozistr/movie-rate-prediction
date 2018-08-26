@@ -48,7 +48,7 @@ train_arg.add_argument('--lr', type=float, default=8e-4)
 train_arg.add_argument('--lr_lower_boundary', type=float, default=2e-5)
 
 # Korean words Pre-Processing
-nlp_model = add_arg_group('Korean Words Progressing')
+nlp_model = add_arg_group('Ko-nlp')
 nlp_model.add_argument('--analyzer', type=str, default='mecab', choices=['mecab', 'hannanum', 'twitter'],
                        help='korean pos analyzer')
 nlp_model.add_argument('--use_correct_spacing', type=bool, default=False,
