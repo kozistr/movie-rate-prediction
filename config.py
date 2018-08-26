@@ -18,11 +18,18 @@ def get_config():
 
 # Network
 network_arg = add_arg_group('Network')
+network_arg.add_argument('--model', type=str, default='charcnn', choices=['charcnn', 'charrnn'])
+network_arg.add_argument('--n_classes', type=int, default=10)
+network_arg.add_argument('--use_pre_trained_embeds', type=bool, default=True,
+                         help='using Doc2Vec as embedding. If False, use character-level embedding')
 network_arg.add_argument('--kernel_size', type=list, default=[1, 2, 3, 4],
                          help='conv1d kernel size')
 network_arg.add_argument('--fc_unit', type=int, default=1024)
 network_arg.add_argument('--drop_out', type=int, default=.8,
                          help='dropout rate')
+network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
+network_arg.add_argument('--act_threshold', type=float, default=1e-6,
+                         help='used at ThresholdReLU')
 
 # DataSet
 data_arg = add_arg_group('DataSet')
@@ -40,8 +47,26 @@ train_arg.add_argument('--optimizer', type=str, default='adam')
 train_arg.add_argument('--lr', type=float, default=8e-4)
 train_arg.add_argument('--lr_lower_boundary', type=float, default=2e-5)
 
+# Korean words Pre-Processing
+nlp_model = add_arg_group('Korean Words Progressing')
+nlp_model.add_argument('--analyzer', type=str, default='mecab', choices=['mecab', 'hannanum', 'twitter'],
+                       help='korean pos analyzer')
+nlp_model.add_argument('--use_correct_spacing', type=bool, default=False,
+                       help='resolving sentence spacing problem but taking lots of time...')
+nlp_model.add_argument('--use_normalize', type=bool, default=True)
+nlp_model.add_argument('--use_remove_repeats', type=bool, default=True,
+                       help='remove useless repeated words')
+nlp_model.add_argument('--lr', type=float, default=2.5e-2)
+nlp_model.add_argument('--min_lr', type=float, default=2.5e-2)
+nlp_model.add_argument('--lr_decay', type=float, default=2e-3)
+
 # Misc
 misc_arg = add_arg_group('Misc')
+misc_arg.add_argument('--dataset', type=str, default='data.csv')
+misc_arg.add_argument('--tagged_dataset', type=str, default='tagged_data.csv',
+                      help='already processed data file')
+misc_arg.add_argument('--pretrained', type=str, default='./model/')
+misc_arg.add_argument('--w2v_model', type=str, default='ko_w2v.model')
+misc_arg.add_argument('--d2v_model', type=str, default='ko_d2v.model')
 misc_arg.add_argument('--seed', type=int, default=1337)
 misc_arg.add_argument('--verbose', type=bool, default=True)
-misc_arg.add_argument('--')
