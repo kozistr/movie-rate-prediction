@@ -109,11 +109,6 @@ class DataLoader:
             if not self.is_analyzed:
                 raise NotImplementedError("[-] only Mecab, Hannanum, Twitter are supported :(")
 
-        if self.use_save:
-            self.csv_file = open(self.fn_to_save, 'w', encoding='utf8', newline='')
-            self.csv_file.writelines("rate,comment\n")  # csv header
-            print("[*] %s is generated!" % self.fn_to_save)
-
         # Already Analyzed Data
         if self.is_analyzed:
             self.naive_load()  # just load data from .csv
@@ -133,6 +128,11 @@ class DataLoader:
             if self.use_correct_spacing:
                 print("[*] correcting spacing problem...")
                 self.correct_spacing()
+
+            if self.use_save:
+                self.csv_file = open(self.fn_to_save, 'w', encoding='utf8', newline='')
+                self.csv_file.writelines("rate,comment\n")  # csv header
+                print("[*] %s is generated!" % self.fn_to_save)
 
             # Stage 3 : build data (pos/morphs analyze)
             print("[*] start the analyzer")
@@ -171,21 +171,6 @@ class DataLoader:
                 if idx == 0:
                     idx += 1
                     continue
-
-                """
-                print(line)
-                d = line.split(',')
-                try:
-                    tmp = {'rate': int(d[0]), 'comment': bs(','.join(d[1:]), 'lxml').text}
-                    if len(d) == 1 or d[0] == '\n':
-                        print(line, tmp)
-                    self.data.append(tmp)
-                except Exception as e:
-                    print(e)
-                    print(idx, ' ', 'rate:', d[0], 'comment:', d[1:], 'line:', line)
-                    sleep(1)
-                del d
-                """
 
                 self.data.append({'rate': line[0], 'comment': bs(line[1], 'lxml').text})
                 idx += 1
@@ -240,9 +225,11 @@ class DataLoader:
             self.sentences.append(pos)
             self.labels.append(d['rate'])
 
-            if idx > 0 and idx % (len_data // 100) == 0:
+            if idx and idx % (len_data // 100) == 0:
                 print("[*] %d/%d" % (idx, len_data), pos)
             del pos
+
+        self.csv_file.close()
 
     def naive_save(self):
         try:
