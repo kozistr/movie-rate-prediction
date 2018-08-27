@@ -89,9 +89,9 @@ class DataLoader:
         assert self.config
         if not self.load_from == 'db':
             assert not self.file.find('.csv') == -1
-        if not self.use_save:
+        if self.use_save:
             assert self.fn_to_save
-        if not self.analyzer == 'mecab':
+        if self.analyzer and not self.analyzer == 'mecab':
             assert self.jvm_path
 
         if self.analyzer == 'mecab':
