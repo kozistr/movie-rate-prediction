@@ -5,5 +5,6 @@ soynlp
 konlpy
 tqdm
 pymysql
+validators
 unicodecsv
 MulticoreTSNE
