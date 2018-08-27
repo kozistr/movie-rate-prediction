@@ -40,7 +40,7 @@ def w2v_training(data: list) -> bool:
     w2v_model = word2vec.Word2Vec(**config)
     w2v_model.wv.init_sims(replace=True)
 
-    w2v_model.save(config.w2v_model)
+    w2v_model.save('ko_w2v.model')
     return True
 
 
@@ -76,7 +76,7 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
         d2v_model.alpha -= 2e-3
         d2v_model.min_alpha = d2v_model.alpha
 
-    d2v_model.save(config.d2v_model)
+    d2v_model.save('ko_d2v.model')
     return True
 
 
