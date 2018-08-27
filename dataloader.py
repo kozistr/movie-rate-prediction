@@ -191,9 +191,12 @@ class DataLoader:
                 idx += 1
 
     def words_cleaning(self):
+        import warnings
+        warnings.filterwarnings("ignore", category=UserWarning, module='bs4')
+
         len_data = len(self.data)
         for idx in tqdm(range(len_data)):
-            self.data[idx]['comment'] = bs(self.data[idx]['comment'], 'lxml').text.replace('\x00', '').\
+            self.data[idx]['comment'] = bs(self.data[idx]['comment'], "lxml").text.replace('\x00', '').\
                 replace('\n', '').strip('"').strip()
 
     def correct_spacing(self):
