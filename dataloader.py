@@ -203,11 +203,11 @@ class DataLoader:
                 replace('\n', '').strip('"').strip()
 
             # There're lots of meaningless comments like url... So, I'll drop it from data
-            if not validators.url(self.data[idx]['comment']):
+            if validators.url(self.data[idx]['comment']):
                 drop_list.append(idx)
 
         print("[*] deleting data which contains only meaningless url")
-        for drop in tqdm(drop_list):
+        for drop in tqdm(sorted(drop_list, reverse=True)):
             del self.data[drop]
 
     def correct_spacing(self):
