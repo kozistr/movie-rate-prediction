@@ -230,7 +230,6 @@ class DataLoader:
                     self.labels.append(d[0])
                 except IndexError:
                     print("[-] ", line)
-                    pass
 
     def to_one_hot(self):
         arr = np.eye(self.n_classes)
