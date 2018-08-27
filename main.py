@@ -10,6 +10,7 @@ from dataloader import Doc2VecEmbeddings, DataLoader, DataIterator
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
 parser.add_argument('--mode', type=str, help='train or test', default='train')
 parser.add_argument('--model_name', type=str, help='classification model', default='charcnn')
+parser.add_argument('--checkpoint', type=str, help='pre-trained model', default=None)
 parser.add_argument('--dataset', type=str, help='DataSet path', default='tagged_data.csv')
 parser.add_argument('--n_threads', type=int, help='the number of threads', default=8)
 parser.add_argument('--model', type=str, help='trained w2v/d2v model file', default='ko_d2v.model')
@@ -30,6 +31,7 @@ vec_model = args.model
 verbose = args.verbose
 n_classes = args.n_classes
 n_threads = args.n_threads
+checkpoint = args.checkpoint
 model_name = args.model_name
 
 save_to_file = args.save_to_file
@@ -73,6 +75,19 @@ if __name__ == '__main__':
 
             # Initializing
             s.run(tf.global_variables_initializer())
+
+            print("[*] Reading checkpoints...")
+
+            saved_global_step = 0
+            ckpt = tf.train.get_checkpoint_state('./model/')
+            if ckpt and ckpt.model_checkpoint_path:
+                # Restores from checkpoint
+                model.saver.restore(s, ckpt.model_checkpoint_path)
+
+                saved_global_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+                print("[+] global step : %d" % saved_global_step, " successfully loaded")
+            else:
+                print('[-] No checkpoint file found')
 
             # DataSet Iterator
             di = DataIterator(x=ds.sentences, y=ds.labels,
