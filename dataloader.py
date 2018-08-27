@@ -225,8 +225,12 @@ class DataLoader:
 
             for line in tqdm(f.readlines()[1:]):
                 d = line.split(',')
-                self.sentences.append(d[1].split(' '))
-                self.labels.append(d[0])
+                try:
+                    self.sentences.append(d[1].split(' '))
+                    self.labels.append(d[0])
+                except IndexError:
+                    print("[-] ", line)
+                    pass
 
     def to_one_hot(self):
         arr = np.eye(self.n_classes)
