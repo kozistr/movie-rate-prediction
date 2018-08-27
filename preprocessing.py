@@ -69,8 +69,8 @@ def from_csv(fn_csv: str) -> list:
             dl = line.split(',')
             try:
                 csv_data.append({'rate': dl[0], 'comment': ','.join(dl[1:])})
-            except Exception as e:
-                print(e, line)
+            except Exception as E:
+                print(E, line)
             del dl
     return csv_data
 
@@ -84,8 +84,8 @@ def to_csv(w_data: list, fn_csv: str) -> bool:
             w.writeheader()
             for d_ in w_data:
                 w.writerow(d_)
-    except Exception as e:
-        raise Exception(e)
+    except Exception as E:
+        raise Exception(E)
     return True
 
 
