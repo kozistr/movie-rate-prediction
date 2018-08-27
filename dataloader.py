@@ -100,7 +100,9 @@ class DataLoader:
             from konlpy.tag import Twitter
             self.analyzer = Twitter(jvmpath=self.jvm_path)
         else:
-            raise NotImplementedError("[-] only Mecab, Hannanum, Twitter are supported :(")
+            # if is_analyzed is True, there's no need to analyze again.
+            if not self.is_analyzed:
+                raise NotImplementedError("[-] only Mecab, Hannanum, Twitter are supported :(")
 
         if self.use_save:
             self.csv_file = open(self.fn_to_save, 'w', encoding='utf8', newline='')
