@@ -119,19 +119,23 @@ class DataLoader:
             self.naive_load()  # just load data from .csv
         else:
             # Stage 1 : read data from 'db' or 'csv'
+            print("[*] loaded from %s" % self.load_from)
             if self.load_from == 'db':
                 self.read_from_db()
             else:
-                self.read_from_csv()
+                self.read_from_csv()  # currently unstable...
 
             # Stage 2-1 : remove dirty stuffs
+            print("[*] cleaning words...")
             self.words_cleaning()
 
             # Stage 2-2 : (Optional) Correcting spacing
             if self.use_correct_spacing:
+                print("[*] correcting spacing problem...")
                 self.correct_spacing()
 
             # Stage 3 : build data (pos/morphs analyze)
+            print("[*] start the analyzer")
             self.word_tokenize()
 
             del self.data  # remove unused var # for saving memory
@@ -189,8 +193,8 @@ class DataLoader:
     def words_cleaning(self):
         len_data = len(self.data)
         for idx in tqdm(range(len_data)):
-            self.data[idx]['comment'] = self.data[idx]['comment'].replace('<span class=""ico_penel""></span>', '').\
-                replace('\x00', '').replace('\n', '').strip('"').strip()
+            self.data[idx]['comment'] = bs(self.data[idx]['comment'], 'lxml').text.replace('\x00', '').\
+                replace('\n', '').strip('"').strip()
 
     def correct_spacing(self):
         try:
