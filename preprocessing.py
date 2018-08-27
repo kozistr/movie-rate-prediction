@@ -126,23 +126,25 @@ def word_processing(w_data: list) -> (list, list):
 
 
 def w2v_training(data: list) -> bool:
+    global config
+
     # word2vec Training
     config = {
         'sentences': data,
         'batch_words': 10000,
-        'size': 300,
+        'size': config.embed_size,
         'window': 5,
         'min_count': 3,
         'negative': 3,
         'sg': 1,
         'iter': 10,
-        'seed': 1337,
-        'workers': 8,
+        'seed': config.seed,
+        'workers': config.n_threads,
     }
     w2v_model = word2vec.Word2Vec(**config)
     w2v_model.wv.init_sims(replace=True)
 
-    w2v_model.save(model_name)
+    w2v_model.save(config.w2v_model)
     return True
 
 
@@ -156,15 +158,15 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
     config = {
         'dm': 1,
         'dm_concat': 1,
-        'vector_size': 300,
-        'negative': 5,
+        'vector_size': config.embed_size,
+        'negative': 3,
         'hs': 0,
         'alpha': config.lr,
         'min_alpha': config.min_lr,
-        'min_count': 2,
+        'min_count': 3,
         'window': 5,
         'seed': config.seed,
-        'workers': 8,
+        'workers': config.n_threads,
     }
     d2v_model = Doc2Vec(**config)
     d2v_model.build_vocab(tagged_data)
@@ -175,7 +177,7 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
         d2v_model.train(tagged_data, total_examples=total_examples, epochs=d2v_model.iter)
 
         # LR Scheduler
-        d2v_model.alpha -= 2e-3  # (decay)
+        d2v_model.alpha -= config.lr_decay
         d2v_model.min_alpha = d2v_model.alpha
 
     d2v_model.save(config.d2v_model)
@@ -213,6 +215,7 @@ if __name__ == "__main__":
     main()
 
 """
+# Multi-Threading implementation
 x_data, y_data = [], []
 ts = len(data) // n_threads  # 5366474
 with Pool(n_threads) as p:
