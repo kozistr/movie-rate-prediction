@@ -73,7 +73,7 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
         d2v_model.train(tagged_data, total_examples=total_examples, epochs=d2v_model.iter)
 
         # LR Scheduler
-        d2v_model.alpha -= config.vec_lr_decay
+        d2v_model.alpha -= 2e-3
         d2v_model.min_alpha = d2v_model.alpha
 
     d2v_model.save(config.d2v_model)
