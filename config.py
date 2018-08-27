@@ -43,6 +43,7 @@ data_arg.add_argument('--n_threads', type=int, default=8,
 train_arg = add_arg_group('Training')
 train_arg.add_argument('--is_train', type=bool, default=True)
 train_arg.add_argument('--epochs', type=int, default=150)
+train_arg.add_argument('--logging_step', type=int, default=1000)
 train_arg.add_argument('--optimizer', type=str, default='adam')
 train_arg.add_argument('--lr', type=float, default=8e-4)
 train_arg.add_argument('--lr_lower_boundary', type=float, default=2e-5)
