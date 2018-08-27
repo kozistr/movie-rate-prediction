@@ -88,8 +88,8 @@ soon!
 soon!
 
 ## To-Do
-1. implements Generous DataLoader & Inference
-2. try Doc2Vec DM + DBOW
+1. try Doc2Vec DM + DBOW
+2. deal with word spacing problem
 
 ## ETC
 
