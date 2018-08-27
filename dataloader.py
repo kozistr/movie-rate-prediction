@@ -4,6 +4,7 @@ import numpy as np
 
 from tqdm import tqdm
 from soynlp.normalizer import *
+from bs4 import BeautifulSoup as bs
 
 
 class Word2VecEmbeddings:
@@ -159,16 +160,31 @@ class DataLoader:
 
     def read_from_csv(self):
         with open(self.file, 'r', encoding='utf8') as f:
+            csv_f = csv.reader(f)
+
             idx = 0
-            for line in tqdm(f.readlines()[1:]):
+            for line in tqdm(csv_f):
+                if idx == 0:
+                    idx += 1
+                    continue
+
+                """
+                print(line)
                 d = line.split(',')
                 try:
-                    self.data.append({'rate': int(d[0]), 'comment': ','.join(d[1:])})
+                    tmp = {'rate': int(d[0]), 'comment': bs(','.join(d[1:]), 'lxml').text}
+                    if len(d) == 1 or d[0] == '\n':
+                        print(line, tmp)
+                    self.data.append(tmp)
                 except Exception as e:
                     print(e)
                     print(idx, ' ', 'rate:', d[0], 'comment:', d[1:], 'line:', line)
-                idx += 1
+                    sleep(1)
                 del d
+                """
+
+                self.data.append({'rate': line[0], 'comment': bs(line[1], 'lxml').text})
+                idx += 1
 
     def words_cleaning(self):
         len_data = len(self.data)
