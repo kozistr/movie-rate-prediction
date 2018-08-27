@@ -28,9 +28,6 @@
 |:---:|:---:|:---:|:---:|
 | [NAVER Movie Review](http://movie.naver.com) | *Korean* | ```5.36M``` | ```About 557MB``` | 
 
-> Word Embeddings : 2.5M <br/>
-> Train/Test : 4.00M/1.36M <br/>
-
 ## Usage
 ### 1.1 Installing Dependencies
     $ sudo python3 -m pip install -r requirements.txt
@@ -41,20 +38,14 @@
 ### 3. Making DataSet DB
     $ python3 db.py
 ### 4. Making w2v/d2v embeddings
-    # Be careful, if your ram size is ...
-        RAM ==  8GB then, max_sentences = 1250000
-        RAM == 16GB then, max_sentences = 2500000
-        RAM == 32GB then, max_sentences = 5000000
-        RAM  > 32GB then, max_sentences = 0
-
     # loading from db
-    $ python3 preprocessing.py --save_model ko_d2v.model
+    $ python3 preprocessing.py --load_from db
 
     # loading from csv
-    $ python3 preprocessing.py --load_from csv --data_file data.csv --save_model ko_d2v.model
+    $ python3 preprocessing.py --load_from csv
 
 ### 5. Training/Testing a Model
-    $ python3 main.py --mode [train or test] --model ko_d2v.model
+    $ python3 main.py --is_train [True or False]
 
 
 ## Repo Tree
@@ -68,10 +59,12 @@
 │    ├── charcnn.py
 │    ├── ...
 │    └── charrnn.py
+├── config.py         (Configuration)
+├── util.py           (utils)
+├── dataloader.py     (Doc/Word2Vec model loader)
 ├── movie-parser.py   (NAVER Movie Review Parser)
 ├── db.py             (DataBase processing)
 ├── preprocessing.py  (Korean normalize/tokenize)
-├── dataloader.py     (Doc/Word2Vec model loader)
 ├── visualize.py      (for visualizing w2v)
 └── main.py           (for easy use of train/test)
 ```
