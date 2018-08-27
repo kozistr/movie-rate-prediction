@@ -26,7 +26,7 @@ if __name__ == '__main__':
     # DataSet Loader
     ds = DataLoader(file=config.processed_dataset,
                     n_classes=config.n_classes,
-                    analyzer=config.analyzer,
+                    analyzer=None,
                     is_analyzed=True,
                     use_save=False,
                     config=config)
@@ -61,20 +61,20 @@ if __name__ == '__main__':
 
             print("[*] Reading checkpoints...")
 
-            saved_global_step = 0
-            ckpt = tf.train.get_checkpoint_state('./model/')
-            if ckpt and ckpt.model_checkpoint_path:
-                # Restores from checkpoint
-                model.saver.restore(s, ckpt.model_checkpoint_path)
+            if checkpoint:
+                ckpt = tf.train.get_checkpoint_state('./model/')
+                if ckpt and ckpt.model_checkpoint_path:
+                    # Restores from checkpoint
+                    model.saver.restore(s, ckpt.model_checkpoint_path)
 
-                saved_global_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
-                print("[+] global step : %d" % saved_global_step, " successfully loaded")
-            else:
-                print('[-] No checkpoint file found')
+                    global_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+                    print("[+] global step : %d" % global_step, " successfully loaded")
+                else:
+                    global_step = 0
+                    print('[-] No checkpoint file found')
 
             start_time = time.time()
 
-            global_step = 0
             for epoch in range(config.epochs):
                 for x_train, y_train in di.iterate():
                     # training
