@@ -4,7 +4,6 @@ import numpy as np
 
 from tqdm import tqdm
 from soynlp.normalizer import *
-from gensim.models import Word2Vec, Doc2Vec
 
 
 class Word2VecEmbeddings:
@@ -21,6 +20,7 @@ class Word2VecEmbeddings:
         self.build_embeds()
 
     def load_model(self):
+        from gensim.models import Word2Vec
         self.w2v_model = Word2Vec.load(self.model)
 
     def build_embeds(self):
@@ -48,6 +48,7 @@ class Doc2VecEmbeddings:
         self.load_model()
 
     def load_model(self):
+        from gensim.models import Doc2Vec
         self.d2v_model = Doc2Vec.load(self.model)
 
     def sent_to_vec(self, input_sentence: str) -> np.array:
