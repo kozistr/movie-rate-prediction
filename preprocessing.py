@@ -82,11 +82,19 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
 
 def main():
     # Data Loader
+
     data_loader = DataLoader(file=config.dataset,
                              load_from=load_from,
                              use_save=True,
                              fn_to_save=config.processed_dataset,
-                             config=config)
+                             config=config)  # not processed data
+    """
+    data_loader = DataLoader(file=config.processed_dataset,
+                             is_analyzed=True,
+                             use_save=False,
+                             config=config)  # processed data
+    """
+
     x_data, y_data = data_loader.sentences, data_loader.labels
 
     # logging
