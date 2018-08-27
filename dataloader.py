@@ -208,8 +208,6 @@ class DataLoader:
             del pos
 
     def naive_save(self):
-        assert self.fn_to_save
-
         try:
             with open(self.fn_to_save, 'w', encoding='utf8', newline='') as csv_file:
                 w = csv.DictWriter(csv_file, fieldnames=['rate', 'comment'])
@@ -222,6 +220,9 @@ class DataLoader:
 
     def naive_load(self):
         with open(self.file, 'r', encoding='utf8') as f:
+            if self.config.verbose:
+                print("[*] %s loaded!" % self.file)
+
             for line in tqdm(f.readlines()[1:]):
                 d = line.split(',')
                 self.sentences.append(d[1].split(' '))
