@@ -3,10 +3,7 @@ import csv
 import numpy as np
 
 from tqdm import tqdm
-from konlpy.tag import Mecab
 from soynlp.normalizer import *
-from pykospacing import spacing
-from multiprocessing import Pool
 from gensim.models import Word2Vec, Doc2Vec
 
 
@@ -62,9 +59,9 @@ class Doc2VecEmbeddings:
 
 class DataLoader:
 
-    def __init__(self, file, n_classes=10,
-                 is_tagged_file=False, save_to_file=False, save_file=None, use_in_time_save=True,
-                 max_sentences=-2, n_threads=5, mem_limit=512):
+    def __init__(self, file, n_classes=10, analyzer='mecab',
+                 use_correct_spacing=False, use_normalize=True,
+                 is_analyzed=False, fn_to_save=None, use_save=True, jvm_path=None):
         self.file = file
         self.n_classes = n_classes
 
@@ -72,112 +69,110 @@ class DataLoader:
         self.sentences = []
         self.labels = []
 
-        self.max_sentences = max_sentences + 1
+        self.use_correct_spacing = use_correct_spacing
+        self.use_normalize = use_normalize
 
-        self.is_tagged_file = is_tagged_file
-        self.use_in_time_save = use_in_time_save
-        self.save_to_file = save_to_file
-        self.save_file = save_file
-        self.n_threads = n_threads  # currently, unsupported feature :(
-        self.mem_limit = mem_limit
+        self.is_analyzed = is_analyzed
+        self.use_save = use_save
+        self.fn_to_save = fn_to_save
+        self.jvm_path = jvm_path
 
-        self.mecab = Mecab()  # Korean Pos Tagger
+        self.analyzer = analyzer
 
-        assert self.file.find('.csv')
-        assert self.save_file
+        assert not self.analyzer == 'mecab' and self.jvm_path
+        assert self.file.find('.csv') and self.fn_to_save
 
-        if self.use_in_time_save:
-            self.csv_file = open(self.save_file, 'w', encoding='utf8', newline='')
+        if self.analyzer == 'mecab':
+            from konlpy.tag import Mecab
+            self.analyzer = Mecab()
+        elif self.analyzer == 'hannanum':
+            from konlpy.tag import Hannanum
+            self.analyzer = Hannanum(jvmpath=self.jvm_path)
+        elif self.analyzer == 'twitter':
+            from konlpy.tag import Twitter
+            self.analyzer = Twitter(jvmpath=self.jvm_path)
+        else:
+            raise NotImplementedError("[-] only Mecab, Hannanum, Twitter are supported :(")
+
+        if self.use_save:
+            self.csv_file = open(self.fn_to_save, 'w', encoding='utf8', newline='')
             self.csv_file.writelines("rate,comment\n")  # csv header
-            print("[*] %s is generated!" % self.save_file)
+            print("[*] %s is generated!" % self.fn_to_save)
 
-        if not self.is_tagged_file:
-            # Stage 1 : remove dirty stuffs / normalizing
+        # Already Analyzed Data
+        if self.is_analyzed:
+            self.naive_load()  # just load data from .csv
+        else:
+            # Stage 1-1 : remove dirty stuffs
             self.remove_dirty()
 
-            # Stage 2 : build the data (word processing)
-            self.build_data()
+            # Stage 1-2 : (Optional) Correcting spacing
+            if self.use_correct_spacing:
+                self.correct_spacing()
 
-            if not self.use_in_time_save:  # if you have a enough memory
-                self.naive_save()
-        else:
-            self.naive_load()  # just load from .csv
+            # Stage 2 : build data (pos/morphs analyze)
+            self.word_tokenize()
+            del self.data  # remove unused var # for saving memory
 
         # if it's not binary class, convert into one-hot vector
         if not self.n_classes == 1:
             self.to_one_hot()
 
-    def remove_dirty(self, sent_spacing=False):
+    def remove_dirty(self):
         with open(self.file, 'r', encoding='utf8') as f:
-            for line in tqdm(f.readlines()[1: self.max_sentences]):
+            for line in tqdm(f.readlines()[1:]):
                 d = line.split(',')
                 try:
-                    # remove dirty stuffs
-                    if sent_spacing:
-                        self.data.append({'rate': d[0],
-                                          'comment': spacing(','.join(d[1:]).replace('\x00', '').replace('\n', '').
-                                                             replace('<span class=""ico_penel""></span>', '').
-                                                             strip('"').strip())})
-                    else:
-                        self.data.append({'rate': d[0],
-                                          'comment': ','.join(d[1:]).replace('\x00', '').replace('\n', '').
-                                         replace('<span class=""ico_penel""></span>', '').strip('"').strip()})
+                    self.data.append({'rate': d[0],
+                                      'comment': ','.join(d[1:]).replace('\x00', '').replace('\n', '').
+                                     replace('<span class=""ico_penel""></span>', '').strip('"').strip()})
                 except Exception as e:
                     print(e, line)
                 del d
 
+    def correct_spacing(self):
+        try:
+            from pykospacing import spacing
+        except ImportError:
+            raise ImportError("[-] plz installing KoSpacing package first!")
+
+        len_data = len(self.data)
+        for idx in tqdm(range(len_data)):
+            self.data[idx]['comment'] = spacing(self.data[idx]['comment'])
+
     def word_tokenize(self):
-        def emo(x: str) -> str:
-            return emoticon_normalize(x, n_repeats=3)
+        def emo(x: str, n_rep: int = 3) -> str:
+            return emoticon_normalize(x, n_repeats=n_rep)
 
-        def rep(x: str) -> str:
-            return repeat_normalize(x, n_repeats=2)
+        def rep(x: str, n_rep: int = 3) -> str:
+            return repeat_normalize(x, n_repeats=n_rep)
 
-        def normalize(x: str) -> str:
-            return rep(emo(x))
+        def normalize(x: str, n_rep: int = 3) -> str:
+            return rep(emo(x, n_rep), n_rep) if self.use_normalize else x
 
-        n_data = len(self.data)
+        len_data = len(self.data)
         for idx, cd in enumerate(self.data):
-            pos = list(map(lambda x: '/'.join(x), self.mecab.pos(normalize(cd['comment']))))
+            pos = list(map(lambda x: '/'.join(x), self.analyzer.pos(normalize(cd['comment']))))
 
-            if self.use_in_time_save:
+            if self.use_save:
                 self.csv_file.writelines(str(cd['rate']) + ',' + ' '.join(pos) + '\n')
 
             self.sentences.append(pos)
             self.labels.append(cd['rate'])
 
-            if idx > 0 and idx % (n_data // 100) == 0:
-                print("[*] %d/%d" % (idx, n_data), pos)
+            if idx > 0 and idx % (len_data // 100) == 0:
+                print("[*] %d/%d" % (idx, len_data), pos)
             del pos
         gc.collect()
 
-    def build_data(self):
-        """
-            ts = len(self.data) // self.n_threads  # 5366474
-            with Pool(self.n_threads) as pool:
-                print(pool.map(self.word_tokenize, [self.data[ts * i:ts * (i + 1)] for i in range(self.n_threads)]))
-    
-                pp_data = [pool.apply_async(self.word_tokenize, (self.data[ts * i:ts * (i + 1)],))
-                           for i in range(self.n_threads)]
-               
-                for pd in pp_data:
-                    self.sentences += pd.get()[0]
-                    self.labels += pd.get()[1]
-        """
-
-        self.word_tokenize()
-
-        del self.data
-        gc.collect()
-
     def naive_save(self):
-        assert self.save_file
+        assert self.fn_to_save
 
         try:
-            with open(self.save_file, 'w', encoding='utf8', newline='') as csv_file:
+            with open(self.fn_to_save, 'w', encoding='utf8', newline='') as csv_file:
                 w = csv.DictWriter(csv_file, fieldnames=['rate', 'comment'])
-
                 w.writeheader()
+
                 for rate, comment in tqdm(zip(self.labels, self.sentences)):
                     w.writerow({'rate': rate, 'comment': ' '.join(comment)})
         except Exception as e:
@@ -187,15 +182,13 @@ class DataLoader:
         with open(self.file, 'r', encoding='utf8') as f:
             for line in tqdm(f.readlines()[1:]):
                 d = line.split(',')
-
                 self.sentences.append(d[1].split(' '))
                 self.labels.append(d[0])
 
     def to_one_hot(self):
         arr = np.eye(self.n_classes)
-
         for i in tqdm(range(len(self.labels))):
-            self.labels[i] = arr[self.labels[i] - 1]
+            self.labels[i] = arr[self.labels[i] - 1]  # 1 ~ 10
 
 
 class DataIterator:
