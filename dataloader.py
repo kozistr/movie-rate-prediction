@@ -1,6 +1,5 @@
 import gc
 import csv
-import psutil
 import numpy as np
 
 from tqdm import tqdm
@@ -149,10 +148,6 @@ class DataLoader:
 
             if idx > 0 and idx % (n_data // 100) == 0:
                 print("[*] %d/%d" % (idx, n_data), pos)
-
-                remain_ram = psutil.virtual_memory().available / (2 ** 20)
-                if remain_ram < self.mem_limit:
-                    raise MemoryError("[-] not enough memory %dMB < %dMB, " % (remain_ram, self.mem_limit))
             del pos
         gc.collect()
 
