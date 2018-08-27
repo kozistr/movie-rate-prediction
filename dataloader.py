@@ -87,9 +87,12 @@ class DataLoader:
 
         # Sanity Checks
         assert self.config
-        assert not self.file.find('.csv') == -1
-        assert self.fn_to_save if not self.use_save else pass
-        assert self.jvm_path if not self.analyzer == 'mecab' else pass
+        if not self.load_from == 'db':
+            assert not self.file.find('.csv') == -1
+        if not self.use_save:
+            assert self.fn_to_save
+        if not self.analyzer == 'mecab':
+            assert self.jvm_path
 
         if self.analyzer == 'mecab':
             from konlpy.tag import Mecab
