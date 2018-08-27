@@ -159,12 +159,15 @@ class DataLoader:
 
     def read_from_csv(self):
         with open(self.file, 'r', encoding='utf8') as f:
+            idx = 0
             for line in tqdm(f.readlines()[1:]):
                 d = line.split(',')
                 try:
-                    self.data.append({'rate': d[0], 'comment': ','.join(d[1:])})
+                    self.data.append({'rate': int(d[0]), 'comment': ','.join(d[1:])})
                 except Exception as e:
-                    print(e, line)
+                    print(e)
+                    print(idx, ' ', 'rate:', d[0], 'comment:', d[1:], 'line:', line)
+                idx += 1
                 del d
 
     def words_cleaning(self):
