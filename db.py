@@ -42,15 +42,19 @@ def main():
     }
 
     # Stage 1 : Initial DB Connection
+    print("[*] Making DB Connection...")
     db_con = make_db_conn(db_info)
 
     # Stage 2 : Delete previous database
+    print("[*] Drop 'movie' database")
     do_db(db_con, "drop schema movie")
 
     # Stage 3 : Make 'movie' database
+    print("[*] Create 'movie' database")
     do_db(db_con, "create database movie")
 
     # Stage 4 : Make 'movie.movie' table
+    print("[*] Create 'movie.movie' table")
     with open('table.sql', 'r') as table_qry:
         do_db(db_con, table_qry.read())
 
@@ -60,6 +64,7 @@ def main():
     db_con = make_db_conn(db_info)  # db connect
 
     # Stage 5 : Insert whole queries
+    print("[*] Inserting data queries...")
     n_query, n_success = 0, 0
     for qp in tqdm(glob(cfg.query_path + "*.sql")):
         item_qry = open(qp, 'r', encoding='utf8').read()
