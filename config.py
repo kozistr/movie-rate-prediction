@@ -55,9 +55,9 @@ nlp_model.add_argument('--analyzer', type=str, default='mecab', choices=['mecab'
 nlp_model.add_argument('--use_correct_spacing', type=bool, default=False,
                        help='resolving sentence spacing problem but taking lots of time...')
 nlp_model.add_argument('--use_normalize', type=bool, default=True)
-nlp_model.add_argument('--lr', type=float, default=2.5e-2)
-nlp_model.add_argument('--min_lr', type=float, default=2.5e-2)
-nlp_model.add_argument('--lr_decay', type=float, default=2e-3)
+nlp_model.add_argument('--vec_lr', type=float, default=2.5e-2)
+nlp_model.add_argument('--vec_min_lr', type=float, default=2.5e-2)
+nlp_model.add_argument('--vec_lr_decay', type=float, default=2e-3)
 
 # Misc
 misc_arg = add_arg_group('Misc')

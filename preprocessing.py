@@ -31,6 +31,7 @@ def w2v_training(data: list) -> bool:
         'window': 5,
         'min_count': 3,
         'negative': 3,
+        'alpha': config.vec_lr,
         'sg': 1,
         'iter': 10,
         'seed': config.seed,
@@ -56,8 +57,8 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
         'vector_size': config.embed_size,
         'negative': 3,
         'hs': 0,
-        'alpha': config.lr,
-        'min_alpha': config.min_lr,
+        'alpha': config.vec_lr,
+        'min_alpha': config.vec_min_lr,
         'min_count': 3,
         'window': 5,
         'seed': config.seed,
@@ -72,7 +73,7 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
         d2v_model.train(tagged_data, total_examples=total_examples, epochs=d2v_model.iter)
 
         # LR Scheduler
-        d2v_model.alpha -= config.lr_decay
+        d2v_model.alpha -= config.vec_lr_decay
         d2v_model.min_alpha = d2v_model.alpha
 
     d2v_model.save(config.d2v_model)
