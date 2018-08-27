@@ -258,7 +258,7 @@ class DataLoader:
     def to_one_hot(self):
         arr = np.eye(self.n_classes)
         for i in tqdm(range(len(self.labels))):
-            self.labels[i] = arr[self.labels[i] - 1]  # 1 ~ 10
+            self.labels[i] = arr[int(self.labels[i]) - 1]  # 1 ~ 10
 
 
 class DataIterator:
