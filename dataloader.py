@@ -61,11 +61,13 @@ class DataLoader:
 
     def __init__(self, file, n_classes=10, analyzer='mecab',
                  use_correct_spacing=False, use_normalize=True,
-                 is_analyzed=False, fn_to_save=None, use_save=True, jvm_path=None):
+                 load_from='db', is_analyzed=False, fn_to_save=None, use_save=True, jvm_path=None,
+                 config=None):
         self.file = file
         self.n_classes = n_classes
 
         self.data = []
+
         self.sentences = []
         self.labels = []
 
@@ -73,14 +75,19 @@ class DataLoader:
         self.use_normalize = use_normalize
 
         self.is_analyzed = is_analyzed
-        self.use_save = use_save
         self.fn_to_save = fn_to_save
+        self.load_from = load_from
+        self.use_save = use_save
         self.jvm_path = jvm_path
 
         self.analyzer = analyzer
 
-        assert not self.analyzer == 'mecab' and self.jvm_path
+        self.config = config
+
+        assert self.config
         assert self.file.find('.csv') and self.fn_to_save
+        assert not self.analyzer == 'mecab' and self.jvm_path
+        assert self.load_from == 'db' or self.load_from == 'csv'
 
         if self.analyzer == 'mecab':
             from konlpy.tag import Mecab
@@ -103,32 +110,61 @@ class DataLoader:
         if self.is_analyzed:
             self.naive_load()  # just load data from .csv
         else:
-            # Stage 1-1 : remove dirty stuffs
-            self.remove_dirty()
+            # Stage 1 : read data from 'db' or 'csv'
+            if self.load_from == 'db':
+                self.read_from_db()
+            else:
+                self.read_from_csv()
 
-            # Stage 1-2 : (Optional) Correcting spacing
+            # Stage 2-1 : remove dirty stuffs
+            self.words_cleaning()
+
+            # Stage 2-2 : (Optional) Correcting spacing
             if self.use_correct_spacing:
                 self.correct_spacing()
 
-            # Stage 2 : build data (pos/morphs analyze)
+            # Stage 3 : build data (pos/morphs analyze)
             self.word_tokenize()
+
             del self.data  # remove unused var # for saving memory
+            gc.collect()
 
         # if it's not binary class, convert into one-hot vector
         if not self.n_classes == 1:
             self.to_one_hot()
 
-    def remove_dirty(self):
+    def read_from_db(self):
+        import pymysql
+
+        db_info = {
+            'host': self.config.host,
+            'user': self.config.user,
+            'password': self.config.password,
+            'db': self.config.db,
+            'charset': self.config.charset,
+            'cursorclass': pymysql.cursors.DictCursor,
+        }
+        db_conn = pymysql.connect(**db_info)
+
+        with db_conn.cursor() as cur:
+            cur.execute("select rate, comment from movie")
+            self.data = cur.fetchall()
+
+    def read_from_csv(self):
         with open(self.file, 'r', encoding='utf8') as f:
             for line in tqdm(f.readlines()[1:]):
                 d = line.split(',')
                 try:
-                    self.data.append({'rate': d[0],
-                                      'comment': ','.join(d[1:]).replace('\x00', '').replace('\n', '').
-                                     replace('<span class=""ico_penel""></span>', '').strip('"').strip()})
+                    self.data.append({'rate': d[0], 'comment': ','.join(d[1:])})
                 except Exception as e:
                     print(e, line)
                 del d
+
+    def words_cleaning(self):
+        len_data = len(self.data)
+        for idx in tqdm(range(len_data)):
+            self.data[idx]['comment'] = self.data[idx]['comment'].replace('<span class=""ico_penel""></span>', '').\
+                replace('\x00', '').replace('\n', '').strip('"').strip()
 
     def correct_spacing(self):
         try:
@@ -151,19 +187,18 @@ class DataLoader:
             return rep(emo(x, n_rep), n_rep) if self.use_normalize else x
 
         len_data = len(self.data)
-        for idx, cd in enumerate(self.data):
-            pos = list(map(lambda x: '/'.join(x), self.analyzer.pos(normalize(cd['comment']))))
+        for idx, d in tqdm(enumerate(self.data)):
+            pos = list(map(lambda x: '/'.join(x), self.analyzer.pos(normalize(d['comment']))))
 
             if self.use_save:
-                self.csv_file.writelines(str(cd['rate']) + ',' + ' '.join(pos) + '\n')
+                self.csv_file.writelines(str(d['rate']) + ',' + ' '.join(pos) + '\n')
 
             self.sentences.append(pos)
-            self.labels.append(cd['rate'])
+            self.labels.append(d['rate'])
 
             if idx > 0 and idx % (len_data // 100) == 0:
                 print("[*] %d/%d" % (idx, len_data), pos)
             del pos
-        gc.collect()
 
     def naive_save(self):
         assert self.fn_to_save
