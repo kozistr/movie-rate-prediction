@@ -113,6 +113,13 @@ if __name__ == '__main__':
             x_data = np.array(f['comment'], dtype=np.float32)
             y_data = np.array(f['rate'], dtype=np.uint8)
 
+            if not y_data.shape[1] == config.n_classes:
+                print("[*] different 'n_classes' is detected with config file")
+                if config.n_classes == 1:
+                    y_data = DataLoader.to_binary(y_data)
+                else:
+                    y_data = DataLoader.to_one_hot(y_data, config.n_classes)
+
             if config.verbose:
                 print("[+] data loaded from h5 file!")
                 print("[*] comment : ", x_data.shape)
