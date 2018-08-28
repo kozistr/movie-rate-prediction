@@ -7,7 +7,8 @@ class CharCNN:
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
                  vocab_size=251, dims=300, seed=1337, use_d2v=True, optimizer='adam',
                  filter_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
-                 lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6):
+                 lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6,
+                 summary=None):
         self.s = s
         self.n_dims = dims
         self.n_classes = n_classes
@@ -25,6 +26,8 @@ class CharCNN:
         self.th = th
 
         self.optimizer = optimizer
+
+        self.summary = summary
 
         # set random seed
         np.random.seed(self.seed)
@@ -87,7 +90,7 @@ class CharCNN:
 
         # Model saver
         self.saver = tf.train.Saver(max_to_keep=1)
-        self.writer = tf.summary.FileWriter('./model/', self.s.graph)
+        self.writer = tf.summary.FileWriter(self.summary, self.s.graph)
 
     def build_model(self):
         if not self.use_d2v:
@@ -151,5 +154,4 @@ class CharCNN:
             else:
                 rate = tf.nn.sigmoid(x)
                 rate = rate * 9. + 1.  # To-Do : replace with another scale function to avoid saturation
-
             return x, rate
