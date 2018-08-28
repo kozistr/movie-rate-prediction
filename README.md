@@ -29,6 +29,12 @@
 |:---:|:---:|:---:|:---:|
 | [NAVER Movie Review](http://movie.naver.com) | *Korean* | ```5.36M``` | ```About 557MB``` | 
 
+### Movie Review Data Distribution
+
+![dist](./dist.png)
+
+> data imbalance is worried... maybe rate-10 data should be downsized by 20%
+
 ## Usage
 ### 1.1 Installing Dependencies
     $ sudo python3 -m pip install -r requirements.txt
