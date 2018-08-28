@@ -124,10 +124,10 @@ if __name__ == '__main__':
     # resizing the amount of rate-10 data
     # 2.5M to 500K # downsize to 20%
     rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if np.argmax(y, axis=-1) == 9]
-    rand_idx = np.random.choice(rate_10_idx, len(rate_10_idx) // 5)
+    rand_idx = np.random.choice(rate_10_idx, 4 * len(rate_10_idx) // 5)
 
-    x_data = np.delete(x_data, rand_idx).reshape(-1, config.embed_size)
-    y_data = np.delete(y_data, rand_idx).reshape(-1, config.n_classes)
+    x_data = np.delete(x_data, rand_idx, axis=0).reshape(-1, config.embed_size)
+    y_data = np.delete(y_data, rand_idx, axis=0).reshape(-1, config.n_classes)
 
     if config.verbose:
         print("[*] refined comment : ", x_data.shape)
