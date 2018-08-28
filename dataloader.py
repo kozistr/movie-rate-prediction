@@ -260,6 +260,10 @@ class DataLoader:
         for i in tqdm(range(len(self.labels))):
             self.labels[i] = arr[int(self.labels[i]) - 1]  # 1 ~ 10
 
+    def to_binary(self):
+        for i in tqdm(range(len(self.labels))):
+            self.labels[i] = np.argmax(self.labels[i], axis=-1) + 1
+
     def __len__(self):
         return len(self.sentences)
 
