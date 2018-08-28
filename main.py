@@ -139,12 +139,12 @@ if __name__ == '__main__':
             for epoch in range(restored_epochs, config.epochs):
                 for x_train, y_train in di.iterate():
                     # training
-                    loss = s.run([model.opt, model.loss],
-                                 feed_dict={
-                                     model.x: x_train,
-                                     model.y: y_train,
-                                     model.do_rate: config.drop_out,
-                                 })
+                    _, loss = s.run([model.opt, model.loss],
+                                    feed_dict={
+                                        model.x: x_train,
+                                        model.y: y_train,
+                                        model.do_rate: config.drop_out,
+                                    })
 
                     if global_step % config.logging_step == 0:
                         print("[*] epoch %d global step %d" % (epoch, global_step), " loss : {:.8f}".format(loss))
