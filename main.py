@@ -154,7 +154,7 @@ if __name__ == '__main__':
                         print("[*] epoch %d global step %d" % (epoch, global_step), " loss : {:.8f}".format(loss))
 
                         # prediction
-                        sample = vec.sent_to_vec(samples['comment'])
+                        sample = vec.sent_to_vec(samples['comment']).reshape(-1, config.embed_size)
                         predict = s.run(model.prediction,
                                         feed_dict={
                                             model.x: sample,
