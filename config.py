@@ -22,10 +22,10 @@ network_arg.add_argument('--model', type=str, default='charcnn', choices=['charc
 network_arg.add_argument('--n_classes', type=int, default=10)
 network_arg.add_argument('--use_pre_trained_embeds', type=bool, default=True,
                          help='using Doc2Vec as embedding. If False, use character-level embedding')
-network_arg.add_argument('--kernel_size', type=list, default=[1, 2, 3, 4],
+network_arg.add_argument('--kernel_size', type=list, default=[3, 4, 5],
                          help='conv1d kernel size')
-network_arg.add_argument('--fc_unit', type=int, default=1024)
-network_arg.add_argument('--drop_out', type=int, default=.8,
+network_arg.add_argument('--fc_unit', type=int, default=512)
+network_arg.add_argument('--drop_out', type=int, default=.2,
                          help='dropout rate')
 network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
 network_arg.add_argument('--act_threshold', type=float, default=1e-6,
@@ -45,7 +45,7 @@ train_arg.add_argument('--is_train', type=bool, default=True)
 train_arg.add_argument('--epochs', type=int, default=150)
 train_arg.add_argument('--logging_step', type=int, default=500)
 train_arg.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'sgd'])
-train_arg.add_argument('--lr', type=float, default=8e-4)
+train_arg.add_argument('--lr', type=float, default=2e-4)
 train_arg.add_argument('--lr_decay', type=float, default=.95)
 train_arg.add_argument('--lr_lower_boundary', type=float, default=2e-5)
 
