@@ -40,7 +40,7 @@ if __name__ == '__main__':
                         use_save=False,
                         config=config)
         ds_len = len(ds)
-        
+
         if config.verbose:
             print("[+] DataSet loaded! Total %d samples" % ds_len)
 
@@ -79,11 +79,13 @@ if __name__ == '__main__':
                 print("[+] data saved into h5 file!")
     else:
         with h5py.File(load_from_h5, 'r') as f:
-            x_data = f['comment']
-            y_data = f['rate']
+            x_data = np.array(f['comment'], dtype=np.float32)
+            y_data = np.array(f['rate'], dtype=np.uint8)
 
             if config.verbose:
                 print("[+] data loaded from h5 file!")
+                print("[*] comment : ", x_data.shape)
+                print("[*] rate    : ", y_data.shape)
 
     data_size = x_data.shape[0]
 
