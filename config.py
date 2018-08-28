@@ -19,7 +19,7 @@ def get_config():
 # Network
 network_arg = add_arg_group('Network')
 network_arg.add_argument('--model', type=str, default='charcnn', choices=['charcnn', 'charrnn'])
-network_arg.add_argument('--n_classes', type=int, default=10)
+network_arg.add_argument('--n_classes', type=int, default=1)
 network_arg.add_argument('--use_pre_trained_embeds', type=bool, default=True,
                          help='using Doc2Vec as embedding. If False, use character-level embedding')
 network_arg.add_argument('--kernel_size', type=list, default=[3, 4, 5],
