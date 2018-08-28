@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import tensorflow as tf
 
+from tqdm import tqdm
 from model import charcnn
 from config import get_config
 from dataloader import Doc2VecEmbeddings, DataLoader, DataIterator
@@ -34,13 +35,18 @@ if __name__ == '__main__':
     if config.verbose:
         print("[+] DataSet loaded! Total %d samples" % len(ds))
 
-    # DataSet Iterator
-    di = DataIterator(x=ds.sentences, y=ds.labels, batch_size=config.batch_size)
-
     # Doc2Vec Loader
     vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)
     if config.verbose:
         print("[+] Doc2Vec loaded! Total %d pre-trained sentences, %d dims" % (len(vec), config.n_dims))
+
+    # words Vectorization # type conversion
+    for i in tqdm(range(len(ds))):
+        ds.sentences[i] = vec.sent_to_vec(ds.sentences[i])
+        ds.labels[i] = np.asarray(ds.labels[i])
+
+    # DataSet Iterator
+    di = DataIterator(x=ds.sentences, y=ds.labels, batch_size=config.batch_size)
 
     if config.is_train:
         # GPU configure
