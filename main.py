@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # Doc2Vec Loader
     vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)
     if config.verbose:
-        print("[+] Doc2Vec loaded! Total %d pre-trained sentences, %d dims" % (len(vec), n_dims))
+        print("[+] Doc2Vec loaded! Total %d pre-trained sentences, %d dims" % (len(vec), config.n_dims))
 
     if config.is_train:
         # GPU configure
@@ -52,16 +52,23 @@ if __name__ == '__main__':
                 # Model Loaded
                 model = charcnn.CharCNN(s=s,
                                         n_classes=config.n_classes,
-                                        dims=config.embed_size)
+                                        optimizer=config.optimizer,
+                                        dims=config.embed_size,
+                                        lr=config.lr,
+                                        lr_decay=config.lr_decay,
+                                        lr_lower_boundary=config.lr_lower_boundary)
+            elif config.model == 'charrnn':
+                raise NotImplementedError("[-] Not Implemented Yet")
             else:
                 raise NotImplementedError("[-] Not Implemented Yet")
 
             # Initializing
             s.run(tf.global_variables_initializer())
 
-            print("[*] Reading checkpoints...")
-
+            global_step = 0
             if checkpoint:
+                print("[*] Reading checkpoints...")
+
                 ckpt = tf.train.get_checkpoint_state('./model/')
                 if ckpt and ckpt.model_checkpoint_path:
                     # Restores from checkpoint
@@ -70,19 +77,19 @@ if __name__ == '__main__':
                     global_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
                     print("[+] global step : %d" % global_step, " successfully loaded")
                 else:
-                    global_step = 0
                     print('[-] No checkpoint file found')
 
             start_time = time.time()
 
-            for epoch in range(config.epochs):
+            restored_epochs = global_step // (len(ds) // config.batch_size)
+            for epoch in range(restored_epochs, config.epochs):
                 for x_train, y_train in di.iterate():
                     # training
                     loss = s.run([model.opt, model.loss],
                                  feed_dict={
                                      model.x: x_train,
                                      model.y: y_train,
-                                     model.do_rate: .8,
+                                     model.do_rate: config.do_rate,
                                  })
 
                     if global_step % config.logging_step == 0:
