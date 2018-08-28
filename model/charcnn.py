@@ -5,7 +5,7 @@ import tensorflow as tf
 class CharCNN:
 
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
-                 vocab_size=251, dims=300, seed=1337, use_d2v=True,
+                 vocab_size=251, dims=300, seed=1337, use_d2v=True, optimizer='adam',
                  filter_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
                  lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6):
         self.s = s
@@ -23,6 +23,8 @@ class CharCNN:
         self.fc_unit = fc_unit
         self.l2_reg = l2_reg
         self.th = th
+
+        self.optimizer = optimizer
 
         # set random seed
         np.random.seed(self.seed)
@@ -67,7 +69,12 @@ class CharCNN:
                                    clip_value_max=1e-3,
                                    name='lr-clipped')
 
-        self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr).minimize(self.loss)
+        if self.optimizer == 'adam':
+            self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr).minimize(self.loss)
+        elif self.optimizer == 'sgd':
+            self.opt = tf.train.GradientDescentOptimizer(learning_rate=self.lr).minimize(self.loss)
+        else:
+            raise NotImplementedError("[-] only Adam, SGD are supported!")
 
         # Mode Saver/Summary
         tf.summary.scalar('loss/loss', self.loss)
