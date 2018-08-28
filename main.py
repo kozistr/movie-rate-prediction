@@ -30,7 +30,19 @@ np.random.seed(config.seed)
 tf.set_random_seed(config.seed)
 
 
+samples = {'rate': 10, 'comment': "대박 개쩔어요!!"}
+
+
 if __name__ == '__main__':
+    # Loading Doc2Vec Model
+    if config.use_pre_trained_embeds:
+        # Doc2Vec Loader
+        vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)
+        if config.verbose:
+            print("[+] Doc2Vec loaded! Total %d pre-trained sentences, %d dims" % (len(vec), config.embed_size))
+    else:
+        raise NotImplementedError("[-] character-level pre-processing not yet ready :(")
+
     if not load_from_h5:
         # DataSet Loader
         ds = DataLoader(file=config.processed_dataset,
@@ -43,14 +55,6 @@ if __name__ == '__main__':
 
         if config.verbose:
             print("[+] DataSet loaded! Total %d samples" % ds_len)
-
-        if config.use_pre_trained_embeds:
-            # Doc2Vec Loader
-            vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)
-            if config.verbose:
-                print("[+] Doc2Vec loaded! Total %d pre-trained sentences, %d dims" % (len(vec), config.embed_size))
-        else:
-            raise NotImplementedError("[-] character-level pre-processing not yet ready :(")
 
         # words Vectorization # type conversion
         x_data = np.zeros((ds_len, config.embed_size), dtype=np.float32)
@@ -148,6 +152,15 @@ if __name__ == '__main__':
 
                     if global_step % config.logging_step == 0:
                         print("[*] epoch %d global step %d" % (epoch, global_step), " loss : {:.8f}".format(loss))
+
+                        # prediction
+                        sample = vec.sent_to_vec(samples['comment'])
+                        predict = s.run(model.prediction,
+                                        feed_dict={
+                                            model.x: sample,
+                                            model.do_rate: .0,
+                                        })
+                        print("[*] predict %s : %d" % (samples['comment'], predict))
 
                         summary = s.run([model.merged],
                                         feed_dict={
