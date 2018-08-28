@@ -117,7 +117,8 @@ if __name__ == '__main__':
                                         lr=config.lr,
                                         lr_decay=config.lr_decay,
                                         lr_lower_boundary=config.lr_lower_boundary,
-                                        th=config.act_threshold)
+                                        th=config.act_threshold,
+                                        summary=config.pretrained)
             elif config.model == 'charrnn':
                 raise NotImplementedError("[-] Not Implemented Yet")
             else:
@@ -167,7 +168,9 @@ if __name__ == '__main__':
                                                 model.x: sample,
                                                 model.do_rate: .0,
                                             })
-                            print("[*] predict %s : %d" % (sample_data['comment'], predict))
+                            print("[*] predict %s : %d (expected %d)" % (sample_data['comment'],
+                                                                         predict,
+                                                                         sample_data['rate']))
 
                         # summary
                         summary = s.run(model.merged,
