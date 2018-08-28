@@ -35,15 +35,19 @@ tf.set_random_seed(config.seed)
 samples = [
     {'rate': 9, 'comment': "대박 개쩔어요!!"},
     {'rate': 7, 'comment': "띵작 그런데 좀 아쉽다..."},
+    {'rate': 5, 'comment': "그냥 그럼"},
     {'rate': 2, 'comment': "쓰레기... 에반데"},
 ]
 
 
 def data_distribution(y_: np.array, size: int = 10, img: str = 'dist.png') -> np.array:
     # showing data distribution
-    y_dist = np.zeros((size,), dtype=np.int32)
+    y_dist = np.zeros((10,), dtype=np.int32)
     for y in tqdm(y_):
-        y_dist[np.argmax(y, axis=-1)] += 1
+        if size == 1:
+            y_dist[y - 1] += 1
+        else:
+            y_dist[np.argmax(y, axis=-1)] += 1
 
     plt.figure(figsize=(10, 8))
 
@@ -52,7 +56,7 @@ def data_distribution(y_: np.array, size: int = 10, img: str = 'dist.png') -> np
     plt.grid(True)
 
     plt.bar(range(size), y_dist, width=.35, align='center', alpha=.5, label='rainfall')
-    plt.xticks(range(size), list(range(1, size + 1)))
+    plt.xticks(range(10), list(range(1, 11)))
 
     plt.savefig(img)
     plt.show()
@@ -115,10 +119,15 @@ if __name__ == '__main__':
 
             if not y_data.shape[1] == config.n_classes:
                 print("[*] different 'n_classes' is detected with config file")
-                if config.n_classes == 1:
-                    y_data = DataLoader.to_binary(y_data)
-                else:
-                    y_data = DataLoader.to_one_hot(y_data, config.n_classes)
+                new_y_data = np.zeros((len(y_data), config.n_classes), dtype=np.uint8)
+
+                arr = np.eye(config.n_classes)
+                for i in tqdm(range(len(y_data))):
+                    new_y_data[i] = arr[int(y_data[i]) - 1] if not config.n_classes == 1 \
+                        else np.argmax(y_data[i], axis=-1) + 1
+
+                y_data = new_y_data[:]
+                del new_y_data, arr
 
             if config.verbose:
                 print("[+] data loaded from h5 file!")
@@ -126,11 +135,14 @@ if __name__ == '__main__':
                 print("[*] rate    : ", y_data.shape)
 
     # show data rate distribution
-    y_dist = data_distribution(y_data)
+    # y_dist = data_distribution(y_data, config.n_classes)
 
     # resizing the amount of rate-10 data
     # 2.5M to 500K # downsize to 20%
-    rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if np.argmax(y, axis=-1) == 9]
+    if not config.n_classes == 1:
+        rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if np.argmax(y, axis=-1) == 9]
+    else:
+        rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if y == 10]
     rand_idx = np.random.choice(rate_10_idx, 4 * len(rate_10_idx) // 5)
 
     x_data = np.delete(x_data, rand_idx, axis=0).reshape(-1, config.embed_size)
