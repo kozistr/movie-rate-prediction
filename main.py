@@ -8,6 +8,7 @@ import tensorflow as tf
 from tqdm import tqdm
 from model import charcnn
 from config import get_config
+from concurrent.futures import ThreadPoolExecutor
 from dataloader import Doc2VecEmbeddings, DataLoader, DataIterator
 
 
@@ -38,9 +39,10 @@ if __name__ == '__main__':
                         is_analyzed=True,
                         use_save=False,
                         config=config)
-
+        ds_len = len(ds)
+        
         if config.verbose:
-            print("[+] DataSet loaded! Total %d samples" % len(ds))
+            print("[+] DataSet loaded! Total %d samples" % ds_len)
 
         if config.use_pre_trained_embeds:
             # Doc2Vec Loader
@@ -51,24 +53,31 @@ if __name__ == '__main__':
             raise NotImplementedError("[-] character-level pre-processing not yet ready :(")
 
         # words Vectorization # type conversion
-        x_data = np.zeros((len(ds), config.embed_size), dtype=np.float32)
-        y_data = np.zeros((len(ds), config.n_classes), dtype=np.uint8)
-        for i in tqdm(range(len(ds))):
-            x_data[i] = vec.sent_to_vec(ds.sentences[i])
-            y_data[i] = np.asarray(ds.labels[i])
+        x_data = np.zeros((ds_len, config.embed_size), dtype=np.float32)
+        y_data = np.zeros((ds_len, config.n_classes), dtype=np.uint8)
 
-            # memory stuff...
-            del ds.sentences[i]
-            del ds.labels[i]
+        def processing(idx: int):
+            x_data[idx] = vec.sent_to_vec(ds.sentences[idx])
+            y_data[idx] = np.asarray(ds.labels[idx])
+
+            ds.sentences[idx] = None
+            ds.labels[idx] = None
+            if idx % 10000 == 0:
+                gc.collect()
+
+        with ThreadPoolExecutor(max_workers=config.n_threads) as executor:
+            for i in tqdm(range(ds_len)):
+                executor.submit(processing, i)
 
         if config.verbose:
             print("[+] conversion finish! x_data, y_data loaded!")
 
         # delete DataSetLoader() from memory
-        del ds
+        ds = None
         gc.collect()
 
         if save_to_h5:
+            print("[*] start writing .h5 file...")
             with h5py.File(save_to_h5, 'w') as f:
                 f.create_dataset('comment', x_data)
                 f.create_dataset('rate', y_data)
