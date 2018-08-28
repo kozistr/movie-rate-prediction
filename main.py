@@ -33,6 +33,7 @@ tf.set_random_seed(config.seed)
 # hand-made samples
 # you can replace this part to your custom DataSet :)
 samples = [
+    {'rate': 10, 'comment': "이건 10점 안줄 수 가 없다. 닥추"},
     {'rate': 9, 'comment': "대박 개쩔어요!!"},
     {'rate': 7, 'comment': "띵작 그런데 좀 아쉽다..."},
     {'rate': 5, 'comment': "그냥 그럼"},
@@ -223,7 +224,7 @@ if __name__ == '__main__':
                                                 model.x: sample,
                                                 model.do_rate: .0,
                                             })
-                            print("[*] predict %030s : %d (expected %d)" % (sample_data['comment'],
+                            print("[*] predict %050s : %d (expected %d)" % (sample_data['comment'],
                                                                             predict + 1,
                                                                             sample_data['rate']))
 
