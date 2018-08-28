@@ -1,3 +1,4 @@
+import gc
 import time
 import h5py
 import argparse
@@ -12,11 +13,14 @@ from dataloader import Doc2VecEmbeddings, DataLoader, DataIterator
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
 parser.add_argument('--checkpoint', type=str, help='pre-trained model', default=None)
-parser.add_argument('--save_to_h5', type=bool, help='saving vectorized processed data into h5', default=True)
+parser.add_argument('--save_to_h5', type=str, help='saving vectorized processed data into h5', default=None)
+parser.add_argument('--load_from_h5', type=str, help='loading vectorized processed data from h5', default=None)
 args = parser.parse_args()
 
 # parsed args
 checkpoint = args.checkpoint
+save_to_h5 = args.save_to_h5
+load_from_h5 = args.load_from_h5
 
 # Configuration
 config, _ = get_config()
@@ -26,36 +30,63 @@ tf.set_random_seed(config.seed)
 
 
 if __name__ == '__main__':
-    # DataSet Loader
-    ds = DataLoader(file=config.processed_dataset,
-                    n_classes=config.n_classes,
-                    analyzer=None,
-                    is_analyzed=True,
-                    use_save=False,
-                    config=config)
+    if not load_from_h5:
+        # DataSet Loader
+        ds = DataLoader(file=config.processed_dataset,
+                        n_classes=config.n_classes,
+                        analyzer=None,
+                        is_analyzed=True,
+                        use_save=False,
+                        config=config)
 
-    if config.verbose:
-        print("[+] DataSet loaded! Total %d samples" % len(ds))
-
-    if config.use_pre_trained_embeds:
-        # Doc2Vec Loader
-        vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)
         if config.verbose:
-            print("[+] Doc2Vec loaded! Total %d pre-trained sentences, %d dims" % (len(vec), config.embed_size))
+            print("[+] DataSet loaded! Total %d samples" % len(ds))
+
+        if config.use_pre_trained_embeds:
+            # Doc2Vec Loader
+            vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)
+            if config.verbose:
+                print("[+] Doc2Vec loaded! Total %d pre-trained sentences, %d dims" % (len(vec), config.embed_size))
+        else:
+            raise NotImplementedError("[-] character-level pre-processing not yet ready :(")
+
+        # words Vectorization # type conversion
+        x_data = np.zeros((len(ds), config.embed_size), dtype=np.float32)
+        y_data = np.zeros((len(ds), config.n_classes), dtype=np.uint8)
+        for i in tqdm(range(len(ds))):
+            x_data[i] = vec.sent_to_vec(ds.sentences[i])
+            y_data[i] = np.asarray(ds.labels[i])
+
+            # memory stuff...
+            del ds.sentences[i]
+            del ds.labels[i]
+
+        if config.verbose:
+            print("[+] conversion finish! x_data, y_data loaded!")
+
+        # delete DataSetLoader() from memory
+        del ds
+        gc.collect()
+
+        if save_to_h5:
+            with h5py.File(save_to_h5, 'w') as f:
+                f.create_dataset('comment', x_data)
+                f.create_dataset('rate', y_data)
+
+            if config.verbose:
+                print("[+] data saved into h5 file!")
     else:
-        raise NotImplementedError("[-] character-level pre-processing not yet ready :(")
+        with h5py.File(load_from_h5, 'r') as f:
+            x_data = f['comment']
+            y_data = f['rate']
 
-    # words Vectorization # type conversion
-    for i in tqdm(range(len(ds))):
-        ds.sentences[i] = vec.sent_to_vec(ds.sentences[i])
-        ds.labels[i] = np.asarray(ds.labels[i])
+            if config.verbose:
+                print("[+] data loaded from h5 file!")
 
-    print(type(ds.sentences), type(ds.labels))
-    ds.sentences = np.asarray(ds.sentences, dtype=np.float32)
-    ds.labels = np.asarray(ds.labels, dtype=np.uint8)
+    data_size = x_data.shape[0]
 
     # DataSet Iterator
-    di = DataIterator(x=ds.sentences, y=ds.labels, batch_size=config.batch_size)
+    di = DataIterator(x=x_data, y=y_data, batch_size=config.batch_size)
 
     if config.is_train:
         # GPU configure
@@ -71,11 +102,15 @@ if __name__ == '__main__':
                                         dims=config.embed_size,
                                         lr=config.lr,
                                         lr_decay=config.lr_decay,
-                                        lr_lower_boundary=config.lr_lower_boundary)
+                                        lr_lower_boundary=config.lr_lower_boundary,
+                                        th=config.act_threshold)
             elif config.model == 'charrnn':
                 raise NotImplementedError("[-] Not Implemented Yet")
             else:
                 raise NotImplementedError("[-] Not Implemented Yet")
+
+            if config.verbose:
+                print("[+] %s model loaded" % config.model)
 
             # Initializing
             s.run(tf.global_variables_initializer())
@@ -96,7 +131,7 @@ if __name__ == '__main__':
 
             start_time = time.time()
 
-            restored_epochs = global_step // (len(ds) // config.batch_size)
+            restored_epochs = global_step // (data_size // config.batch_size)
             for epoch in range(restored_epochs, config.epochs):
                 for x_train, y_train in di.iterate():
                     # training
@@ -128,6 +163,5 @@ if __name__ == '__main__':
             end_time = time.time()
 
             print("[+] Training Done! Elapsed {:.8f}s".format(end_time - start_time))
-
     else:  # Test
         pass
