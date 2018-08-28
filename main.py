@@ -30,7 +30,13 @@ np.random.seed(config.seed)
 tf.set_random_seed(config.seed)
 
 
-samples = {'rate': 10, 'comment': "대박 개쩔어요!!"}
+# hand-made samples
+# you can replace this part to your custom DataSet :)
+samples = [
+    {'rate': 9, 'comment': "대박 개쩔어요!!"},
+    {'rate': 7, 'comment': "띵작 그런데 좀 아쉽다..."},
+    {'rate': 2, 'comment': "쓰레기... 에반데"},
+]
 
 
 if __name__ == '__main__':
@@ -153,14 +159,15 @@ if __name__ == '__main__':
                     if global_step % config.logging_step == 0:
                         print("[*] epoch %d global step %d" % (epoch, global_step), " loss : {:.8f}".format(loss))
 
-                        # prediction
-                        sample = vec.sent_to_vec(samples['comment']).reshape(-1, config.embed_size)
-                        predict = s.run(model.prediction,
-                                        feed_dict={
-                                            model.x: sample,
-                                            model.do_rate: .0,
-                                        })
-                        print("[*] predict %s : %d" % (samples['comment'], predict))
+                        # predictions
+                        for sample_data in samples:
+                            sample = vec.sent_to_vec(sample_data['comment']).reshape(-1, config.embed_size)
+                            predict = s.run(model.prediction,
+                                            feed_dict={
+                                                model.x: sample,
+                                                model.do_rate: .0,
+                                            })
+                            print("[*] predict %s : %d" % (sample_data['comment'], predict))
 
                         # summary
                         summary = s.run(model.merged,
