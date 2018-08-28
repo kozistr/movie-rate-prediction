@@ -71,9 +71,9 @@ if __name__ == '__main__':
 
         if save_to_h5:
             print("[*] start writing .h5 file...")
-            with h5py.File(save_to_h5, 'w') as f:
-                f.create_dataset('comment', x_data)
-                f.create_dataset('rate', y_data)
+            with h5py.File(save_to_h5, 'w') as h5fs:
+                h5fs.create_dataset('comment', data=np.array(x_data))
+                h5fs.create_dataset('rate', data=np.array(y_data))
 
             if config.verbose:
                 print("[+] data saved into h5 file!")
