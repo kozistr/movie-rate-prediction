@@ -69,7 +69,7 @@ if __name__ == '__main__':
             if checkpoint:
                 print("[*] Reading checkpoints...")
 
-                ckpt = tf.train.get_checkpoint_state('./model/')
+                ckpt = tf.train.get_checkpoint_state(config.pretrained)
                 if ckpt and ckpt.model_checkpoint_path:
                     # Restores from checkpoint
                     model.saver.restore(s, ckpt.model_checkpoint_path)
@@ -106,7 +106,7 @@ if __name__ == '__main__':
                         model.writer.add_summary(summary, global_step)
 
                         # Model save
-                        model.saver.save(s, './model/%s.ckpt' % config.model, global_step=global_step)
+                        model.saver.save(s, config.pretrained + '%s.ckpt' % config.model, global_step=global_step)
 
                     global_step += 1
 
