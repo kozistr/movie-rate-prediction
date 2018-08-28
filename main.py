@@ -56,18 +56,11 @@ if __name__ == '__main__':
         x_data = np.zeros((ds_len, config.embed_size), dtype=np.float32)
         y_data = np.zeros((ds_len, config.n_classes), dtype=np.uint8)
 
-        def processing(idx: int):
+        for idx in tqdm(range(ds_len)):
             x_data[idx] = vec.sent_to_vec(ds.sentences[idx])
             y_data[idx] = np.asarray(ds.labels[idx])
-
             ds.sentences[idx] = None
             ds.labels[idx] = None
-            if idx % 10000 == 0:
-                gc.collect()
-
-        with ThreadPoolExecutor(max_workers=config.n_threads) as executor:
-            for i in tqdm(range(ds_len)):
-                executor.submit(processing, i)
 
         if config.verbose:
             print("[+] conversion finish! x_data, y_data loaded!")
