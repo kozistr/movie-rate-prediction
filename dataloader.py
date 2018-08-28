@@ -267,6 +267,9 @@ class DataLoader:
 class DataIterator:
 
     def __init__(self, x, y, batch_size):
+        # x, y should be numpy obj
+        assert not isinstance(x, list) and not isinstance(y, list)
+
         self.x = x
         self.y = y
 
