@@ -213,7 +213,7 @@ if __name__ == '__main__':
                                     })
 
                     if global_step % config.logging_step == 0:
-                        print("[*] epoch %d global step %d" % (epoch, global_step), " loss : {:.8f}".format(loss))
+                        print("[*] epoch %03d global step %07d" % (epoch, global_step), " loss : {:.8f}".format(loss))
 
                         # predictions
                         for sample_data in samples:
@@ -240,6 +240,7 @@ if __name__ == '__main__':
 
                         # Model save
                         model.saver.save(s, config.pretrained + '%s.ckpt' % config.model, global_step=global_step)
+                        print()
 
                     global_step += 1
 
