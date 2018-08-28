@@ -162,7 +162,8 @@ if __name__ == '__main__':
                                         })
                         print("[*] predict %s : %d" % (samples['comment'], predict))
 
-                        summary = s.run([model.merged],
+                        # summary
+                        summary = s.run(model.merged,
                                         feed_dict={
                                             model.x: x_train,
                                             model.y: y_train,
