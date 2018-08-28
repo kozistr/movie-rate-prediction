@@ -32,7 +32,7 @@ if __name__ == '__main__':
                     config=config)
 
     if config.verbose:
-        print("[+] DataSet loaded! Total %d samples" % len(ds.labels))
+        print("[+] DataSet loaded! Total %d samples" % len(ds))
 
     # DataSet Iterator
     di = DataIterator(x=ds.sentences, y=ds.labels, batch_size=config.batch_size)
