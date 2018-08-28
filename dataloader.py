@@ -260,6 +260,9 @@ class DataLoader:
         for i in tqdm(range(len(self.labels))):
             self.labels[i] = arr[int(self.labels[i]) - 1]  # 1 ~ 10
 
+    def __len__(self):
+        return len(self.sentences)
+
 
 class DataIterator:
 
