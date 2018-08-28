@@ -8,7 +8,7 @@ import tensorflow as tf
 from tqdm import tqdm
 from model import charcnn
 from config import get_config
-from concurrent.futures import ThreadPoolExecutor
+from matplotlib import pyplot as plt
 from dataloader import Doc2VecEmbeddings, DataLoader, DataIterator
 
 
@@ -37,6 +37,27 @@ samples = [
     {'rate': 7, 'comment': "띵작 그런데 좀 아쉽다..."},
     {'rate': 2, 'comment': "쓰레기... 에반데"},
 ]
+
+
+def data_distribution(y_: np.array, size: int = 10, img: str = 'dist.png') -> np.array:
+    # showing data distribution
+    y_dist = np.zeros((size,), dtype=np.int32)
+    for y in tqdm(y_):
+        y_dist[np.argmax(y, axis=-1)] += 1
+
+    plt.figure(figsize=(10, 8))
+
+    plt.xlabel('rate')
+    plt.ylabel('frequency')
+    plt.grid(True)
+
+    plt.bar(range(size), y_dist, width=.35, align='center', alpha=.5, label='rainfall')
+    plt.xticks(range(size), list(range(1, size + 1)))
+
+    plt.savefig(img)
+    plt.show()
+
+    return y_dist
 
 
 if __name__ == '__main__':
@@ -96,6 +117,21 @@ if __name__ == '__main__':
                 print("[+] data loaded from h5 file!")
                 print("[*] comment : ", x_data.shape)
                 print("[*] rate    : ", y_data.shape)
+
+    # show data rate distribution
+    y_dist = data_distribution(y_data)
+
+    # resizing the amount of rate-10 data
+    # 2.5M to 500K # downsize to 20%
+    rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if np.argmax(y, axis=-1) == 9]
+    rand_idx = np.random.choice(rate_10_idx, len(rate_10_idx) // 5)
+
+    x_data = np.delete(x_data, rand_idx)
+    y_data = np.delete(y_data, rand_idx)
+
+    if config.verbose:
+        print("[*] refined comment : ", x_data.shape)
+        print("[*] refined rate    : ", y_data.shape)
 
     data_size = x_data.shape[0]
 
@@ -168,9 +204,9 @@ if __name__ == '__main__':
                                                 model.x: sample,
                                                 model.do_rate: .0,
                                             })
-                            print("[*] predict %s : %d (expected %d)" % (sample_data['comment'],
-                                                                         predict,
-                                                                         sample_data['rate']))
+                            print("[*] predict %030s : %d (expected %d)" % (sample_data['comment'],
+                                                                            predict + 1,
+                                                                            sample_data['rate']))
 
                         # summary
                         summary = s.run(model.merged,
