@@ -22,9 +22,9 @@ network_arg.add_argument('--model', type=str, default='charcnn', choices=['charc
 network_arg.add_argument('--n_classes', type=int, default=1)
 network_arg.add_argument('--use_pre_trained_embeds', type=bool, default=True,
                          help='using Doc2Vec as embedding. If False, use character-level embedding')
-network_arg.add_argument('--kernel_size', type=list, default=[3, 4, 5],
+network_arg.add_argument('--kernel_size', type=list, default=[2, 3, 4, 5],
                          help='conv1d kernel size')
-network_arg.add_argument('--fc_unit', type=int, default=512)
+network_arg.add_argument('--fc_unit', type=int, default=256)
 network_arg.add_argument('--drop_out', type=int, default=.2,
                          help='dropout rate')
 network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
