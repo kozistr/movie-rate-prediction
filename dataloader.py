@@ -256,14 +256,14 @@ class DataLoader:
                     print("[-] ", line)
 
     @staticmethod
-    def to_one_hot(data: list, n_classes: int) -> list:
+    def to_one_hot(data, n_classes: int):
         arr = np.eye(n_classes)
         for i in tqdm(range(len(data))):
             data[i] = arr[int(data[i]) - 1]  # 1 ~ 10
         return data
 
     @staticmethod
-    def to_binary(data: list) -> list:
+    def to_binary(data):
         for i in tqdm(range(len(data))):
             data[i] = np.argmax(data[i], axis=-1) + 1
         return data
