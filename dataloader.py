@@ -143,7 +143,7 @@ class DataLoader:
 
         # if it's not binary class, convert into one-hot vector
         if not self.n_classes == 1:
-            self.to_one_hot()
+            self.labels = self.to_one_hot(self.labels, self.n_classes)
 
     def read_from_db(self):
         import pymysql
@@ -255,14 +255,18 @@ class DataLoader:
                 except IndexError:
                     print("[-] ", line)
 
-    def to_one_hot(self):
-        arr = np.eye(self.n_classes)
-        for i in tqdm(range(len(self.labels))):
-            self.labels[i] = arr[int(self.labels[i]) - 1]  # 1 ~ 10
+    @staticmethod
+    def to_one_hot(data: list, n_classes: int) -> list:
+        arr = np.eye(n_classes)
+        for i in tqdm(range(len(data))):
+            data[i] = arr[int(data[i]) - 1]  # 1 ~ 10
+        return data
 
-    def to_binary(self):
-        for i in tqdm(range(len(self.labels))):
-            self.labels[i] = np.argmax(self.labels[i], axis=-1) + 1
+    @staticmethod
+    def to_binary(data: list) -> list:
+        for i in tqdm(range(len(data))):
+            data[i] = np.argmax(data[i], axis=-1) + 1
+        return data
 
     def __len__(self):
         return len(self.sentences)
