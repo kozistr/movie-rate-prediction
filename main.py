@@ -1,4 +1,5 @@
 import time
+import h5py
 import argparse
 import numpy as np
 import tensorflow as tf
@@ -11,6 +12,7 @@ from dataloader import Doc2VecEmbeddings, DataLoader, DataIterator
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
 parser.add_argument('--checkpoint', type=str, help='pre-trained model', default=None)
+parser.add_argument('--save_to_h5', type=bool, help='saving vectorized processed data into h5', default=True)
 args = parser.parse_args()
 
 # parsed args
@@ -35,15 +37,22 @@ if __name__ == '__main__':
     if config.verbose:
         print("[+] DataSet loaded! Total %d samples" % len(ds))
 
-    # Doc2Vec Loader
-    vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)
-    if config.verbose:
-        print("[+] Doc2Vec loaded! Total %d pre-trained sentences, %d dims" % (len(vec), config.n_dims))
+    if config.use_pre_trained_embeds:
+        # Doc2Vec Loader
+        vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)
+        if config.verbose:
+            print("[+] Doc2Vec loaded! Total %d pre-trained sentences, %d dims" % (len(vec), config.embed_size))
+    else:
+        raise NotImplementedError("[-] character-level pre-processing not yet ready :(")
 
     # words Vectorization # type conversion
     for i in tqdm(range(len(ds))):
         ds.sentences[i] = vec.sent_to_vec(ds.sentences[i])
         ds.labels[i] = np.asarray(ds.labels[i])
+
+    print(type(ds.sentences), type(ds.labels))
+    ds.sentences = np.asarray(ds.sentences, dtype=np.float32)
+    ds.labels = np.asarray(ds.labels, dtype=np.uint8)
 
     # DataSet Iterator
     di = DataIterator(x=ds.sentences, y=ds.labels, batch_size=config.batch_size)
@@ -95,7 +104,7 @@ if __name__ == '__main__':
                                  feed_dict={
                                      model.x: x_train,
                                      model.y: y_train,
-                                     model.do_rate: config.do_rate,
+                                     model.do_rate: config.drop_out,
                                  })
 
                     if global_step % config.logging_step == 0:
