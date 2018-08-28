@@ -4,6 +4,7 @@ gensim
 soynlp
 konlpy
 tqdm
+h5py
 pymysql
 validators
 unicodecsv

@@ -17,6 +17,7 @@
 * gensim and konlpy and soynlp
 * mecab-ko
 * pymysql
+* h5py
 * tqdm
 * PyKoSpacing
 * (Optional) MultiTSNE (for visualization)
