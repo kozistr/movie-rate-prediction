@@ -51,11 +51,13 @@ class CharCNN:
                 labels=self.y,
                 predictions=self.rate
             ))
+            self.prediction = self.rate
         else:
             self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
                 logits=self.feat,
                 labels=self.y
             ))
+            self.prediction = tf.argmax(self.rate, axis=1)
 
         # Optimizer
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
