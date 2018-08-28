@@ -92,10 +92,10 @@ if __name__ == '__main__':
 
     if config.is_train:
         # GPU configure
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
+        gpu_config = tf.ConfigProto()
+        gpu_config.gpu_options.allow_growth = True
 
-        with tf.Session(config=config) as s:
+        with tf.Session(config=gpu_config) as s:
             if config.model == 'charcnn':
                 # Model Loaded
                 model = charcnn.CharCNN(s=s,
