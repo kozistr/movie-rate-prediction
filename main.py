@@ -9,6 +9,7 @@ from tqdm import tqdm
 from model import charcnn
 from config import get_config
 from matplotlib import pyplot as plt
+from sklearn.model_selection import train_test_split
 from dataloader import Doc2VecEmbeddings, DataLoader, DataIterator
 
 
@@ -156,10 +157,17 @@ if __name__ == '__main__':
             print("[*] refined comment : ", x_data.shape)
             print("[*] refined rate    : ", y_data.shape)
 
+    # shuffle data
+    split_rate = .2
+    x_train, x_valid, y_train, y_valid = train_test_split(x_data, y_data, random_state=config.seed, test_size=split_rate,
+        shuffle=True)
+    if config.verbose:
+        print("[*] train/test (%.1f/%.1f) split!" % (1. - split_rate, split_rate))
+
     data_size = x_data.shape[0]
 
     # DataSet Iterator
-    di = DataIterator(x=x_data, y=y_data, batch_size=config.batch_size)
+    di = DataIterator(x=x_train, y=y_train, batch_size=config.batch_size)
 
     if config.is_train:
         # GPU configure
@@ -207,12 +215,12 @@ if __name__ == '__main__':
 
             restored_epochs = global_step // (data_size // config.batch_size)
             for epoch in range(restored_epochs, config.epochs):
-                for x_train, y_train in di.iterate():
+                for x_tr, y_tr in di.iterate():
                     # training
                     _, loss = s.run([model.opt, model.loss],
                                     feed_dict={
-                                        model.x: x_train,
-                                        model.y: y_train,
+                                        model.x: x_tr,
+                                        model.y: y_tr,
                                         model.do_rate: config.drop_out,
                                     })
 
@@ -234,8 +242,8 @@ if __name__ == '__main__':
                         # summary
                         summary = s.run(model.merged,
                                         feed_dict={
-                                            model.x: x_train,
-                                            model.y: y_train,
+                                            model.x: x_tr,
+                                            model.y: y_tr,
                                             model.do_rate: .0,
                                         })
 
