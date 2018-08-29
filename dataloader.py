@@ -1,5 +1,6 @@
 import gc
 import csv
+import h5py
 import numpy as np
 
 from tqdm import tqdm
@@ -70,13 +71,82 @@ class Doc2VecEmbeddings:
 
 class EmbeddingVectorizer:
 
-    def __init__(self, vec, n_dims=300, vec_type='tf-idf', save_to_h5=None):
+    def __init__(self, x, y=None, vec=None, n_dims=300, vec_type='tf-idf',
+                 save_to_h5=None, load_from_h5=False,
+                 config=None):
+        self.x = x
+        self.y = y
+
         self.vec = vec
         self.n_dims = n_dims
         self.vec_type = vec_type
-        self.save_to_h5 = save_to_h5
 
         self.to_vec = vec.word_to_vec if str(vec) == 'Word2Vec' else vec.sent_to_vec
+
+        self.save_to_h5 = save_to_h5
+        self.load_from_h5 = load_from_h5
+
+        assert self.vec
+
+        if not self.load_from_h5:
+            # DataSet Loader
+            ds = DataLoader(file=config.processed_dataset,
+                            n_classes=config.n_classes,
+                            analyzer=None,
+                            is_analyzed=True,
+                            use_save=False,
+                            config=config)
+            ds_len = len(ds)
+
+            if config.verbose:
+                print("[+] DataSet loaded! Total %d samples" % ds_len)
+
+            # words Vectorization # type conversion
+            x_data = np.zeros((ds_len, config.embed_size), dtype=np.float32)
+            y_data = np.zeros((ds_len, config.n_classes), dtype=np.uint8)
+
+            for idx in tqdm(range(ds_len)):
+                x_data[idx] = self.to_vec(ds.sentences[idx])
+                y_data[idx] = np.asarray(ds.labels[idx])
+                ds.sentences[idx] = None
+                ds.labels[idx] = None
+
+            if config.verbose:
+                print("[+] conversion finish! x_data, y_data loaded!")
+
+            # delete DataSetLoader() from memory
+            ds = None
+            gc.collect()
+
+            if save_to_h5:
+                print("[*] start writing .h5 file...")
+                with h5py.File(save_to_h5, 'w') as h5fs:
+                    h5fs.create_dataset('comment', data=np.array(x_data))
+                    h5fs.create_dataset('rate', data=np.array(y_data))
+
+                if config.verbose:
+                    print("[+] data saved into h5 file!")
+        else:
+            with h5py.File(load_from_h5, 'r') as f:
+                x_data = np.array(f['comment'], dtype=np.float32)
+                y_data = np.array(f['rate'], dtype=np.uint8)
+
+                if not y_data.shape[1] == config.n_classes:
+                    print("[*] different 'n_classes' is detected with config file")
+                    new_y_data = np.zeros((len(y_data), config.n_classes), dtype=np.uint8)
+
+                    arr = np.eye(config.n_classes)
+                    for i in tqdm(range(len(y_data))):
+                        new_y_data[i] = arr[int(y_data[i]) - 1] if not config.n_classes == 1 \
+                            else np.argmax(y_data[i], axis=-1) + 1
+
+                    y_data = new_y_data[:]
+                    del new_y_data, arr
+
+                if config.verbose:
+                    print("[+] data loaded from h5 file!")
+                    print("[*] comment : ", x_data.shape)
+                    print("[*] rate    : ", y_data.shape)
 
     def mean_embedding(self, sentences: list) -> np.array:
         return np.array([
