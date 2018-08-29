@@ -37,14 +37,17 @@ class Word2VecEmbeddings:
         return self.w2v_model.wv[input_word]
 
     def words_to_index(self, input_words: list) -> list:
+        """
         idx = []
         for word in input_words:
             try:
                 idx.append(self.w2v_model.wv.vocab[word].index)
             except KeyError:
-                print("[=] %s missing..." % word)
+                # print("[-] %s missing..." % word)
                 idx.append(0)
         return idx
+        """
+        return [self.w2v_model.wv.vocab[word].index if word in self.w2v_model.wv.vocab else 0 for word in input_words]
 
     def __len__(self):
         return len(self.w2v_model.wv.vocab)
