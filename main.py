@@ -16,11 +16,13 @@ parser = argparse.ArgumentParser(description='train/test movie review classifica
 parser.add_argument('--checkpoint', type=str, help='pre-trained model', default=None)
 parser.add_argument('--save_to_h5', type=str, help='saving vectorized processed data into h5', default=None)
 parser.add_argument('--load_from_h5', type=str, help='loading vectorized processed data from h5', default=None)
+parser.add_argument('--refine_data', type=bool, help='solving data imbalance problem', default=False)
 args = parser.parse_args()
 
 # parsed args
 checkpoint = args.checkpoint
 save_to_h5 = args.save_to_h5
+refine_data = args.refine_data
 load_from_h5 = args.load_from_h5
 
 # Configuration
@@ -138,20 +140,21 @@ if __name__ == '__main__':
     # show data rate distribution
     # y_dist = data_distribution(y_data, config.n_classes)
 
-    # resizing the amount of rate-10 data
-    # 2.5M to 500K # downsize to 20%
-    if not config.n_classes == 1:
-        rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if np.argmax(y, axis=-1) == 9]
-    else:
-        rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if y == 10]
-    rand_idx = np.random.choice(rate_10_idx, 4 * len(rate_10_idx) // 5)
+    if refine_data:
+        # resizing the amount of rate-10 data
+        # 2.5M to 500K # downsize to 20%
+        if not config.n_classes == 1:
+            rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if np.argmax(y, axis=-1) == 9]
+        else:
+            rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if y == 10]
+        rand_idx = np.random.choice(rate_10_idx, 4 * len(rate_10_idx) // 5)
 
-    x_data = np.delete(x_data, rand_idx, axis=0).reshape(-1, config.embed_size)
-    y_data = np.delete(y_data, rand_idx, axis=0).reshape(-1, config.n_classes)
+        x_data = np.delete(x_data, rand_idx, axis=0).reshape(-1, config.embed_size)
+        y_data = np.delete(y_data, rand_idx, axis=0).reshape(-1, config.n_classes)
 
-    if config.verbose:
-        print("[*] refined comment : ", x_data.shape)
-        print("[*] refined rate    : ", y_data.shape)
+        if config.verbose:
+            print("[*] refined comment : ", x_data.shape)
+            print("[*] refined rate    : ", y_data.shape)
 
     data_size = x_data.shape[0]
 
