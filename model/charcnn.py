@@ -99,6 +99,7 @@ class CharCNN:
         # Mode Saver/Summary
         tf.summary.scalar('loss/loss', self.loss)
         tf.summary.scalar('misc/lr', self.lr)
+        tf.summary.scalar('misc/acc', self.accuracy)
 
         # Merge summary
         self.merged = tf.summary.merge_all()
