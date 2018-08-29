@@ -104,7 +104,7 @@ class CharCNN:
         self.writer = tf.summary.FileWriter(self.summary, self.s.graph)
 
     def build_model(self):
-        with tf.name_scope('embeddings'):
+        with tf.device('/cpu:0'), tf.name_scope('embeddings'):
             spatial_do = tf.contrib.keras.layers.SpatialDropout1D(self.do_rate)
 
             embeds = tf.nn.embedding_lookup(self.embeddings, self.x)
