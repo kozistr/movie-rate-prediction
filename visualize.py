@@ -14,12 +14,10 @@ from MulticoreTSNE import MulticoreTSNE as TSNE
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 # font
-path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
+path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'  # Korean font is needed!
 # path = 'C:\\Windows\\Fonts\\NanumGothic.ttf'
 font_name = fm.FontProperties(fname=path, size=16).get_name()
 plt.rc('font', family=font_name)
-
-print("[*] FONT")
 
 
 def tsne_plot(model):
@@ -40,19 +38,15 @@ def tsne_plot(model):
     }
     tsne_model = TSNE(**config)
     
-    vals = tsne_model.fit_transform(np.asarray(tokens))
+    val = tsne_model.fit_transform(np.asarray(tokens))
     print("[*] t-SNE training done!")
-    
-    x, y = [], []
-    for v in tqdm(vals):
-        x.append(v[0])
-        y.append(v[1])
 
-    print("[*] x, y")
+    x = [v[0] for v in tqdm(val)]
+    y = [v[1] for v in tqdm(val)]
 
     plt.figure(figsize=(32, 32))
     plt.title('w2v embeddings vis')
-    
+
     for i in tqdm(range(len(x))):
         plt.scatter(x[i], y[i]) 
         plt.annotate(labels[i], xy=(x[i], y[i]), xytext=(5, 2),
@@ -62,7 +56,8 @@ def tsne_plot(model):
     plt.show()
 
 
-model = Word2Vec.load('ko_w2v.model')
-print("[+] w2v model loaded!")
+if __name__ == '__main__':
+    w2v_model = Word2Vec.load('ko_w2v.model')
+    print("[+] w2v model loaded!")
 
-tsne_plot(model)
+    tsne_plot(w2v_model)
