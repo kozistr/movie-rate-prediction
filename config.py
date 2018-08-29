@@ -24,7 +24,7 @@ network_arg.add_argument('--use_pre_trained_embeds', type=bool, default=True,
                          help='using Doc2Vec as embedding. If False, use character-level embedding')
 network_arg.add_argument('--kernel_size', type=list, default=[2, 3, 4, 5],
                          help='conv1d kernel size')
-network_arg.add_argument('--fc_unit', type=int, default=256)
+network_arg.add_argument('--fc_unit', type=int, default=1024)
 network_arg.add_argument('--drop_out', type=int, default=.2,
                          help='dropout rate')
 network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
@@ -35,14 +35,14 @@ network_arg.add_argument('--act_threshold', type=float, default=1e-6,
 data_arg = add_arg_group('DataSet')
 data_arg.add_argument('--embed_size', type=int, default=300,
                       help='the size of Doc2Vec embedding vector')
-data_arg.add_argument('--batch_size', type=int, default=128)
+data_arg.add_argument('--batch_size', type=int, default=256)
 data_arg.add_argument('--n_threads', type=int, default=8,
                       help='the number of workers for speeding up')
 
 # Train/Test hyper-parameters
 train_arg = add_arg_group('Training')
 train_arg.add_argument('--is_train', type=bool, default=True)
-train_arg.add_argument('--epochs', type=int, default=150)
+train_arg.add_argument('--epochs', type=int, default=100)
 train_arg.add_argument('--logging_step', type=int, default=500)
 train_arg.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'sgd'])
 train_arg.add_argument('--lr', type=float, default=2e-4)
