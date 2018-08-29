@@ -5,6 +5,7 @@ import numpy as np
 from tqdm import tqdm
 from soynlp.normalizer import *
 from bs4 import BeautifulSoup as bs
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 class Word2VecEmbeddings:
@@ -32,8 +33,14 @@ class Word2VecEmbeddings:
             if vec is not None:
                 self.embeds[i] = vec
 
+    def word_to_vec(self, input_word: str) -> np.array:
+        return self.w2v_model.wv[input_word]
+
     def __len__(self):
         return len(self.w2v_model.wv.vocab)
+
+    def __str__(self):
+        return "Word2Vec"
 
 
 class Doc2VecEmbeddings:
@@ -57,6 +64,29 @@ class Doc2VecEmbeddings:
 
     def __len__(self):
         return len(self.d2v_model.wv.vocab)
+
+    def __str__(self):
+        return "Doc2Vec"
+
+
+class EmbeddingVectorizer:
+
+    def __init__(self, vec, n_dims=300, vec_type='tf-idf', save_to_h5=None):
+        self.vec = vec
+        self.n_dims = n_dims
+        self.vec_type = vec_type
+        self.save_to_h5 = save_to_h5
+
+        self.to_vec = vec.word_to_vec if str(vec) == 'Word2Vec' else vec.sent_to_vec
+
+    def mean_embedding(self, sentences: list) -> np.array:
+        return np.array([
+            np.mean([self.to_vec[word] for word in sentence if self.to_vec[word]] or [np.zeros(self.n_dims)], axis=0)
+            for sentence in sentences
+        ])
+
+    def tf_idf_embedding(self, sentences: list) -> np.array:
+        pass
 
 
 class DataLoader:
