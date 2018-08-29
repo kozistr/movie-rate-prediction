@@ -41,10 +41,15 @@ class CharCNN:
             # uncompleted feature
             self.embeddings = tf.get_variable('embeddings', shape=[self.vocab_size, self.n_dims],
                                               initializer=self.he_uni, trainable=False)
-        elif self.mode == 'non-static':
+        elif self.mode == 'non-static' and self.mode == 'rand':
             self.embeddings = tf.get_variable('embeddings', shape=[self.vocab_size, self.n_dims],
                                               initializer=self.he_uni, trainable=True)
-        self.embeddings = self.embeddings.assign(self.w2v_embeds)
+        else:
+            raise NotImplementedError("[-] static or non-static or rand only!")
+
+        if not self.mode == 'rand':
+            assert self.w2v_embeds
+            self.embeddings = self.embeddings.assign(self.w2v_embeds)
 
         self.x = tf.placeholder(tf.float32, shape=[None, self.n_dims], name='x-sentence')
         self.y = tf.placeholder(tf.float32, shape=[None, self.n_classes], name='y-label')  # one-hot or int
