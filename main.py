@@ -108,7 +108,8 @@ if __name__ == '__main__':
     # Stage 3 : to index
     x_data = np.zeros((len(ds), config.sequence_length), dtype=np.int32)
     for i in tqdm(range(len(x_data))):
-        x_data[i] = vectors.words_to_index(ds.sentences[i][:config.sequence_length])
+        x_data[i] = np.pad(vectors.words_to_index(ds.sentences[i][:config.sequence_length]),
+                           (0, config.sequence_length), 'constant')
         del ds.sentences[i]
 
     x_data = np.array(x_data)
