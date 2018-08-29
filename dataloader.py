@@ -5,7 +5,6 @@ import numpy as np
 from tqdm import tqdm
 from soynlp.normalizer import *
 from bs4 import BeautifulSoup as bs
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 class Word2VecEmbeddings:
@@ -86,7 +85,22 @@ class EmbeddingVectorizer:
         ])
 
     def tf_idf_embedding(self, sentences: list) -> np.array:
-        pass
+        from collections import defaultdict
+        from sklearn.feature_extraction.text import TfidfVectorizer
+
+        tf_idf = TfidfVectorizer(analyzer=lambda x: x)
+        tf_idf.fit(sentences)
+
+        max_idf = max(tf_idf.idf_)
+        word2weight = defaultdict(
+            lambda: max_idf,
+            [(w, tf_idf.idf_[i]) for w, i in tf_idf.vocabulary_.items()]
+        )
+
+        return np.array([
+            np.mean([self.to_vec[word] * word2weight[word] for word in sentence if self.to_vec[word]] or
+                    [np.zeros(self.n_dims)], axis=0) for sentence in sentences
+        ])
 
 
 class DataLoader:
