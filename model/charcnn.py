@@ -53,6 +53,8 @@ class CharCNN:
             assert self.w2v_embeds
             self.embeddings = self.embeddings.assign(self.w2v_embeds)
 
+            print("[+] Word2Vec pre-trained model loaded!")
+
         self.x = tf.placeholder(tf.int32, shape=[None, self.sequence_length], name='x-sentence')
         self.y = tf.placeholder(tf.float32, shape=[None, self.n_classes], name='y-label')  # one-hot or int
         self.do_rate = tf.placeholder(tf.float32, name='do-rate')
@@ -69,7 +71,6 @@ class CharCNN:
 
             self.prediction = self.rate
             self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.y, self.prediction)), dtype=tf.float32)
-
         else:
             self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
                 logits=self.feat,
