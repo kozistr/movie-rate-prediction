@@ -21,9 +21,9 @@ network_arg = add_arg_group('Network')
 network_arg.add_argument('--mode', type=str, default='static', choices=['static', 'non-static'])
 network_arg.add_argument('--model', type=str, default='charcnn', choices=['charcnn', 'charrnn'])
 network_arg.add_argument('--n_classes', type=int, default=1)
-network_arg.add_argument('--use_pre_trained_embeds', type=bool, default=True,
-                         help='using Doc2Vec as embedding. If False, use character-level embedding')
-network_arg.add_argument('--kernel_size', type=list, default=[2, 3, 4, 5],
+network_arg.add_argument('--use_pre_trained_embeds', type=str, default='w2v', choices=['w2v', 'd2v', None],
+                         help='using Word/Doc2Vec/None as embedding.')
+network_arg.add_argument('--kernel_size', type=list, default=[2, 3, 4],
                          help='conv1d kernel size')
 network_arg.add_argument('--fc_unit', type=int, default=1024)
 network_arg.add_argument('--drop_out', type=int, default=.2,
@@ -36,7 +36,7 @@ network_arg.add_argument('--act_threshold', type=float, default=1e-6,
 data_arg = add_arg_group('DataSet')
 data_arg.add_argument('--embed_size', type=int, default=300,
                       help='the size of Doc2Vec embedding vector')
-data_arg.add_argument('--batch_size', type=int, default=256)
+data_arg.add_argument('--batch_size', type=int, default=128)
 data_arg.add_argument('--n_threads', type=int, default=8,
                       help='the number of workers for speeding up')
 
