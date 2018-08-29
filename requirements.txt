@@ -6,6 +6,3 @@ konlpy
 tqdm
 h5py
 pymysql
-validators
-unicodecsv
-MulticoreTSNE

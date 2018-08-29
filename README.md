@@ -37,7 +37,10 @@
 
 ## Usage
 ### 1.1 Installing Dependencies
+    # Necessary
     $ sudo python3 -m pip install -r requirements.txt
+    # Optional
+    $ sudo python3 -m pip install -r opt_requirements.txt
 ### 1.2 Configuration
     # In ```config.py```, there're lots of params for scripts. plz re-setting
 ### 2. Parsing the DataSet
