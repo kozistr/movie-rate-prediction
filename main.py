@@ -115,7 +115,8 @@ if __name__ == '__main__':
     x_train, x_valid, y_train, y_valid = train_test_split(x_data, y_data, random_state=config.seed,
                                                           test_size=config.test_size, shuffle=True)
     if config.verbose:
-        print("[*] train/test (%.1f/%.1f) split!" % (1. - config.test_size, config.test_size))
+        print("[*] train/test %d/%d(%.1f/%.1f) split!" % (len(y_train), len(y_valid),
+                                                          1. - config.test_size, config.test_size))
 
     del x_data, y_data
 
