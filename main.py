@@ -9,7 +9,7 @@ from tqdm import tqdm
 from model import charcnn
 from config import get_config
 from sklearn.model_selection import train_test_split
-from dataloader import Doc2VecEmbeddings, DataLoader, DataIterator
+from dataloader import Word2VecEmbeddings, Doc2VecEmbeddings, DataLoader, DataIterator
 
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
@@ -69,15 +69,25 @@ def data_distribution(y_: np.array, size: int = 10, img: str = 'dist.png') -> np
     return y_dist
 
 
-if __name__ == '__main__':
-    # Loading Doc2Vec Model
-    if config.use_pre_trained_embeds:
-        # Doc2Vec Loader
-        vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)
+def load_trained_embeds(embed_mode: str = 'w2v'):
+    if embed_mode == 'd2v':
+        vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)  # Doc2Vec Loader
         if config.verbose:
             print("[+] Doc2Vec loaded! Total %d pre-trained sentences, %d dims" % (len(vec), config.embed_size))
+    elif embed_mode == 'd2v':
+        vec = Word2VecEmbeddings(config.w2v_model, config.embed_size)  # WOrd2Vec Loader
+        if config.verbose:
+            print("[+] Word2Vec loaded! Total %d pre-trained words, %d dims" % (len(vec), config.embed_size))
     else:
         raise NotImplementedError("[-] character-level pre-processing not yet ready :(")
+    return vec
+
+
+if __name__ == '__main__':
+    # Stage 1 : loading trained embeddings
+    vectors = load_trained_embeds(config.use_pre_trained_embeds)
+
+    # Stage 2 : loading DataSet
 
     if not load_from_h5:
         # DataSet Loader
@@ -97,7 +107,7 @@ if __name__ == '__main__':
         y_data = np.zeros((ds_len, config.n_classes), dtype=np.uint8)
 
         for idx in tqdm(range(ds_len)):
-            x_data[idx] = vec.sent_to_vec(ds.sentences[idx])
+            x_data[idx] = vectors.sent_to_vec(ds.sentences[idx])
             y_data[idx] = np.asarray(ds.labels[idx])
             ds.sentences[idx] = None
             ds.labels[idx] = None
