@@ -104,12 +104,18 @@ if __name__ == '__main__':
                     is_analyzed=True,
                     use_save=False,
                     config=config)  # DataSet Loader
+    ds_len = len(ds)
 
     # Stage 3 : to index
-    x_data = np.zeros((len(ds), config.sequence_length), dtype=np.int32)
-    for i in tqdm(range(len(x_data))):
-        x_data[i] = np.pad(vectors.words_to_index(ds.sentences[i][:config.sequence_length]),
-                           (0, config.sequence_length), 'constant')
+    x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
+    for i in tqdm(range(ds_len)):
+        sent = ds.sentences[i][:config.sequence_length]
+        try:
+            x_data[i] = np.pad(vectors.words_to_index(sent),
+                               (0, config.sequence_length - len(sent)), 'constant', constant_values=ds_len)
+        except ValueError:
+            raise ValueError(i, sent)
+        # index 0 : . # so we need to fill with meaningless number
         del ds.sentences[i]
 
     x_data = np.array(x_data)
