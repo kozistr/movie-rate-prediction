@@ -8,7 +8,6 @@ import tensorflow as tf
 from tqdm import tqdm
 from model import charcnn
 from config import get_config
-from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from dataloader import Doc2VecEmbeddings, DataLoader, DataIterator
 
@@ -45,6 +44,8 @@ samples = [
 
 
 def data_distribution(y_: np.array, size: int = 10, img: str = 'dist.png') -> np.array:
+    from matplotlib import pyplot as plt
+
     # showing data distribution
     y_dist = np.zeros((10,), dtype=np.int32)
     for y in tqdm(y_):
