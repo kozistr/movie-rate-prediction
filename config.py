@@ -53,8 +53,6 @@ train_arg.add_argument('--test_size', type=float, default=.2)
 
 # Korean words Pre-Processing
 nlp_model = add_arg_group('NLP')
-nlp_model.add_argument('--w2v_model', type=str, default='./w2v/ko_w2v.model')
-nlp_model.add_argument('--d2v_model', type=str, default='./w2v/ko_d2v.model')
 nlp_model.add_argument('--analyzer', type=str, default='mecab', choices=['mecab', 'hannanum', 'twitter'],
                        help='korean pos analyzer')
 nlp_model.add_argument('--use_correct_spacing', type=bool, default=False,
@@ -71,8 +69,8 @@ misc_arg.add_argument('--dataset', type=str, default='data.csv')
 misc_arg.add_argument('--processed_dataset', type=str, default='tagged_data.csv',
                       help='already processed data file')
 misc_arg.add_argument('--pretrained', type=str, default='./ml_model/')
-misc_arg.add_argument('--w2v_model', type=str, default='ko_w2v.model')
-misc_arg.add_argument('--d2v_model', type=str, default='ko_d2v.model')
+misc_arg.add_argument('--w2v_model', type=str, default='./w2v/ko_w2v.model')
+misc_arg.add_argument('--d2v_model', type=str, default='./w2v/ko_d2v.model')
 misc_arg.add_argument('--seed', type=int, default=1337)
 misc_arg.add_argument('--jvm_path', type=str, default="C:\\Program Files\\Java\\jre-9\\bin\\server\\jvm.dll")
 misc_arg.add_argument('--verbose', type=bool, default=True)
