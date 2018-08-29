@@ -36,6 +36,10 @@ network_arg.add_argument('--act_threshold', type=float, default=1e-6,
 data_arg = add_arg_group('DataSet')
 data_arg.add_argument('--embed_size', type=int, default=300,
                       help='the size of Doc2Vec embedding vector')
+data_arg.add_argument('--vocab_size', type=int, default=122351, help='default is w2v vocab size')
+data_arg.add_argument('--sequence_length', type=int, default=100,
+                      help='the length of the sentence, default is w2v max words cnt.'
+                           'In case of char-level, 400 is preferred')
 data_arg.add_argument('--batch_size', type=int, default=128)
 data_arg.add_argument('--n_threads', type=int, default=8,
                       help='the number of workers for speeding up')

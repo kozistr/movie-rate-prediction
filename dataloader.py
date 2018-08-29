@@ -36,6 +36,9 @@ class Word2VecEmbeddings:
     def word_to_vec(self, input_word: str) -> np.array:
         return self.w2v_model.wv[input_word]
 
+    def words_to_index(self, input_words: list) -> list:
+        return [self.w2v_model.wv.vocab[word].index for word in input_words]
+
     def __len__(self):
         return len(self.w2v_model.wv.vocab)
 

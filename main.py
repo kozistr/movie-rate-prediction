@@ -7,7 +7,7 @@ from tqdm import tqdm
 from model import charcnn
 from config import get_config
 from sklearn.model_selection import train_test_split
-from dataloader import Word2VecEmbeddings, Doc2VecEmbeddings, EmbeddingVectorLoader, DataIterator
+from dataloader import Word2VecEmbeddings, Doc2VecEmbeddings, DataLoader, DataIterator
 
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
@@ -72,7 +72,7 @@ def load_trained_embeds(embed_mode: str = 'w2v'):
         vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)  # Doc2Vec Loader
         if config.verbose:
             print("[+] Doc2Vec loaded! Total %d pre-trained sentences, %d dims" % (len(vec), config.embed_size))
-    elif embed_mode == 'd2v':
+    elif embed_mode == 'w2v':
         vec = Word2VecEmbeddings(config.w2v_model, config.embed_size)  # WOrd2Vec Loader
         if config.verbose:
             print("[+] Word2Vec loaded! Total %d pre-trained words, %d dims" % (len(vec), config.embed_size))
@@ -85,15 +85,37 @@ if __name__ == '__main__':
     # Stage 1 : loading trained embeddings
     vectors = load_trained_embeds(config.use_pre_trained_embeds)
 
+    """
     # Stage 2 : loading vectorized data
+
     embed_vectors = EmbeddingVectorLoader(vec=vectors,
                                           vec_type='tf-idf',
                                           save_to_h5=config.save_to_h5,
                                           load_from_h5=config.load_from_h5,
                                           config=config)
     x_data, y_data = embed_vectors.x_data, embed_vectors.y_data
-
     del embed_vectors
+    """
+
+    # Stage 2 : loading tokenize data
+    ds = DataLoader(file=config.processed_dataset,
+                    n_classes=config.n_classes,
+                    analyzer=None,
+                    is_analyzed=True,
+                    use_save=False,
+                    config=config)  # DataSet Loader
+
+    # Stage 3 : to index
+    x_data = np.zeros((len(ds), config.sequence_length), dtype=np.int32)
+    for i in tqdm(range(len(x_data))):
+        x_data[i] = vectors.words_to_index(ds.sentences[i][:config.sequence_length])
+        del ds.sentences[i]
+
+    x_data = np.array(x_data)
+    y_data = np.array(ds.labels)
+
+    ds = None
+    del ds
 
     if refine_data:
         # resizing the amount of rate-10 data
@@ -139,8 +161,9 @@ if __name__ == '__main__':
                                         mode=config.mode,
                                         n_classes=config.n_classes,
                                         optimizer=config.optimizer,
-                                        dims=config.embed_size,
+                                        n_dims=config.embed_size,
                                         vocab_size=config.vocab_size,
+                                        sequence_length=config.sequence_length,
                                         lr=config.lr,
                                         lr_decay=config.lr_decay,
                                         lr_lower_boundary=config.lr_lower_boundary,

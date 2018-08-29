@@ -5,14 +5,16 @@ import tensorflow as tf
 class CharCNN:
 
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
-                 vocab_size=122351, dims=300, seed=1337, optimizer='adam',
+                 vocab_size=122351, sequence_length=400, n_dims=300, seed=1337, optimizer='adam',
                  filter_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
                  lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6,
                  summary=None, mode='static', w2v_embeds=None):
         self.s = s
-        self.n_dims = dims
+        self.n_dims = n_dims
         self.n_classes = n_classes
         self.vocab_size = vocab_size
+        self.sequence_length = sequence_length
+
         self.batch_size = batch_size
         self.epochs = epochs
 
@@ -51,7 +53,7 @@ class CharCNN:
             assert self.w2v_embeds
             self.embeddings = self.embeddings.assign(self.w2v_embeds)
 
-        self.x = tf.placeholder(tf.float32, shape=[None, self.n_dims], name='x-sentence')
+        self.x = tf.placeholder(tf.int32, shape=[None, self.sequence_length], name='x-sentence')
         self.y = tf.placeholder(tf.float32, shape=[None, self.n_classes], name='y-label')  # one-hot or int
         self.do_rate = tf.placeholder(tf.float32, name='do-rate')
 
