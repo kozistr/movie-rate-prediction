@@ -64,6 +64,7 @@ nlp_model.add_argument('--vec_lr_decay', type=float, default=2e-3)
 
 # Misc
 misc_arg = add_arg_group('Misc')
+misc_arg.add_argument('--device', type=str, default='gpu')
 misc_arg.add_argument('--query_path', type=str, default='./comments/')
 misc_arg.add_argument('--dataset', type=str, default='data.csv')
 misc_arg.add_argument('--processed_dataset', type=str, default='tagged_data.csv',

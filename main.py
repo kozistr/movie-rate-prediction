@@ -7,7 +7,7 @@ from tqdm import tqdm
 from model import charcnn
 from config import get_config
 from sklearn.model_selection import train_test_split
-from dataloader import Word2VecEmbeddings, Doc2VecEmbeddings, DataLoader, DataIterator
+from dataloader import Word2VecEmbeddings, Doc2VecEmbeddings, EmbeddingVectorLoader, DataIterator
 
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
@@ -85,12 +85,15 @@ if __name__ == '__main__':
     # Stage 1 : loading trained embeddings
     vectors = load_trained_embeds(config.use_pre_trained_embeds)
 
-    # Stage 2 : loading DataSet
+    # Stage 2 : loading vectorized data
+    embed_vectors = EmbeddingVectorLoader(vec=vectors,
+                                          vec_type='tf-idf',
+                                          save_to_h5=config.save_to_h5,
+                                          load_from_h5=config.load_from_h5,
+                                          config=config)
+    x_data, y_data = embed_vectors.x_data, embed_vectors.y_data
 
-
-
-    # show data rate distribution
-    # y_dist = data_distribution(y_data, config.n_classes)
+    del embed_vectors
 
     if refine_data:
         # resizing the amount of rate-10 data
@@ -114,17 +117,21 @@ if __name__ == '__main__':
     if config.verbose:
         print("[*] train/test (%.1f/%.1f) split!" % (1. - config.test_size, config.test_size))
 
+    del x_data, y_data
+
     data_size = x_data.shape[0]
 
     # DataSet Iterator
     di = DataIterator(x=x_train, y=y_train, batch_size=config.batch_size)
 
-    if config.is_train:
-        # GPU configure
-        gpu_config = tf.ConfigProto()
-        gpu_config.gpu_options.allow_growth = True
+    if config.device == 'gpu':
+        dev_config = tf.ConfigProto()
+        dev_config.gpu_options.allow_growth = True
+    else:
+        dev_config = None
 
-        with tf.Session(config=gpu_config) as s:
+    if config.is_train:
+        with tf.Session(config=dev_config) as s:
             if config.model == 'charcnn':
                 # Model Loaded
                 model = charcnn.CharCNN(s=s,
@@ -132,6 +139,7 @@ if __name__ == '__main__':
                                         n_classes=config.n_classes,
                                         optimizer=config.optimizer,
                                         dims=config.embed_size,
+                                        vocab_size=config.vocab_size,
                                         lr=config.lr,
                                         lr_decay=config.lr_decay,
                                         lr_lower_boundary=config.lr_lower_boundary,
