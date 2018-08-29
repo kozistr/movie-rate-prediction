@@ -5,7 +5,7 @@ import tensorflow as tf
 class CharCNN:
 
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
-                 vocab_size=122352, dims=300, seed=1337, optimizer='adam',
+                 vocab_size=122351, dims=300, seed=1337, optimizer='adam',
                  filter_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
                  lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6,
                  summary=None, mode='static', w2v_embeds=None):

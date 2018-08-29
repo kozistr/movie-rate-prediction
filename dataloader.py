@@ -88,6 +88,13 @@ class EmbeddingVectorLoader:
 
         assert self.vec
 
+        if self.vec_type == 'tf-idf':
+            self.vec_type = self.tf_idf_embedding
+        elif self.vec_type == 'average':
+            self.vec_type = self.mean_embedding
+        else:
+            raise NotImplementedError("[-] Only tf-idf and average")
+
         if not self.load_from_h5:
             ds = DataLoader(file=config.processed_dataset,
                             n_classes=config.n_classes,
@@ -101,14 +108,23 @@ class EmbeddingVectorLoader:
                 print("[+] DataSet loaded! Total %d samples" % ds_len)
 
             # words Vectorization # type conversion
-            self.x_data = np.zeros((ds_len, config.embed_size), dtype=np.float32)
             self.y_data = np.zeros((ds_len, config.n_classes), dtype=np.uint8)
 
-            for idx in tqdm(range(ds_len)):
-                self.x_data[idx] = self.to_vec(ds.sentences[idx])
-                self.y_data[idx] = np.asarray(ds.labels[idx])
-                ds.sentences[idx] = None
-                ds.labels[idx] = None
+            if config.use_pre_trained_embeds == 'd2v':
+                self.x_data = np.zeros((ds_len, config.embed_size), dtype=np.float32)
+
+                for idx in tqdm(range(ds_len)):
+                    self.x_data[idx] = self.to_vec(ds.sentences[idx])
+                    self.y_data[idx] = np.asarray(ds.labels[idx])
+                    ds.sentences[idx] = None
+                    ds.labels[idx] = None
+            else:
+                self.x_data = self.vec_type(ds.sentences)
+                del ds.sentences
+
+                for idx in tqdm(range(ds_len)):
+                    self.y_data[idx] = np.asarray(ds.labels[idx])
+                    ds.labels[idx] = None
 
             if config.verbose:
                 print("[+] conversion finish! x_data, y_data loaded!")
@@ -150,7 +166,7 @@ class EmbeddingVectorLoader:
     def mean_embedding(self, sentences: list) -> np.array:
         return np.array([
             np.mean([self.to_vec[word] for word in sentence if self.to_vec[word]] or [np.zeros(self.n_dims)], axis=0)
-            for sentence in sentences
+            for sentence in tqdm(sentences)
         ])
 
     def tf_idf_embedding(self, sentences: list) -> np.array:
@@ -168,7 +184,7 @@ class EmbeddingVectorLoader:
 
         return np.array([
             np.mean([self.to_vec[word] * word2weight[word] for word in sentence if self.to_vec[word]] or
-                    [np.zeros(self.n_dims)], axis=0) for sentence in sentences
+                    [np.zeros(self.n_dims)], axis=0) for sentence in tqdm(sentences)
         ])
 
 
