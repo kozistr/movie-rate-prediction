@@ -110,11 +110,8 @@ if __name__ == '__main__':
     x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
     for i in tqdm(range(ds_len)):
         sent = ds.sentences[i][:config.sequence_length]
-        try:
-            x_data[i] = np.pad(vectors.words_to_index(sent),
-                               (0, config.sequence_length - len(sent)), 'constant', constant_values=ds_len)
-        except ValueError:
-            raise ValueError(i, sent)
+        x_data[i] = np.pad(vectors.words_to_index(sent),
+                           (0, config.sequence_length - len(sent)), 'constant', constant_values=ds_len)
         # index 0 : . # so we need to fill with meaningless number
         del ds.sentences[i]
 
