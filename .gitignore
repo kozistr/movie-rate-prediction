@@ -108,3 +108,11 @@ ENV/
 
 # DataSet queries
 /comments
+
+# trained models
+/d2v
+/w2v
+/ml_model
+
+# dataset files
+*.csv

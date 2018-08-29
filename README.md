@@ -64,13 +64,19 @@
 ├── comments          (NAVER Movie Review DataSets)
 │    ├── 10000.sql
 │    ├── ...
-│    └── 200000.sql   
+│    └── 200000.sql
+├── w2v               (Word2Vec)
+│    ├── ko_w2v.model (Word2Vec trained gensim model)
+│    └── ...
+├── d2v               (Doc2Vec)
+│    ├── ko_d2v.model (Dov2Vec trained gensim model)
+│    └── ...
 ├── model             (Movie Review Rate ML Models)
 │    ├── charcnn.py
 │    ├── ...
 │    └── charrnn.py
 ├── config.py         (Configuration)
-├── util.py           (utils)
+├── tfutil.py         (handy tfutils)
 ├── dataloader.py     (Doc/Word2Vec model loader)
 ├── movie-parser.py   (NAVER Movie Review Parser)
 ├── db.py             (DataBase processing)
@@ -85,11 +91,15 @@ Here's a **google drive link**. You can download pre-trained models from [~~here
 
 ## Models
 
-* CharCNN (optimized)
+* Char/TextCNN (optimized)
 
 soon!
 
-* CharRNN (planned)
+* Char/TextRNN (planned)
+
+soon!
+
+* Simple Convolutional Neural Networks
 
 soon!
 

@@ -41,7 +41,7 @@ class CharCNN:
             # uncompleted feature
             self.embeddings = tf.get_variable('embeddings', shape=[self.vocab_size, self.n_dims],
                                               initializer=self.he_uni, trainable=False)
-        else:
+        elif self.mode == 'non-static':
             self.embeddings = tf.get_variable('embeddings', shape=[self.vocab_size, self.n_dims],
                                               initializer=self.he_uni, trainable=True)
         self.embeddings = self.embeddings.assign(self.w2v_embeds)

@@ -53,6 +53,8 @@ train_arg.add_argument('--test_size', type=float, default=.2)
 
 # Korean words Pre-Processing
 nlp_model = add_arg_group('NLP')
+nlp_model.add_argument('--w2v_model', type=str, default='./w2v/ko_w2v.model')
+nlp_model.add_argument('--d2v_model', type=str, default='./w2v/ko_d2v.model')
 nlp_model.add_argument('--analyzer', type=str, default='mecab', choices=['mecab', 'hannanum', 'twitter'],
                        help='korean pos analyzer')
 nlp_model.add_argument('--use_correct_spacing', type=bool, default=False,
