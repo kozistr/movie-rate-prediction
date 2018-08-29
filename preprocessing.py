@@ -5,22 +5,25 @@ from tqdm import tqdm
 from config import get_config
 from dataloader import DataLoader
 from collections import namedtuple
-from gensim.models import word2vec, Doc2Vec
 
 
 # Argument parser
 parser = argparse.ArgumentParser(description='Pre-Processing NAVER Movie Review Comment')
 parser.add_argument('--load_from', type=str, help='load DataSet from db or csv', default='db', choices=['db', 'csv'])
-parser.add_argument('--vector', type=str, help='d2v or w2v', choices=['d2v', 'w2v'], default='d2v')
+parser.add_argument('--vector', type=str, help='d2v or w2v', choices=['d2v', 'w2v'], default='w2v')
+parser.add_argument('--is_analyzed', type=bool, help='already analyzed data', default=False)
 args = parser.parse_args()
 
 config, _ = get_config()  # global configuration
 
 vec = args.vector
 load_from = args.load_from
+is_analyzed = args.is_analyzed
 
 
 def w2v_training(data: list) -> bool:
+    from gensim.models import word2vec
+
     global config
 
     # word2vec Training
@@ -45,6 +48,8 @@ def w2v_training(data: list) -> bool:
 
 
 def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
+    from gensim.models import Doc2Vec
+
     global config
 
     # data processing to fit in Doc2Vec
@@ -82,18 +87,17 @@ def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
 
 def main():
     # Data Loader
-
-    data_loader = DataLoader(file=config.dataset,
-                             load_from=load_from,
-                             use_save=True,
-                             fn_to_save=config.processed_dataset,
-                             config=config)  # not processed data
-    """
-    data_loader = DataLoader(file=config.processed_dataset,
-                             is_analyzed=True,
-                             use_save=False,
-                             config=config)  # processed data
-    """
+    if is_analyzed:
+        data_loader = DataLoader(file=config.processed_dataset,
+                                 is_analyzed=True,
+                                 use_save=False,
+                                 config=config)  # processed data
+    else:
+        data_loader = DataLoader(file=config.dataset,
+                                 load_from=load_from,
+                                 use_save=True,
+                                 fn_to_save=config.processed_dataset,
+                                 config=config)  # not processed data
 
     x_data, y_data = data_loader.sentences, data_loader.labels
 
