@@ -201,6 +201,7 @@ class DataLoader:
 
         self.sentences = []
         self.labels = []
+        self.max_sent_len = 0
 
         self.use_correct_spacing = use_correct_spacing
         self.use_normalize = use_normalize
@@ -379,10 +380,17 @@ class DataLoader:
             for line in tqdm(f.readlines()[1:]):
                 d = line.split(',')
                 try:
-                    self.sentences.append(d[1].split(' '))
+                    sent = d[1].split(' ')
+                    if len(sent) > self.max_sent_len:
+                        self.max_sent_len = len(sent)
+
+                    self.sentences.append(sent)
                     self.labels.append(d[0])
                 except IndexError:
                     print("[-] ", line)
+
+        if self.config.verbose:
+            print("[*] the number of words in sentence : %d" % self.max_sent_len)
 
     @staticmethod
     def to_one_hot(data, n_classes: int):
