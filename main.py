@@ -157,12 +157,11 @@ if __name__ == '__main__':
             print("[*] refined comment : ", x_data.shape)
             print("[*] refined rate    : ", y_data.shape)
 
-    # shuffle data
-    split_rate = .2
-    x_train, x_valid, y_train, y_valid = train_test_split(x_data, y_data, random_state=config.seed, test_size=split_rate,
-        shuffle=True)
+    # shuffle/split data
+    x_train, x_valid, y_train, y_valid = train_test_split(x_data, y_data, random_state=config.seed,
+                                                          test_size=config.test_size, shuffle=True)
     if config.verbose:
-        print("[*] train/test (%.1f/%.1f) split!" % (1. - split_rate, split_rate))
+        print("[*] train/test (%.1f/%.1f) split!" % (1. - config.test_size, config.test_size))
 
     data_size = x_data.shape[0]
 
@@ -178,6 +177,7 @@ if __name__ == '__main__':
             if config.model == 'charcnn':
                 # Model Loaded
                 model = charcnn.CharCNN(s=s,
+                                        mode=config.mode,
                                         n_classes=config.n_classes,
                                         optimizer=config.optimizer,
                                         dims=config.embed_size,
@@ -213,48 +213,55 @@ if __name__ == '__main__':
 
             start_time = time.time()
 
+            best_loss = 100.  # initial value
             restored_epochs = global_step // (data_size // config.batch_size)
             for epoch in range(restored_epochs, config.epochs):
                 for x_tr, y_tr in di.iterate():
                     # training
-                    _, loss = s.run([model.opt, model.loss],
-                                    feed_dict={
-                                        model.x: x_tr,
-                                        model.y: y_tr,
-                                        model.do_rate: config.drop_out,
-                                    })
+                    _, loss, acc = s.run([model.opt, model.loss, model.accuracy],
+                                         feed_dict={
+                                             model.x: x_tr,
+                                             model.y: y_tr,
+                                             model.do_rate: config.drop_out,
+                                         })
 
                     if global_step % config.logging_step == 0:
-                        print("[*] epoch %03d global step %07d" % (epoch, global_step), " loss : {:.8f}".format(loss))
-
-                        # predictions
-                        for sample_data in samples:
-                            sample = vec.sent_to_vec(sample_data['comment']).reshape(-1, config.embed_size)
-                            predict = s.run(model.prediction,
-                                            feed_dict={
-                                                model.x: sample,
-                                                model.do_rate: .0,
-                                            })
-                            print("[*] predict %050s : %d (expected %d)" % (sample_data['comment'],
-                                                                            predict + 1,
-                                                                            sample_data['rate']))
-
-                        # summary
-                        summary = s.run(model.merged,
-                                        feed_dict={
-                                            model.x: x_tr,
-                                            model.y: y_tr,
-                                            model.do_rate: .0,
-                                        })
+                        summary, valid_loss, valid_acc = s.run([model.merged, model.loss, model.accuracy],
+                                                               feed_dict={
+                                                                   model.x: x_valid,
+                                                                   model.y: y_valid,
+                                                                   model.do_rate: .0,
+                                                               })
+                        print("[*] epoch %03d global step %07d" % (epoch, global_step),
+                              " train_loss : {:.8f} train_acc : {:.4f}".format(loss, acc),
+                              " valid_loss : {:.8f} valid_acc : {:.4f}".format(valid_loss, valid_acc))
 
                         # Summary saver
                         model.writer.add_summary(summary, global_step)
 
                         # Model save
-                        model.saver.save(s, config.pretrained + '%s.ckpt' % config.model, global_step=global_step)
+                        model.saver.save(s, config.pretrained + '%s.ckpt' % config.model,
+                                         global_step=global_step)
+
+                        if valid_loss < best_loss:
+                            print("[+] model improved {:.6f} to {:.6f}".format(best_loss, loss))
+                            model.best_saver.save(s, config.pretrained + '%s.ckpt' % config.model,
+                                                  global_step=global_step)
                         print()
 
                     global_step += 1
+
+                # predictions
+                for sample_data in samples:
+                    sample = vec.sent_to_vec(sample_data['comment']).reshape(-1, config.embed_size)
+                    predict = s.run(model.prediction,
+                                    feed_dict={
+                                        model.x: sample,
+                                        model.do_rate: .0,
+                                    })
+                    print("[*] predict %050s : %d (expected %d)" % (sample_data['comment'],
+                                                                    predict + 1,
+                                                                    sample_data['rate']))
 
             end_time = time.time()
 

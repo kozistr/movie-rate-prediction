@@ -18,6 +18,7 @@ def get_config():
 
 # Network
 network_arg = add_arg_group('Network')
+network_arg.add_argument('--mode', type=str, default='static', choices=['static', 'non-static'])
 network_arg.add_argument('--model', type=str, default='charcnn', choices=['charcnn', 'charrnn'])
 network_arg.add_argument('--n_classes', type=int, default=1)
 network_arg.add_argument('--use_pre_trained_embeds', type=bool, default=True,
@@ -48,6 +49,7 @@ train_arg.add_argument('--optimizer', type=str, default='adam', choices=['adam',
 train_arg.add_argument('--lr', type=float, default=2e-4)
 train_arg.add_argument('--lr_decay', type=float, default=.95)
 train_arg.add_argument('--lr_lower_boundary', type=float, default=2e-5)
+train_arg.add_argument('--test_size', type=float, default=.2)
 
 # Korean words Pre-Processing
 nlp_model = add_arg_group('NLP')

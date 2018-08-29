@@ -5,10 +5,10 @@ import tensorflow as tf
 class CharCNN:
 
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
-                 vocab_size=251, dims=300, seed=1337, use_d2v=True, optimizer='adam',
+                 vocab_size=122352, dims=300, seed=1337, optimizer='adam',
                  filter_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
                  lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6,
-                 summary=None):
+                 summary=None, mode='static', w2v_embeds=None):
         self.s = s
         self.n_dims = dims
         self.n_classes = n_classes
@@ -16,7 +16,6 @@ class CharCNN:
         self.batch_size = batch_size
         self.epochs = epochs
 
-        self.use_d2v = use_d2v
         self.seed = seed
 
         self.filter_sizes = filter_sizes
@@ -28,6 +27,8 @@ class CharCNN:
         self.optimizer = optimizer
 
         self.summary = summary
+        self.mode = mode
+        self.w2v_embeds = w2v_embeds
 
         # set random seed
         np.random.seed(self.seed)
@@ -36,13 +37,17 @@ class CharCNN:
         self.he_uni = tf.contrib.layers.variance_scaling_initializer(factor=1., mode='FAN_AVG', uniform=True)
         self.reg = tf.contrib.layers.l2_regularizer(self.l2_reg)
 
-        if not use_d2v:  # use random initialization # use w2v initialization
+        if self.mode == 'static':
             # uncompleted feature
-            self.embeddings = tf.get_variable('lookup-w', shape=[self.vocab_size, self.n_dims],
-                                              initializer=self.he_uni)
+            self.embeddings = tf.get_variable('embeddings', shape=[self.vocab_size, self.n_dims],
+                                              initializer=self.he_uni, trainable=False)
+        else:
+            self.embeddings = tf.get_variable('embeddings', shape=[self.vocab_size, self.n_dims],
+                                              initializer=self.he_uni, trainable=True)
+        self.embeddings = self.embeddings.assign(self.w2v_embeds)
 
         self.x = tf.placeholder(tf.float32, shape=[None, self.n_dims], name='x-sentence')
-        self.y = tf.placeholder(tf.float32, shape=[None, self.n_classes], name='y-label')  # one-hot
+        self.y = tf.placeholder(tf.float32, shape=[None, self.n_classes], name='y-label')  # one-hot or int
         self.do_rate = tf.placeholder(tf.float32, name='do-rate')
 
         # build CharCNN Model
@@ -53,14 +58,19 @@ class CharCNN:
             self.loss = tf.reduce_mean(tf.losses.mean_squared_error(
                 labels=self.y,
                 predictions=self.rate
-            ))
+            ))  # MSE loss
+
             self.prediction = self.rate
+            self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.y, self.prediction)), dtype=tf.float32)
+
         else:
             self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
                 logits=self.feat,
                 labels=self.y
-            ))
+            ))  # softmax cross-entropy
+
             self.prediction = tf.argmax(self.rate, axis=1)
+            self.accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(self.y, 1), self.prediction), dtype=tf.float32))
 
         # Optimizer
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
@@ -88,19 +98,18 @@ class CharCNN:
         # Merge summary
         self.merged = tf.summary.merge_all()
 
-        # Model saver
+        # Model savers
         self.saver = tf.train.Saver(max_to_keep=1)
+        self.best_saver = tf.train.Saver(max_to_keep=1)
         self.writer = tf.summary.FileWriter(self.summary, self.s.graph)
 
     def build_model(self):
-        if not self.use_d2v:
-            with tf.name_scope('embeddings'):
-                spatial_do = tf.contrib.keras.layers.SpatialDropout1D(self.do_rate)
+        with tf.name_scope('embeddings'):
+            spatial_do = tf.contrib.keras.layers.SpatialDropout1D(self.do_rate)
 
-                embeds = tf.nn.embedding_lookup(self.embeddings, self.x)
-                embeds = spatial_do(embeds)
-        else:
-            embeds = tf.expand_dims(self.x, axis=-1)
+            embeds = tf.nn.embedding_lookup(self.embeddings, self.x)
+            embeds = spatial_do(embeds)
+            embeds = tf.expand_dims(embeds, axis=-1)  # (-1, n_dims, 1)
 
         pooled_outs = []
         for i, fs in enumerate(self.filter_sizes):
@@ -127,6 +136,7 @@ class CharCNN:
                 pooled_outs.append(x)
 
         x = tf.concat(pooled_outs, 1)
+
         x = tf.layers.flatten(x)
         x = tf.layers.dropout(x, self.do_rate)
 
@@ -149,9 +159,9 @@ class CharCNN:
             )
 
             # Rate
-            if not self.n_classes == 1:
-                rate = tf.nn.softmax(x)
-            else:
+            if self.n_classes == 1:
                 rate = tf.nn.sigmoid(x)
                 rate = rate * 9. + 1.  # To-Do : replace with another scale function to avoid saturation
+            else:
+                rate = tf.nn.softmax(x)
             return x, rate
