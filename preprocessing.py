@@ -26,14 +26,17 @@ def w2v_training(data: list) -> bool:
 
     global config
 
+    # flatten & remove duplicates
+    # data = list(set(sum(data, [])))
+
     # word2vec Training
     w2v_config = {
         'sentences': data,
-        'batch_words': 10000,
+        'batch_words': 12800,
         'size': config.embed_size,
         'window': 5,
-        'min_count': 3,
-        'negative': 3,
+        'min_count': 1,
+        'negative': 5,
         'alpha': config.vec_lr,
         'sg': 1,
         'iter': 10,
