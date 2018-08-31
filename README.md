@@ -98,6 +98,12 @@
 │    ├── charcnn.py
 │    ├── ...
 │    └── charrnn.py
+├── image             (explaination images)
+│    └── *.png
+├── ml_model          (tf pre-trained model saved in here)
+│    ├── checkpoint
+│    ├── ...
+│    └── charcnn-best_loss.ckpt
 ├── config.py         (Configuration)
 ├── tfutil.py         (handy tfutils)
 ├── dataloader.py     (Doc/Word2Vec model loader)
