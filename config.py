@@ -26,7 +26,7 @@ network_arg.add_argument('--use_pre_trained_embeds', type=str, default='w2v', ch
 network_arg.add_argument('--kernel_size', type=list, default=[2, 3, 4, 5],
                          help='conv1d kernel size')
 network_arg.add_argument('--fc_unit', type=int, default=1024)
-network_arg.add_argument('--drop_out', type=int, default=.2,
+network_arg.add_argument('--drop_out', type=float, default=.5,
                          help='dropout rate')
 network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
 network_arg.add_argument('--act_threshold', type=float, default=1e-6,
