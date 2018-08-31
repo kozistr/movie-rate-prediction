@@ -118,7 +118,7 @@ class CharCNN:
 
             embeds = tf.nn.embedding_lookup(self.embeddings, self.x)
             embeds = spatial_do(embeds)
-            embeds = tf.expand_dims(embeds, axis=-1)  # (-1, n_dims, 1)
+            # embeds = tf.expand_dims(embeds, axis=-1)  # (-1, sequence_length, n_dims, 1)
 
         pooled_outs = []
         for i, fs in enumerate(self.filter_sizes):

@@ -23,7 +23,7 @@ network_arg.add_argument('--model', type=str, default='charcnn', choices=['charc
 network_arg.add_argument('--n_classes', type=int, default=1)
 network_arg.add_argument('--use_pre_trained_embeds', type=str, default='w2v', choices=['w2v', 'd2v', None],
                          help='using Word/Doc2Vec/None as embedding.')
-network_arg.add_argument('--kernel_size', type=list, default=[2, 3, 4],
+network_arg.add_argument('--kernel_size', type=list, default=[2, 3, 4, 5],
                          help='conv1d kernel size')
 network_arg.add_argument('--fc_unit', type=int, default=1024)
 network_arg.add_argument('--drop_out', type=int, default=.2,
