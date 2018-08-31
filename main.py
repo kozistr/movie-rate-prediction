@@ -138,7 +138,7 @@ if __name__ == '__main__':
             rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if y == 10]
         rand_idx = np.random.choice(rate_10_idx, 4 * len(rate_10_idx) // 5)
 
-        x_data = np.delete(x_data, rand_idx, axis=0).reshape(-1, config.embed_size)
+        x_data = np.delete(x_data, rand_idx, axis=0).reshape(-1, config.sequence_length)
         y_data = np.delete(y_data, rand_idx, axis=0).reshape(-1, config.n_classes)
 
         if config.verbose:
