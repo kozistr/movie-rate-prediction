@@ -50,7 +50,7 @@ class CharCNN:
             raise NotImplementedError("[-] static or non-static or rand only!")
 
         if not self.mode == 'rand':
-            assert self.w2v_embeds
+            assert self.w2v_embeds is not None
             self.embeddings = self.embeddings.assign(self.w2v_embeds)
 
             print("[+] Word2Vec pre-trained model loaded!")
