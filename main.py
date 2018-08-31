@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
     sample_x_data = np.array(sample_x_data)
     sample_y_data = np.array(sample_y_data)
-    
+
     if config.verbose:
         print("[*] sample data also loaded")
     """
@@ -269,7 +269,7 @@ if __name__ == '__main__':
                                          global_step=global_step)
 
                         if valid_loss < best_loss:
-                            print("[+] model improved {:.6f} to {:.6f}".format(best_loss, loss))
+                            print("[+] model improved {:.6f} to {:.6f}".format(best_loss, valid_loss))
                             best_loss = valid_loss
 
                             model.best_saver.save(s, config.pretrained + '%s.ckpt' % config.model,

@@ -124,7 +124,7 @@ class CharCNN:
         for i, fs in enumerate(self.filter_sizes):
             with tf.variable_scope("conv_layer-%d-%d" % (fs, i)):
                 """
-                Try 1 : Conv1D-ThresholdReLU-drop_out-k_max_pool
+                Try 1 : Conv1D-(Threshold)ReLU-drop_out-k_max_pool
                 """
 
                 x = tf.layers.conv1d(
@@ -136,7 +136,8 @@ class CharCNN:
                     padding='VALID',
                     name='conv1d'
                 )
-                x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)
+                # x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)  # TresholdReLU
+                x = tf.nn.relu(x)
                 x = tf.layers.dropout(x, self.do_rate)
 
                 x = tf.nn.top_k(tf.transpose(x, [0, 2, 1]), k=3, sorted=False)[0]
@@ -157,7 +158,8 @@ class CharCNN:
                 kernel_regularizer=self.reg,
                 name='fc1'
             )
-            x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)
+            # x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)  # TresholdReLU
+            x = tf.nn.relu(x)
 
             x = tf.layers.dense(
                 x,
