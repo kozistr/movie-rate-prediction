@@ -116,7 +116,7 @@ if __name__ == '__main__':
         # index 0 : . # so we need to fill with meaningless number
 
     x_data = np.array(x_data)
-    y_data = np.array(ds.labels)
+    y_data = np.array(ds.labels).reshape(-1, config.n_classes)
 
     ds = None
     del ds
