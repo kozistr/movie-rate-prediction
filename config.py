@@ -23,10 +23,10 @@ network_arg.add_argument('--model', type=str, default='charcnn', choices=['charc
 network_arg.add_argument('--n_classes', type=int, default=1)
 network_arg.add_argument('--use_pre_trained_embeds', type=str, default='w2v', choices=['w2v', 'd2v', None],
                          help='using Word/Doc2Vec/None as embedding.')
-network_arg.add_argument('--kernel_size', type=list, default=[2, 3, 4, 5],
+network_arg.add_argument('--kernel_size', type=list, default=[3, 4, 5],
                          help='conv1d kernel size')
-network_arg.add_argument('--fc_unit', type=int, default=1024)
-network_arg.add_argument('--drop_out', type=float, default=.5,
+network_arg.add_argument('--fc_unit', type=int, default=128)
+network_arg.add_argument('--drop_out', type=float, default=.7,
                          help='dropout rate')
 network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
 network_arg.add_argument('--act_threshold', type=float, default=1e-6,
@@ -40,7 +40,7 @@ data_arg.add_argument('--vocab_size', type=int, default=348357, help='default is
 data_arg.add_argument('--sequence_length', type=int, default=150,
                       help='the length of the sentence, default is w2v max words cnt.'
                            'In case of char-level, 400 is preferred')
-data_arg.add_argument('--batch_size', type=int, default=128)
+data_arg.add_argument('--batch_size', type=int, default=32)
 data_arg.add_argument('--n_threads', type=int, default=8,
                       help='the number of workers for speeding up')
 
