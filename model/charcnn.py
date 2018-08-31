@@ -70,7 +70,7 @@ class CharCNN:
             ))  # MSE loss
 
             self.prediction = self.rate
-            self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.y, self.prediction)), dtype=tf.float32)
+            self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.y, self.prediction), dtype=tf.float32))
         else:
             self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
                 logits=self.feat,
