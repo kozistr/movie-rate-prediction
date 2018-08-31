@@ -5,7 +5,7 @@ import tensorflow as tf
 class CharCNN:
 
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
-                 vocab_size=122351, sequence_length=400, n_dims=300, seed=1337, optimizer='adam',
+                 vocab_size=122351 + 1, sequence_length=400, n_dims=300, seed=1337, optimizer='adam',
                  filter_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
                  lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6,
                  summary=None, mode='static', w2v_embeds=None):
@@ -70,7 +70,7 @@ class CharCNN:
             ))  # MSE loss
 
             self.prediction = self.rate
-            self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.y, self.prediction), dtype=tf.float32))
+            self.accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.prediction) < .5), dtype=tf.float32))
         else:
             self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
                 logits=self.feat,
@@ -84,7 +84,7 @@ class CharCNN:
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
         learning_rate = tf.train.exponential_decay(lr,
                                                    self.global_step,
-                                                   self.epochs * self.batch_size,
+                                                   4000000,  # hard-coded # 1 epoch
                                                    lr_decay,
                                                    staircase=True)
         self.lr = tf.clip_by_value(learning_rate,
@@ -114,11 +114,10 @@ class CharCNN:
 
     def build_model(self):
         with tf.device('/cpu:0'), tf.name_scope('embeddings'):
-            spatial_do = tf.contrib.keras.layers.SpatialDropout1D(self.do_rate)
+            spatial_drop_out = tf.keras.layers.SpatialDropout1D(self.do_rate)
 
             embeds = tf.nn.embedding_lookup(self.embeddings, self.x)
-            embeds = spatial_do(embeds)
-            # embeds = tf.expand_dims(embeds, axis=-1)  # (-1, sequence_length, n_dims, 1)
+            embeds = spatial_drop_out(embeds)
 
         pooled_outs = []
         for i, fs in enumerate(self.filter_sizes):
@@ -138,7 +137,8 @@ class CharCNN:
                 )
                 # x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)  # TresholdReLU
                 x = tf.nn.relu(x)
-                x = tf.layers.dropout(x, self.do_rate)
+
+                # x = tf.layers.dropout(x, self.do_rate)
 
                 x = tf.nn.top_k(tf.transpose(x, [0, 2, 1]), k=3, sorted=False)[0]
                 x = tf.transpose(x, [0, 2, 1])

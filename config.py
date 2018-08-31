@@ -20,13 +20,13 @@ def get_config():
 network_arg = add_arg_group('Network')
 network_arg.add_argument('--mode', type=str, default='static', choices=['static', 'non-static'])
 network_arg.add_argument('--model', type=str, default='charcnn', choices=['charcnn', 'charrnn'])
-network_arg.add_argument('--n_classes', type=int, default=10)
+network_arg.add_argument('--n_classes', type=int, default=1)
 network_arg.add_argument('--use_pre_trained_embeds', type=str, default='w2v', choices=['w2v', 'd2v', None],
                          help='using Word/Doc2Vec/None as embedding.')
 network_arg.add_argument('--kernel_size', type=list, default=[1, 2, 3, 4],
                          help='conv1d kernel size')
-network_arg.add_argument('--fc_unit', type=int, default=256)
-network_arg.add_argument('--drop_out', type=float, default=.5,
+network_arg.add_argument('--fc_unit', type=int, default=1024)
+network_arg.add_argument('--drop_out', type=float, default=.7,
                          help='dropout rate')
 network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
 network_arg.add_argument('--act_threshold', type=float, default=1e-6,
@@ -48,12 +48,12 @@ data_arg.add_argument('--n_threads', type=int, default=8,
 train_arg = add_arg_group('Training')
 train_arg.add_argument('--is_train', type=bool, default=True)
 train_arg.add_argument('--epochs', type=int, default=100)
-train_arg.add_argument('--logging_step', type=int, default=1000)
+train_arg.add_argument('--logging_step', type=int, default=500)
 train_arg.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'sgd'])
-train_arg.add_argument('--lr', type=float, default=4e-4)
+train_arg.add_argument('--lr', type=float, default=2e-4)
 train_arg.add_argument('--lr_decay', type=float, default=.95)
 train_arg.add_argument('--lr_lower_boundary', type=float, default=2e-5)
-train_arg.add_argument('--test_size', type=float, default=.15)
+train_arg.add_argument('--test_size', type=float, default=.2)
 
 # Korean words Pre-Processing
 nlp_model = add_arg_group('NLP')

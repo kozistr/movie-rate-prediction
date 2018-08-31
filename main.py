@@ -1,4 +1,3 @@
-import gc
 import time
 import argparse
 import numpy as np
@@ -101,8 +100,8 @@ if __name__ == '__main__':
     for i in tqdm(range(ds_len)):
         sent = ds.sentences[i][:config.sequence_length]
         x_data[i] = np.pad(vectors.words_to_index(sent),
-                           (0, config.sequence_length - len(sent)), 'constant')
-        # index 0 : . # so we need to fill with meaningless number
+                           (0, config.sequence_length - len(sent)), 'constant', constant_values=config.vocab_size)
+        # index vocab_size :  # so we need to fill with meaningless number
 
     x_data = np.array(x_data)
     y_data = np.array(ds.labels).reshape(-1, config.n_classes)
@@ -175,7 +174,7 @@ if __name__ == '__main__':
                                         n_classes=config.n_classes,
                                         optimizer=config.optimizer,
                                         n_dims=config.embed_size,
-                                        vocab_size=config.vocab_size,
+                                        vocab_size=config.vocab_size + 1,
                                         sequence_length=config.sequence_length,
                                         lr=config.lr,
                                         lr_decay=config.lr_decay,
@@ -222,7 +221,7 @@ if __name__ == '__main__':
                                              model.do_rate: config.drop_out,
                                          })
 
-                    if global_step % config.logging_step == 0:
+                    if global_step and global_step % config.logging_step == 0:
                         # validation
                         rand_idx = np.random.choice(np.arange(len(y_valid)), len(y_valid) // 20)  # 5% of valid data
 
@@ -243,15 +242,17 @@ if __name__ == '__main__':
                         valid_loss /= valid_iter
                         valid_acc /= valid_iter
 
+                        """
                         if config.n_classes == 1:
                             # accuracy when binary class is used is meaningless. Because it cannot be same :)
                             print("[*] epoch %03d global step %07d" % (epoch, global_step),
                                   " train_mse_loss : {:.8f} ".format(loss),
                                   " valid_mse_loss : {:.8f} ".format(valid_loss))
                         else:
-                            print("[*] epoch %03d global step %07d" % (epoch, global_step),
-                                  " train_loss : {:.8f} train_acc : {:.4f}".format(loss, acc),
-                                  " valid_loss : {:.8f} valid_acc : {:.4f}".format(valid_loss, valid_acc))
+                        """
+                        print("[*] epoch %03d global step %07d" % (epoch, global_step),
+                              " train_loss : {:.8f} train_acc : {:.4f}".format(loss, acc),
+                              " valid_loss : {:.8f} valid_acc : {:.4f}".format(valid_loss, valid_acc))
 
                         # summary
                         summary = s.run(model.merged,

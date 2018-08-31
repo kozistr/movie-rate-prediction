@@ -19,6 +19,9 @@ class Word2VecEmbeddings:
         self.embeds = None
 
         self.load_model()
+
+        self.vocab_size = len(self.w2v_model.wv.vocab) + 1  # 1 for zero embedding for unknown
+
         self.build_embeds()
 
     def load_model(self):
@@ -26,31 +29,25 @@ class Word2VecEmbeddings:
         self.w2v_model = Word2Vec.load(self.model)
 
     def build_embeds(self):
-        self.embeds = np.zeros((len(self.w2v_model.wv.vocab), self.dims))
+        self.embeds = np.zeros((self.vocab_size, self.dims))
 
-        for i in tqdm(range(len(self.w2v_model.wv.vocab))):
+        for i in tqdm(range(self.vocab_size - 1)):
             vec = self.w2v_model.wv[self.w2v_model.wv.index2word[i]]
             if vec is not None:
                 self.embeds[i] = vec
+
+        # zero embedding
+        self.embeds[self.vocab_size - 1] = np.zeros((1, self.dims))
 
     def word_to_vec(self, input_word: str) -> np.array:
         return self.w2v_model.wv[input_word]
 
     def words_to_index(self, input_words: list) -> list:
-        """
-        idx = []
-        for word in input_words:
-            try:
-                idx.append(self.w2v_model.wv.vocab[word].index)
-            except KeyError:
-                # print("[-] %s missing..." % word)
-                idx.append(0)
-        return idx
-        """
-        return [self.w2v_model.wv.vocab[word].index if word in self.w2v_model.wv.vocab else 0 for word in input_words]
+        return [self.w2v_model.wv.vocab[word].index if word in self.w2v_model.wv.vocab else self.vocab_size - 1
+                for word in input_words]
 
     def __len__(self):
-        return len(self.w2v_model.wv.vocab)
+        return len(self.w2v_model.wv.vocab) + 1
 
     def __str__(self):
         return "Word2Vec"
