@@ -130,7 +130,9 @@ Here's a **google drive link**. You can download pre-trained models from [here](
 
 * Char/TextCNN (optimized)
 
-![img]()
+![img](./image/TextCNN-architecture.png)
+
+credit by [Toxic Comment Classification kaggle 1st solution](https://medium.com/@zake7749/top-1-solution-to-toxic-comment-classification-challenge-ea28dbe75054)
 
 * Char/TextRNN (planned)
 
