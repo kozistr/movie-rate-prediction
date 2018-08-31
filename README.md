@@ -63,7 +63,7 @@
                             already analyzed data
 
 ### 5. Training/Testing a Model
-    $ python3 main.py
+    $ python3 main.py --refine_data [True or False]
 
     usage: main.py [-h] [--checkpoint CHECKPOINT] [--save_to_h5 SAVE_TO_H5]
                    [--load_from_h5 LOAD_FROM_H5] [--refine_data REFINE_DATA]
@@ -110,13 +110,13 @@
 
 ## Pre-Trained Models
 
-Here's a **google drive link**. You can download pre-trained models from [~~here~~]() !
+Here's a **google drive link**. You can download pre-trained models from [here](https://drive.google.com/open?id=1yzVzYeybAgjEZ8KG7jwnxDt-eLRSusLi) !
 
 ## Models
 
 * Char/TextCNN (optimized)
 
-soon!
+![img]()
 
 * Char/TextRNN (planned)
 
@@ -127,6 +127,24 @@ soon!
 soon!
 
 ## Results
+
+* Char/TextCNN (optimized)
+
+![img]()
+
+* Char/TextRNN (planned)
+
+soon!
+
+* Simple Convolutional Neural Networks
+
+soon!
+
+## Visualization
+
+You can just simply type ```tensorboard --logdir=./ml_model/```
+
+### Word2Vec Embeddings
 
 soon!
 
