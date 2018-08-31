@@ -1,3 +1,4 @@
+import gc
 import time
 import argparse
 import numpy as np
@@ -113,7 +114,6 @@ if __name__ == '__main__':
         x_data[i] = np.pad(vectors.words_to_index(sent),
                            (0, config.sequence_length - len(sent)), 'constant')
         # index 0 : . # so we need to fill with meaningless number
-        del ds.sentences[i]
 
     x_data = np.array(x_data)
     y_data = np.array(ds.labels)
@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
     del x_data, y_data
 
-    data_size = x_data.shape[0]
+    data_size = x_train.shape[0]
 
     # DataSet Iterator
     di = DataIterator(x=x_train, y=y_train, batch_size=config.batch_size)
