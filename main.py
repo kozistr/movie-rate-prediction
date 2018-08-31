@@ -272,7 +272,7 @@ if __name__ == '__main__':
                             print("[+] model improved {:.6f} to {:.6f}".format(best_loss, valid_loss))
                             best_loss = valid_loss
 
-                            model.best_saver.save(s, config.pretrained + '%s.ckpt' % config.model,
+                            model.best_saver.save(s, config.pretrained + '%s-best_loss.ckpt' % config.model,
                                                   global_step=global_step)
                         print()
 
