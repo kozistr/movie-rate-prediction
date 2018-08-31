@@ -31,7 +31,7 @@ np.random.seed(config.seed)
 tf.set_random_seed(config.seed)
 
 
-# hand-made samples
+# hand-made samples # data must be tokenized by Mecab
 # you can replace this part to your custom DataSet :)
 samples = [
     {'rate': 10, 'comment': "이건 10점 안줄 수 가 없다. 닥추"},
@@ -113,6 +113,7 @@ if __name__ == '__main__':
     if config.verbose:
         print("[*] sentence to w2v index conversion finish!")
 
+    """
     sample_x_data = np.zeros((len(samples), config.sequence_length), dtype=np.int32)
     sample_y_data = np.zeros((len(samples), config.n_classes), dtype=np.int32)
     for i in tqdm(range(len(samples))):
@@ -123,9 +124,10 @@ if __name__ == '__main__':
 
     sample_x_data = np.array(sample_x_data)
     sample_y_data = np.array(sample_y_data)
-
+    
     if config.verbose:
         print("[*] sample data also loaded")
+    """
 
     if refine_data:
         # resizing the amount of rate-10 data
@@ -274,23 +276,12 @@ if __name__ == '__main__':
                                                   global_step=global_step)
                         print()
 
-                    if global_step % config.sample_test == 0:
-                        predict = s.run(model.prediction,
-                                        feed_dict={
-                                            model.x: sample_x_data,
-                                            model.y: sample_y_data,
-                                            model.do_rate: .0,
-                                        })
-
-                        for i, pd in enumerate(predict):
-                            print("[*] review %s" % sample_x_data[i],
-                                  "predict %.2f (expected %.2f)".format(pd, sample_y_data[i]))
-
                     global_step += 1
 
                 # predictions
+                """
                 for sample_data in samples:
-                    sample = vec.sent_to_vec(sample_data['comment']).reshape(-1, config.embed_size)
+                    sample = vectors.sent_to_vec(sample_data['comment']).reshape(-1, config.embed_size)
                     predict = s.run(model.prediction,
                                     feed_dict={
                                         model.x: sample,
@@ -299,6 +290,7 @@ if __name__ == '__main__':
                     print("[*] predict %050s : %d (expected %d)" % (sample_data['comment'],
                                                                     predict + 1,
                                                                     sample_data['rate']))
+                """
 
             end_time = time.time()
 
