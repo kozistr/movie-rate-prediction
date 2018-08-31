@@ -134,7 +134,8 @@ if __name__ == '__main__':
         if not config.n_classes == 1:
             rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if np.argmax(y, axis=-1) == 9]
         else:
-            rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if y == 10]
+             rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if y == 10]
+
         rand_idx = np.random.choice(rate_10_idx, 4 * len(rate_10_idx) // 5)
 
         x_data = np.delete(x_data, rand_idx, axis=0).reshape(-1, config.sequence_length)
@@ -223,7 +224,7 @@ if __name__ == '__main__':
 
                     if global_step and global_step % config.logging_step == 0:
                         # validation
-                        rand_idx = np.random.choice(np.arange(len(y_valid)), len(y_valid) // 20)  # 5% of valid data
+                        rand_idx = np.random.choice(np.arange(len(y_valid)), len(y_valid) // 25)  # 4% of valid data
 
                         x_va, y_va = x_valid[rand_idx], y_valid[rand_idx]
 
