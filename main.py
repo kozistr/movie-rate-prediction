@@ -111,7 +111,7 @@ if __name__ == '__main__':
     for i in tqdm(range(ds_len)):
         sent = ds.sentences[i][:config.sequence_length]
         x_data[i] = np.pad(vectors.words_to_index(sent),
-                           (0, config.sequence_length - len(sent)), 'constant', constant_values=ds_len)
+                           (0, config.sequence_length - len(sent)), 'constant')
         # index 0 : . # so we need to fill with meaningless number
         del ds.sentences[i]
 
@@ -163,6 +163,7 @@ if __name__ == '__main__':
                 # Model Loaded
                 model = charcnn.CharCNN(s=s,
                                         mode=config.mode,
+                                        w2v_embeds=vectors.embeds,
                                         n_classes=config.n_classes,
                                         optimizer=config.optimizer,
                                         n_dims=config.embed_size,
