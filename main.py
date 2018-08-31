@@ -202,7 +202,8 @@ if __name__ == '__main__':
             start_time = time.time()
 
             best_loss = 100.  # initial value
-            restored_epochs = global_step // (data_size // config.batch_size)
+            batch_size = config.batch_size
+            restored_epochs = global_step // (data_size // batch_size)
             for epoch in range(restored_epochs, config.epochs):
                 for x_tr, y_tr in di.iterate():
                     # training
@@ -214,16 +215,34 @@ if __name__ == '__main__':
                                          })
 
                     if global_step % config.logging_step == 0:
-                        summary, valid_loss, valid_acc = s.run([model.merged, model.loss, model.accuracy],
-                                                               feed_dict={
-                                                                   model.x: x_valid,
-                                                                   model.y: y_valid,
-                                                                   model.do_rate: .0,
-                                                               })
+                        # validation
+                        valid_loss, valid_acc = .0, .0
+                        valid_iter = len(y_valid) // batch_size
+                        for i in tqdm(range(0, valid_iter)):
+                            v_loss, v_acc = s.run([model.loss, model.accuracy],
+                                                  feed_dict={
+                                                      model.x: x_valid[batch_size * i:batch_size * (i + 1)],
+                                                      model.y: y_valid[batch_size * i:batch_size * (i + 1)],
+                                                      model.do_rate: .0,
+                                                  })
+                            valid_loss += v_loss
+                            valid_acc += v_acc
+
+                        valid_loss /= valid_iter
+                        valid_acc /= valid_iter
+
                         print("[*] epoch %03d global step %07d" % (epoch, global_step),
                               " train_loss : {:.8f} train_acc : {:.4f}".format(loss, acc),
                               " valid_loss : {:.8f} valid_acc : {:.4f}".format(valid_loss, valid_acc))
 
+                        # summary
+                        summary = s.run(model.merged,
+                                        feed_dict={
+                                            model.x: x_tr,
+                                            model.y: y_tr,
+                                            model.do_rate: .0,
+                                        })
+                        
                         # Summary saver
                         model.writer.add_summary(summary, global_step)
 
