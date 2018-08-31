@@ -49,11 +49,13 @@ train_arg = add_arg_group('Training')
 train_arg.add_argument('--is_train', type=bool, default=True)
 train_arg.add_argument('--epochs', type=int, default=100)
 train_arg.add_argument('--logging_step', type=int, default=1000)
+train_arg.add_argument('--sample_test', type=int, default=3000,
+                       help='steps for testing sample data')
 train_arg.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'sgd'])
 train_arg.add_argument('--lr', type=float, default=2e-4)
 train_arg.add_argument('--lr_decay', type=float, default=.95)
 train_arg.add_argument('--lr_lower_boundary', type=float, default=2e-5)
-train_arg.add_argument('--test_size', type=float, default=.2)
+train_arg.add_argument('--test_size', type=float, default=.15)
 
 # Korean words Pre-Processing
 nlp_model = add_arg_group('NLP')

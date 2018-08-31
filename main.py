@@ -35,10 +35,11 @@ tf.set_random_seed(config.seed)
 # you can replace this part to your custom DataSet :)
 samples = [
     {'rate': 10, 'comment': "이건 10점 안줄 수 가 없다. 닥추"},
-    {'rate': 9, 'comment': "대박 개쩔어요!!"},
-    {'rate': 7, 'comment': "띵작 그런데 좀 아쉽다..."},
+    {'rate': 9, 'comment': "대박 개쩔어요!!!"},
+    {'rate': 7, 'comment': "띵작! 그런데 배우 연기가 좀 아쉽다..."},
     {'rate': 5, 'comment': "그냥 그럼"},
-    {'rate': 2, 'comment': "쓰레기... 에반데"},
+    {'rate': 3, 'comment': "시간날림"},
+    {'rate': 1, 'comment': "쓰레기... 에바임;;"},
 ]
 
 
@@ -86,18 +87,6 @@ if __name__ == '__main__':
     # Stage 1 : loading trained embeddings
     vectors = load_trained_embeds(config.use_pre_trained_embeds)
 
-    """
-    # Stage 2 : loading vectorized data
-
-    embed_vectors = EmbeddingVectorLoader(vec=vectors,
-                                          vec_type='tf-idf',
-                                          save_to_h5=config.save_to_h5,
-                                          load_from_h5=config.load_from_h5,
-                                          config=config)
-    x_data, y_data = embed_vectors.x_data, embed_vectors.y_data
-    del embed_vectors
-    """
-
     # Stage 2 : loading tokenize data
     ds = DataLoader(file=config.processed_dataset,
                     n_classes=config.n_classes,
@@ -120,6 +109,23 @@ if __name__ == '__main__':
 
     ds = None
     del ds
+
+    if config.verbose:
+        print("[*] sentence to w2v index conversion finish!")
+
+    sample_x_data = np.zeros((len(samples), config.sequence_length), dtype=np.int32)
+    sample_y_data = np.zeros((len(samples), config.n_classes), dtype=np.int32)
+    for i in tqdm(range(len(samples))):
+        sent = samples[i]['comment'][:config.sequence_length]
+        sample_x_data[i] = np.pad(vectors.words_to_index(sent),
+                                  (0, config.sequence_length - len(sent)), 'constant')
+        sample_y_data[i] = samples[i]['rate']
+
+    sample_x_data = np.array(sample_x_data)
+    sample_y_data = np.array(sample_y_data)
+
+    if config.verbose:
+        print("[*] sample data also loaded")
 
     if refine_data:
         # resizing the amount of rate-10 data
@@ -216,13 +222,17 @@ if __name__ == '__main__':
 
                     if global_step % config.logging_step == 0:
                         # validation
+                        rand_idx = np.random.choice(np.arange(len(y_valid)), len(y_valid) // 20)  # 5% of valid data
+
+                        x_va, y_va = x_valid[rand_idx], y_valid[rand_idx]
+
                         valid_loss, valid_acc = .0, .0
-                        valid_iter = len(y_valid) // batch_size
+                        valid_iter = len(y_va) // batch_size
                         for i in tqdm(range(0, valid_iter)):
                             v_loss, v_acc = s.run([model.loss, model.accuracy],
                                                   feed_dict={
-                                                      model.x: x_valid[batch_size * i:batch_size * (i + 1)],
-                                                      model.y: y_valid[batch_size * i:batch_size * (i + 1)],
+                                                      model.x: x_va[batch_size * i:batch_size * (i + 1)],
+                                                      model.y: y_va[batch_size * i:batch_size * (i + 1)],
                                                       model.do_rate: .0,
                                                   })
                             valid_loss += v_loss
@@ -231,9 +241,15 @@ if __name__ == '__main__':
                         valid_loss /= valid_iter
                         valid_acc /= valid_iter
 
-                        print("[*] epoch %03d global step %07d" % (epoch, global_step),
-                              " train_loss : {:.8f} train_acc : {:.4f}".format(loss, acc),
-                              " valid_loss : {:.8f} valid_acc : {:.4f}".format(valid_loss, valid_acc))
+                        if config.n_classes == 1:
+                            # accuracy when binary class is used is meaningless. Because it cannot be same :)
+                            print("[*] epoch %03d global step %07d" % (epoch, global_step),
+                                  " train_mse_loss : {:.8f} ".format(loss),
+                                  " valid_mse_loss : {:.8f} ".format(valid_loss))
+                        else:
+                            print("[*] epoch %03d global step %07d" % (epoch, global_step),
+                                  " train_loss : {:.8f} train_acc : {:.4f}".format(loss, acc),
+                                  " valid_loss : {:.8f} valid_acc : {:.4f}".format(valid_loss, valid_acc))
 
                         # summary
                         summary = s.run(model.merged,
@@ -252,9 +268,23 @@ if __name__ == '__main__':
 
                         if valid_loss < best_loss:
                             print("[+] model improved {:.6f} to {:.6f}".format(best_loss, loss))
+                            best_loss = valid_loss
+
                             model.best_saver.save(s, config.pretrained + '%s.ckpt' % config.model,
                                                   global_step=global_step)
                         print()
+
+                    if global_step % config.sample_test == 0:
+                        predict = s.run(model.prediction,
+                                        feed_dict={
+                                            model.x: sample_x_data,
+                                            model.y: sample_y_data,
+                                            model.do_rate: .0,
+                                        })
+
+                        for i, pd in enumerate(predict):
+                            print("[*] review %s" % sample_x_data[i],
+                                  "predict %.2f (expected %.2f)".format(pd, sample_y_data[i]))
 
                     global_step += 1
 
