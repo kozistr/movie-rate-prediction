@@ -31,7 +31,7 @@
 
 ### Movie Review Data Distribution
 
-![dist](./dist.png)
+![dist](./image/movie-rate-distribution.png)
 
 > data imbalance is worried... maybe rate-10 data should be downsized by 20%
 
@@ -144,13 +144,14 @@ soon!
 
 You can just simply type ```tensorboard --logdir=./ml_model/```
 
-### Word2Vec Embeddings
+### Word2Vec Embeddings (t-SNE)
 
-soon!
+![img](./image/w2v-t_sne-visualization.png)
+
+> trained with default parameters set by Tensorboard
 
 ## To-Do
-1. try Doc2Vec DM + DBOW
-2. deal with word spacing problem
+1. deal with word spacing problem
 
 ## ETC
 
