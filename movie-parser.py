@@ -82,8 +82,8 @@ def get_comments(code):
     return ret_list
  
  
-def fetch(idx):
-    out_name = cfg.query_path + '%d.sql' % idx
+def fetch(idx_):
+    out_name = cfg.query_path + '%d.sql' % idx_
 
     try:
         if os.stat(out_name).st_size > 0:
@@ -92,7 +92,7 @@ def fetch(idx):
         print(e)
         pass
 
-    rs = get_comments(idx)
+    rs = get_comments(idx_)
 
     if not len(rs):
         return
@@ -103,7 +103,7 @@ def fetch(idx):
         for idx, r in enumerate(rs):
             if idx:
                 f.write(',\n')
-            f.write("(%d,%s,%s,'%s')" % (i, r[0], r[1], r[2].replace("'", "''").replace("\\", "\\\\")))
+            f.write("(%d,%s,%s,'%s')" % (idx_, r[0], r[1], r[2].replace("'", "''").replace("\\", "\\\\")))
 
         f.write(';\n')
         f.close()
