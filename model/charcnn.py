@@ -96,6 +96,8 @@ class CharCNN:
             self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr).minimize(self.loss)
         elif self.optimizer == 'sgd':
             self.opt = tf.train.GradientDescentOptimizer(learning_rate=self.lr).minimize(self.loss)
+        elif self.optimizer == 'adadelta':
+            self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr).minimize(self.loss)
         else:
             raise NotImplementedError("[-] only Adam, SGD are supported!")
 
