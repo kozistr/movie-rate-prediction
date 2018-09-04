@@ -12,16 +12,12 @@ from dataloader import Word2VecEmbeddings, Doc2VecEmbeddings, DataLoader, DataIt
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
 parser.add_argument('--checkpoint', type=str, help='pre-trained model', default=None)
-parser.add_argument('--save_to_h5', type=str, help='saving vectorized processed data into h5', default=None)
-parser.add_argument('--load_from_h5', type=str, help='loading vectorized processed data from h5', default=None)
 parser.add_argument('--refine_data', type=bool, help='solving data imbalance problem', default=False)
 args = parser.parse_args()
 
 # parsed args
 checkpoint = args.checkpoint
-save_to_h5 = args.save_to_h5
 refine_data = args.refine_data
-load_from_h5 = args.load_from_h5
 
 # Configuration
 config, _ = get_config()
@@ -224,7 +220,7 @@ if __name__ == '__main__':
 
                     if global_step and global_step % config.logging_step == 0:
                         # validation
-                        rand_idx = np.random.choice(np.arange(len(y_valid)), len(y_valid) // 25)  # 4% of valid data
+                        rand_idx = np.random.choice(np.arange(len(y_valid)), len(y_valid) // 50)  # 2% of valid data
 
                         x_va, y_va = x_valid[rand_idx], y_valid[rand_idx]
 
