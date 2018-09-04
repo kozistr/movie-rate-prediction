@@ -62,11 +62,10 @@
       --is_analyzed IS_ANALYZED
                             already analyzed data
 
-### 5. Training/Testing a Model
+### 5. Training a Model
     $ python3 main.py --refine_data [True or False]
 
-    usage: main.py [-h] [--checkpoint CHECKPOINT] [--save_to_h5 SAVE_TO_H5]
-                   [--load_from_h5 LOAD_FROM_H5] [--refine_data REFINE_DATA]
+    usage: main.py [-h] [--checkpoint CHECKPOINT] [--refine_data REFINE_DATA]
     
     train/test movie review classification model
     
@@ -74,10 +73,6 @@
       -h, --help            show this help message and exit
       --checkpoint CHECKPOINT
                             pre-trained model
-      --save_to_h5 SAVE_TO_H5
-                            saving vectorized processed data into h5
-      --load_from_h5 LOAD_FROM_H5
-                            loading vectorized processed data from h5
       --refine_data REFINE_DATA
                             solving data imbalance problem
 
