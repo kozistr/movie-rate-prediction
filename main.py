@@ -130,7 +130,7 @@ if __name__ == '__main__':
         if not config.n_classes == 1:
             rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if np.argmax(y, axis=-1) == 9]
         else:
-             rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if y == 10]
+            rate_10_idx = [idx for idx, y in tqdm(enumerate(y_data)) if y == 10]
 
         rand_idx = np.random.choice(rate_10_idx, 4 * len(rate_10_idx) // 5)
 

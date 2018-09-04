@@ -18,15 +18,15 @@ def get_config():
 
 # Network
 network_arg = add_arg_group('Network')
-network_arg.add_argument('--mode', type=str, default='static', choices=['static', 'non-static'])
+network_arg.add_argument('--mode', type=str, default='non-static', choices=['static', 'non-static'])
 network_arg.add_argument('--model', type=str, default='charcnn', choices=['charcnn', 'charrnn'])
 network_arg.add_argument('--n_classes', type=int, default=1)
 network_arg.add_argument('--use_pre_trained_embeds', type=str, default='w2v', choices=['w2v', 'd2v', None],
                          help='using Word/Doc2Vec/None as embedding.')
-network_arg.add_argument('--kernel_size', type=list, default=[1, 2, 3, 4],
+network_arg.add_argument('--kernel_size', type=list, default=[1, 2, 3],
                          help='conv1d kernel size')
-network_arg.add_argument('--fc_unit', type=int, default=1024)
-network_arg.add_argument('--drop_out', type=float, default=.5,
+network_arg.add_argument('--fc_unit', type=int, default=512)
+network_arg.add_argument('--drop_out', type=float, default=.7,
                          help='dropout rate')
 network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
 network_arg.add_argument('--act_threshold', type=float, default=1e-6,
