@@ -26,8 +26,8 @@
 ## DataSet
 
 | DataSet  |  Language  | Sentences | Words | Size |
-|:---:|:---:|:---:|:---:|
-| [NAVER Movie Review](http://movie.naver.com) | *Korean* | ```5.36M``` | ```40M``` |  ```About 700MB``` | 
+|:---:|:---:|:---:|:---:|:---:|
+| [NAVER Movie Review](http://movie.naver.com) | *Korean* | ```5.36M``` | ```40M``` |  ```About 1GB``` | 
 
 ### Movie Review Data Distribution
 
