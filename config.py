@@ -25,8 +25,10 @@ network_arg.add_argument('--use_pre_trained_embeds', type=str, default='w2v', ch
                          help='using Word/Doc2Vec/None as embedding.')
 network_arg.add_argument('--kernel_size', type=list, default=[1, 2, 3],
                          help='conv1d kernel size')
+network_arg.add_argument('--filter_size', type=int, default=256,
+                         help='conv1d filter size')
 network_arg.add_argument('--fc_unit', type=int, default=512)
-network_arg.add_argument('--drop_out', type=float, default=.7,
+network_arg.add_argument('--drop_out', type=float, default=.5,
                          help='dropout rate')
 network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
 network_arg.add_argument('--act_threshold', type=float, default=1e-6,
@@ -49,7 +51,7 @@ train_arg = add_arg_group('Training')
 train_arg.add_argument('--is_train', type=bool, default=True)
 train_arg.add_argument('--epochs', type=int, default=100)
 train_arg.add_argument('--logging_step', type=int, default=500)
-train_arg.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'sgd', 'adadelta'])
+train_arg.add_argument('--optimizer', type=str, default='adadelta', choices=['adam', 'sgd', 'adadelta'])
 train_arg.add_argument('--lr', type=float, default=2e-4)
 train_arg.add_argument('--lr_decay', type=float, default=.95)
 train_arg.add_argument('--lr_lower_boundary', type=float, default=2e-5)

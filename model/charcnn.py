@@ -6,7 +6,7 @@ class CharCNN:
 
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
                  vocab_size=122351 + 1, sequence_length=400, n_dims=300, seed=1337, optimizer='adam',
-                 filter_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
+                 kernel_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
                  lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6,
                  summary=None, mode='static', w2v_embeds=None):
         self.s = s
@@ -20,7 +20,7 @@ class CharCNN:
 
         self.seed = seed
 
-        self.filter_sizes = filter_sizes
+        self.kernel_sizes = kernel_sizes
         self.n_filters = n_filters
         self.fc_unit = fc_unit
         self.l2_reg = l2_reg
@@ -122,7 +122,7 @@ class CharCNN:
             embeds = spatial_drop_out(embeds)
 
         pooled_outs = []
-        for i, fs in enumerate(self.filter_sizes):
+        for i, fs in enumerate(self.kernel_sizes):
             with tf.variable_scope("conv_layer-%d-%d" % (fs, i)):
                 """
                 Try 1 : Conv1D-(Threshold)ReLU-drop_out-k_max_pool
