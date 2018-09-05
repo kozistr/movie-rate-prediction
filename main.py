@@ -170,12 +170,14 @@ if __name__ == '__main__':
                                         w2v_embeds=vectors.embeds,
                                         n_classes=config.n_classes,
                                         optimizer=config.optimizer,
+                                        filter_sizes=config.kernel_size,
                                         n_dims=config.embed_size,
                                         vocab_size=config.vocab_size + 1,
                                         sequence_length=config.sequence_length,
                                         lr=config.lr,
                                         lr_decay=config.lr_decay,
                                         lr_lower_boundary=config.lr_lower_boundary,
+                                        fc_unit=config.fc_unit,
                                         th=config.act_threshold,
                                         summary=config.pretrained)
             elif config.model == 'charrnn':
