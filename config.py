@@ -23,12 +23,12 @@ network_arg.add_argument('--model', type=str, default='charcnn', choices=['charc
 network_arg.add_argument('--n_classes', type=int, default=1)
 network_arg.add_argument('--use_pre_trained_embeds', type=str, default='w2v', choices=['w2v', 'd2v', None],
                          help='using Word/Doc2Vec/None as embedding.')
-network_arg.add_argument('--kernel_size', type=list, default=[1, 2, 3],
+network_arg.add_argument('--kernel_size', type=list, default=[2, 3, 4, 5],
                          help='conv1d kernel size')
 network_arg.add_argument('--filter_size', type=int, default=256,
                          help='conv1d filter size')
-network_arg.add_argument('--fc_unit', type=int, default=512)
-network_arg.add_argument('--drop_out', type=float, default=.5,
+network_arg.add_argument('--fc_unit', type=int, default=1024)
+network_arg.add_argument('--drop_out', type=float, default=.7,
                          help='dropout rate')
 network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
 network_arg.add_argument('--act_threshold', type=float, default=1e-6,
