@@ -290,7 +290,7 @@ if __name__ == '__main__':
                                                   global_step=global_step)
                         print()
 
-                    model.global_step += 1
+                    model.global_step.assign_add(tf.constant(1))
                     global_step += 1
 
                 # predictions

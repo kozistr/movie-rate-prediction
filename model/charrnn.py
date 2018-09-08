@@ -84,7 +84,7 @@ class CharRNN:
 
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
                  vocab_size=122351 + 1, sequence_length=400, n_dims=300, seed=1337, optimizer='adam',
-                 n_gru_layer=3, n_gru_cell=256, n_attention_size=128, fc_unit=1024,
+                 n_gru_layer=2, n_gru_cell=256, n_attention_size=128, fc_unit=1024,
                  lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.9, l2_reg=5e-4, th=1e-6,
                  summary=None, mode='static', w2v_embeds=None):
         self.s = s
@@ -204,29 +204,24 @@ class CharRNN:
         outs = []
 
         with tf.name_scope("cudnnGRU"):
-            gru1 = tf.contrib.cudnn_rnn.CudnnGRU(num_layers=self.n_gru_layer, num_units=self.n_gru_cell,
-                                                 direction='bidirectional', dropout=self.do_rate, seed=self.seed,
-                                                 kernel_initializer=self.he_uni, name='bigru1')
-            gru2 = tf.contrib.cudnn_rnn.CudnnGRU(num_layers=self.n_gru_layer, num_units=self.n_gru_cell,
-                                                 direction='bidirectional', dropout=self.do_rate, seed=self.seed,
-                                                 kernel_initializer=self.he_uni, name='bigru2')
-
-            x = gru1(x)
-            x = gru2(x)
+            gru = tf.contrib.cudnn_rnn.CudnnGRU(num_layers=self.n_gru_layer, num_units=self.n_gru_cell,
+                                                direction='bidirectional',
+                                                seed=self.seed, kernel_initializer=self.he_uni, name='bigru1')
+            x, _ = gru(x)  # (?, 140, 512)
 
         # 1. lambda
-        outs.append(x)
+        outs.append(tf.layers.flatten(x))  # (?, 140 * 512)
 
         # 2. GlobalMaxPooling1d
-        outs.append(tf.reduce_max(x, axis=-1))
+        outs.append(tf.reduce_max(x, axis=-1))  # (?, 140)
 
         # 3. GlobalAvgPooling1d
-        outs.append(tf.reduce_mean(x, axis=-1))
+        outs.append(tf.reduce_mean(x, axis=-1))  # (?, 140)
 
         # 4. AttentionWeightedAverage
-        outs.append(attention(x, self.n_attention_size))
+        outs.append(attention(x, self.n_attention_size))  # (?, 512)
 
-        x = tf.concat(outs, 1)
+        x = tf.concat(outs, axis=1)
         x = tf.layers.flatten(x)
         x = tf.layers.dropout(x, self.do_rate)
 

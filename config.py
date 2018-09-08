@@ -19,7 +19,7 @@ def get_config():
 # Network
 network_arg = add_arg_group('Network')
 network_arg.add_argument('--mode', type=str, default='non-static', choices=['static', 'non-static'])
-network_arg.add_argument('--model', type=str, default='charcnn', choices=['charcnn', 'charrnn'])
+network_arg.add_argument('--model', type=str, default='charrnn', choices=['charcnn', 'charrnn'])
 network_arg.add_argument('--n_classes', type=int, default=1)
 network_arg.add_argument('--use_pre_trained_embeds', type=str, default='w2v', choices=['w2v', 'd2v', None],
                          help='using Word/Doc2Vec/None as embedding.')
