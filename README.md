@@ -90,9 +90,9 @@
 │    ├── ko_d2v.model (Dov2Vec trained gensim model)
 │    └── ...
 ├── model             (Movie Review Rate ML Models)
-│    ├── charcnn.py
-│    ├── ...
-│    └── charrnn.py
+│    ├── textcnn.py
+│    ├── textrnn.py
+│    └── ...
 ├── image             (explaination images)
 │    └── *.png
 ├── ml_model          (tf pre-trained model saved in here)
