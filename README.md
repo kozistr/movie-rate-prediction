@@ -131,13 +131,9 @@ credited by [Toxic Comment Classification kaggle 1st solution](https://medium.co
 
 * Char/TextRNN (planned)
 
-soon!
+![img](./image/TextRNN-architecture.png)
 
 credited by [Toxic Comment Classification kaggle 1st solution](https://medium.com/@zake7749/top-1-solution-to-toxic-comment-classification-challenge-ea28dbe75054)
-
-* Simple Convolutional Neural Networks
-
-soon!
 
 ## Results
 
