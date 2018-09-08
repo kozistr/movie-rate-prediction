@@ -4,8 +4,9 @@ import numpy as np
 import tensorflow as tf
 
 from tqdm import tqdm
-from model import charcnn, charrnn
 from config import get_config
+from model.textcnn import TextCNN
+from model.textrnn import TextRNN
 from sklearn.model_selection import train_test_split
 from dataloader import Word2VecEmbeddings, Doc2VecEmbeddings, DataLoader, DataIterator
 
@@ -165,39 +166,39 @@ if __name__ == '__main__':
         with tf.Session(config=dev_config) as s:
             if config.model == 'charcnn':
                 # Model Loaded
-                model = charcnn.CharCNN(s=s,
-                                        mode=config.mode,
-                                        w2v_embeds=vectors.embeds,
-                                        n_classes=config.n_classes,
-                                        optimizer=config.optimizer,
-                                        kernel_sizes=config.kernel_size,
-                                        n_filters=config.filter_size,
-                                        n_dims=config.embed_size,
-                                        vocab_size=config.vocab_size + 1,
-                                        sequence_length=config.sequence_length,
-                                        lr=config.lr,
-                                        lr_decay=config.lr_decay,
-                                        lr_lower_boundary=config.lr_lower_boundary,
-                                        fc_unit=config.fc_unit,
-                                        th=config.act_threshold,
-                                        summary=config.pretrained)
+                model = TextCNN(s=s,
+                                mode=config.mode,
+                                w2v_embeds=vectors.embeds,
+                                n_classes=config.n_classes,
+                                optimizer=config.optimizer,
+                                kernel_sizes=config.kernel_size,
+                                n_filters=config.filter_size,
+                                n_dims=config.embed_size,
+                                vocab_size=config.vocab_size + 1,
+                                sequence_length=config.sequence_length,
+                                lr=config.lr,
+                                lr_decay=config.lr_decay,
+                                lr_lower_boundary=config.lr_lower_boundary,
+                                fc_unit=config.fc_unit,
+                                th=config.act_threshold,
+                                summary=config.pretrained)
             elif config.model == 'charrnn':
-                model = charrnn.CharRNN(s=s,
-                                        mode=config.mode,
-                                        w2v_embeds=vectors.embeds,
-                                        n_classes=config.n_classes,
-                                        optimizer=config.optimizer,
-                                        n_gru_cell=config.n_gru_cells,
-                                        n_grU_layer=config.n_gru_layers,
-                                        n_attention_size=config.n_attention_size,
-                                        n_dims=config.embed_size,
-                                        vocab_size=config.vocab_size + 1,
-                                        sequence_length=config.sequence_length,
-                                        lr=config.lr,
-                                        lr_decay=config.lr_decay,
-                                        lr_lower_boundary=config.lr_lower_boundary,
-                                        fc_unit=config.fc_unit,
-                                        summary=config.pretrained)
+                model = TextRNN(s=s,
+                                mode=config.mode,
+                                w2v_embeds=vectors.embeds,
+                                n_classes=config.n_classes,
+                                optimizer=config.optimizer,
+                                n_gru_cell=config.n_gru_cells,
+                                n_grU_layer=config.n_gru_layers,
+                                n_attention_size=config.n_attention_size,
+                                n_dims=config.embed_size,
+                                vocab_size=config.vocab_size + 1,
+                                sequence_length=config.sequence_length,
+                                lr=config.lr,
+                                lr_decay=config.lr_decay,
+                                lr_lower_boundary=config.lr_lower_boundary,
+                                fc_unit=config.fc_unit,
+                                summary=config.pretrained)
             else:
                 raise NotImplementedError("[-] Not Implemented Yet")
 

@@ -80,7 +80,7 @@ def attention(inputs, attention_size, time_major=False, return_alphas=False):
         return output, alphas
 
 
-class CharRNN:
+class TextRNN:
 
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
                  vocab_size=122351 + 1, sequence_length=400, n_dims=300, seed=1337, optimizer='adam',

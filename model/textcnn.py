@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 
-class CharCNN:
+class TextCNN:
 
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
                  vocab_size=122351 + 1, sequence_length=400, n_dims=300, seed=1337, optimizer='adam',
