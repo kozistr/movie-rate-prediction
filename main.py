@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 
 from tqdm import tqdm
-from model import charcnn
+from model import charcnn, charrnn
 from config import get_config
 from sklearn.model_selection import train_test_split
 from dataloader import Word2VecEmbeddings, Doc2VecEmbeddings, DataLoader, DataIterator
@@ -182,7 +182,20 @@ if __name__ == '__main__':
                                         th=config.act_threshold,
                                         summary=config.pretrained)
             elif config.model == 'charrnn':
-                raise NotImplementedError("[-] Not Implemented Yet")
+                model = charrnn.CharRNN(s=s,
+                                        mode=config.mode,
+                                        w2v_embeds=vectors.embeds,
+                                        n_classes=config.n_classes,
+                                        optimizer=config.optimizer,
+                                        n_gru_cell=config.filter_size,
+                                        n_dims=config.embed_size,
+                                        vocab_size=config.vocab_size + 1,
+                                        sequence_length=config.sequence_length,
+                                        lr=config.lr,
+                                        lr_decay=config.lr_decay,
+                                        lr_lower_boundary=config.lr_lower_boundary,
+                                        fc_unit=config.fc_unit,
+                                        summary=config.pretrained)
             else:
                 raise NotImplementedError("[-] Not Implemented Yet")
 
