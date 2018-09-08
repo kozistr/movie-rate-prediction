@@ -23,6 +23,11 @@ network_arg.add_argument('--model', type=str, default='charrnn', choices=['charc
 network_arg.add_argument('--n_classes', type=int, default=1)
 network_arg.add_argument('--use_pre_trained_embeds', type=str, default='w2v', choices=['w2v', 'd2v', None],
                          help='using Word/Doc2Vec/None as embedding.')
+network_arg.add_argument('--n_gru_cells', type=int, default=256,
+                         help='the number of CuDNNGRU cells')
+network_arg.add_argument('--n_gru_layers', type=int, default=2,
+                         help='the number of layers of CuDNNGRU')
+network_arg.add_argument('--n_attention_size', type=int, default=128)
 network_arg.add_argument('--kernel_size', type=list, default=[2, 3, 4, 5],
                          help='conv1d kernel size')
 network_arg.add_argument('--filter_size', type=int, default=256,
