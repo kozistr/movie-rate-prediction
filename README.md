@@ -123,13 +123,13 @@ Here's a **google drive link**. You can download pre-trained models from [here](
 
 ## Models
 
-* Char/TextCNN (optimized)
+* TextCNN
 
 ![img](./image/TextCNN-architecture.png)
 
 credited by [Toxic Comment Classification kaggle 1st solution](https://medium.com/@zake7749/top-1-solution-to-toxic-comment-classification-challenge-ea28dbe75054)
 
-* Char/TextRNN (planned)
+* TextRNN
 
 ![img](./image/TextRNN-architecture.png)
 
@@ -137,17 +137,19 @@ credited by [Toxic Comment Classification kaggle 1st solution](https://medium.co
 
 ## Results
 
-* Char/TextCNN (optimized)
+DataSet is not good. So, the result also isn't pretty good as i expected :( <br/>
+Refining/Normalizing raw sentences are needed!
 
-![img]()
+* TextCNN
 
-* Char/TextRNN (planned)
+![img](./image/TextCNN-loss.png)
 
-soon!
+> Result : MSE 3.886
+> Hyper-Parameter : non-static, conv kernel size [2,3,4,5], conv filters 256, drop out 0.7, fc unit 1024, adadelta
 
-* Simple Convolutional Neural Networks
+* TextRNN
 
-soon!
+![img](./image/TextRNN-loss.png)
 
 ## Visualization
 
