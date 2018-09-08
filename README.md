@@ -138,13 +138,13 @@ credited by [Toxic Comment Classification kaggle 1st solution](https://medium.co
 ## Results
 
 DataSet is not good. So, the result also isn't pretty good as i expected :( <br/>
-Refining/Normalizing raw sentences are needed!
+**Refining/Normalizing raw sentences are needed!**
 
 * TextCNN
 
 ![img](./image/TextCNN-loss.png)
 
-> Result : MSE 3.886
+> Result : MSE 3.886 <br/>
 > Hyper-Parameter : non-static, conv kernel size [2,3,4,5], conv filters 256, drop out 0.7, fc unit 1024, adadelta
 
 * TextRNN
