@@ -208,10 +208,9 @@ class TextRNN:
                                                 direction='bidirectional',
                                                 seed=self.seed, kernel_initializer=self.he_uni, name='bigru1')
             x, _ = gru(x)  # (?, 140, 512)
-            gru_shape = x.get_shape()[-1]
 
         # 1. lambda : get last hidden state
-        outs.append(tf.reshape(x[:, :, -1], (-1, gru_shape)))  # (?, 512)
+        outs.append(tf.reshape(x[:, -1, :], (-1, x.get_shape()[-1])))  # (?, 512)
 
         # 2. GlobalMaxPooling1d
         outs.append(tf.reduce_max(x, axis=-1))  # (?, 140)
