@@ -84,7 +84,7 @@ class TextRNN:
 
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
                  vocab_size=122351 + 1, sequence_length=400, n_dims=300, seed=1337, optimizer='adam',
-                 n_gru_layer=2, n_gru_cell=256, n_attention_size=128, fc_unit=1024,
+                 n_gru_layers=2, n_gru_cells=256, n_attention_size=128, fc_unit=1024,
                  lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.9, l2_reg=5e-4, th=1e-6,
                  summary=None, mode='static', w2v_embeds=None):
         self.s = s
@@ -98,8 +98,8 @@ class TextRNN:
 
         self.seed = seed
 
-        self.n_gru_layer = n_gru_layer
-        self.n_gru_cell = n_gru_cell
+        self.n_gru_layers = n_gru_layers
+        self.n_gru_cells = n_gru_cells
         self.n_attention_size = n_attention_size
         self.fc_unit = fc_unit
         self.l2_reg = l2_reg
@@ -204,7 +204,7 @@ class TextRNN:
         outs = []
 
         with tf.name_scope("cudnnGRU"):
-            gru = tf.contrib.cudnn_rnn.CudnnGRU(num_layers=self.n_gru_layer, num_units=self.n_gru_cell,
+            gru = tf.contrib.cudnn_rnn.CudnnGRU(num_layers=self.n_gru_layers, num_units=self.n_gru_cells,
                                                 direction='bidirectional',
                                                 seed=self.seed, kernel_initializer=self.he_uni, name='bigru1')
             x, _ = gru(x)  # (?, 140, 512)
