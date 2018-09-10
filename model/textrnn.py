@@ -213,16 +213,16 @@ class TextRNN:
         outs.append(tf.reshape(x[:, -1, :], (-1, x.get_shape()[-1])))  # (?, 512)
 
         # 2. GlobalMaxPooling1d
-        outs.append(tf.reduce_max(x, axis=-1))  # (?, 140)
+        outs.append(tf.reduce_max(x, axis=1))  # (?, 512)
 
         # 3. GlobalAvgPooling1d
-        outs.append(tf.reduce_mean(x, axis=-1))  # (?, 140)
+        outs.append(tf.reduce_mean(x, axis=1))  # (?, 512)
 
         # 4. AttentionWeightedAverage
         outs.append(attention(x, self.n_attention_size))  # (?, 512)
 
         x = tf.concat(outs, axis=-1)
-        x = tf.layers.flatten(x)
+        x = tf.layers.flatten(x)  # (?, 2048)
         x = tf.layers.dropout(x, self.do_rate)
 
         with tf.variable_scope("outputs"):
