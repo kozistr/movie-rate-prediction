@@ -80,6 +80,27 @@ def attention(inputs, attention_size, time_major=False, return_alphas=False):
         return output, alphas
 
 
+def biGRU(inputs, n_gru_cells, n_gru_layers, do_rate, k_init=None):
+    x = inputs
+
+    for i in range(n_gru_layers):
+        with tf.variable_scope("biGRU-%d" % i) as scope:
+            cell_fw = tf.nn.rnn_cell.GRUCell(num_units=n_gru_cells, kernel_initializer=k_init)
+            cell_fw = tf.nn.rnn_cell.DropoutWrapper(cell_fw, 1 - do_rate)
+
+            cell_bw = tf.nn.rnn_cell.GRUCell(num_units=n_gru_cells, kernel_initializer=k_init)
+            cell_bw = tf.nn.rnn_cell.DropoutWrapper(cell_bw, 1 - do_rate)
+
+            outs, stat = tf.nn.bidirectional_dynamic_rnn(cell_fw=cell_fw,
+                                                         cell_bw=cell_bw,
+                                                         inputs=x,
+                                                         dtype=tf.float32,
+                                                         scope=scope)
+            x = tf.concat(outs, axis=2)
+
+    return x
+
+
 class TextRNN:
 
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
@@ -194,20 +215,23 @@ class TextRNN:
         self.writer = tf.summary.FileWriter(self.summary, self.s.graph)
 
     def build_model(self):
-        with tf.device('/cpu:0'), tf.name_scope('embeddings'):
-            spatial_drop_out = tf.keras.layers.SpatialDropout1D(self.do_rate)
-
-            embeds = tf.nn.embedding_lookup(self.embeddings, self.x)
-            embeds = spatial_drop_out(embeds)
-
-        x = embeds
         outs = []
 
-        with tf.name_scope("cudnnGRU"):
-            gru = tf.contrib.cudnn_rnn.CudnnGRU(num_layers=self.n_gru_layers, num_units=self.n_gru_cells,
-                                                direction='bidirectional',
-                                                seed=self.seed, kernel_initializer=self.he_uni, name='bigru1')
-            x, _ = gru(x)  # (?, 140, 512)
+        with tf.device('/cpu:0'), tf.name_scope('embeddings'):
+            embeds = tf.nn.embedding_lookup(self.embeddings, self.x)
+
+        spatial_drop_out = tf.keras.layers.SpatialDropout1D(self.do_rate)
+        embeds = spatial_drop_out(embeds)
+
+        """
+        gru = tf.contrib.cudnn_rnn.CudnnGRU(num_layers=self.n_gru_layers, num_units=self.n_gru_cells,
+                                            direction='bidirectional',
+                                            seed=self.seed, kernel_initializer=self.he_uni, name='bigru1')
+        x, _ = gru(embeds)  # (?, 140, 512)
+        """
+
+        x = biGRU(embeds, n_gru_cells=self.n_gru_cells, n_gru_layers=self.n_gru_layers, k_init=self.he_uni,
+                  do_rate=self.do_rate)
 
         # 1. lambda : get last hidden state
         outs.append(tf.reshape(x[:, -1, :], (-1, x.get_shape()[-1])))  # (?, 512)
