@@ -93,7 +93,7 @@ class TextCNN:
                                    name='lr-clipped')
 
         if self.optimizer == 'adam':
-            self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr).minimize(self.loss)
+            self.opt = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss)
         elif self.optimizer == 'sgd':
             self.opt = tf.train.GradientDescentOptimizer(learning_rate=self.lr).minimize(self.loss)
         elif self.optimizer == 'adadelta':
