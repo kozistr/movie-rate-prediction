@@ -159,7 +159,9 @@ You can just simply type ```tensorboard --logdir=./ml_model/```
 
 ![img](./image/w2v-t_sne-visualization.png)
 
-> trained with default parameters set by Tensorboard
+> Perplexity : 80 <br/>
+> Learning rate : 10 <br/>
+> Iteration : 310 <br/>
 
 ## To-Do
 1. deal with word spacing problem
