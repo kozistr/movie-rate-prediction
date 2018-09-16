@@ -182,10 +182,10 @@ class TextRNN:
 
         # Optimizer
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
-        learning_rate = tf.train.exponential_decay(lr,
-                                                   self.global_step,
-                                                   100000,  # hard-coded
-                                                   lr_decay,
+        learning_rate = tf.train.exponential_decay(learning_rate=lr,
+                                                   global_step=self.global_step,
+                                                   decay_steps=100000,  # hard-coded
+                                                   decay_rate=lr_decay,
                                                    staircase=True)
         self.lr = tf.clip_by_value(learning_rate,
                                    clip_value_min=lr_lower_boundary,
@@ -193,11 +193,14 @@ class TextRNN:
                                    name='lr-clipped')
 
         if self.optimizer == 'adam':
-            self.opt = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss)
+            self.opt = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss,
+                                                                              global_step=self.global_step)
         elif self.optimizer == 'sgd':
-            self.opt = tf.train.GradientDescentOptimizer(learning_rate=self.lr).minimize(self.loss)
+            self.opt = tf.train.GradientDescentOptimizer(learning_rate=self.lr).minimize(self.loss,
+                                                                                         global_step=self.global_step)
         elif self.optimizer == 'adadelta':
-            self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr).minimize(self.loss)
+            self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr).minimize(self.loss,
+                                                                                  global_step=self.global_step)
         else:
             raise NotImplementedError("[-] only Adam, SGD are supported!")
 
