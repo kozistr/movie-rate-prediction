@@ -226,6 +226,7 @@ if __name__ == '__main__':
 
             best_loss = 100.  # initial value
             batch_size = config.batch_size
+            model.global_step.assign(tf.constant(global_step))
             restored_epochs = global_step // (data_size // batch_size)
             for epoch in range(restored_epochs, config.epochs):
                 for x_tr, y_tr in di.iterate():
