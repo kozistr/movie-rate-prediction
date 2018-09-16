@@ -84,7 +84,7 @@ def biGRU(inputs, n_gru_cells, n_gru_layers, do_rate, k_init=None):
     x = inputs
 
     for i in range(n_gru_layers):
-        with tf.variable_scope("biGRU-%d" % i) as scope:
+        with tf.device('/gpu:0'), tf.variable_scope("biGRU-%d" % i) as scope:
             cell_fw = tf.nn.rnn_cell.GRUCell(num_units=n_gru_cells, kernel_initializer=k_init)
             cell_fw = tf.nn.rnn_cell.DropoutWrapper(cell_fw, 1 - do_rate)
 
