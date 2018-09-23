@@ -1,5 +1,5 @@
-# NAVER Movie Rate Prediction
-네이버 영화 평점 예측 with Tensorflow
+# Movie Rate Prediction
+영화 평점 예측 with Tensorflow
 
 ## Environments
 * OS  : Ubuntu 16.04/18.04 x86-64 ~
