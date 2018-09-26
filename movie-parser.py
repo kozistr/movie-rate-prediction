@@ -1,7 +1,5 @@
-# Credited by 'bab2min', Reformatted by 'kozistr'
-# original link : http://bab2min.tistory.com/556
-__author__ = "bab2min, kozistr"
-
+# Credited by 'bab2min', Reformatted by 'kozstr'
+#  original link : http://bab2min.tistory.com/556
 
 from concurrent.futures import ThreadPoolExecutor
 from config import get_config

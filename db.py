@@ -7,11 +7,20 @@ from config import get_config
 
 
 def make_db_conn(db_info: dict):
+    """
+    :param db_info: dict
+    :return: pymysql db conn socket
+    """
     db_conn = pymysql.connect(**db_info)
     return db_conn
 
 
-def do_db(db_conn, qry: str):
+def do_db(db_conn, qry):
+    """
+    :param db_conn: pymysql db conn socket
+    :param qry: str
+    :return: bool, success or fail
+    """
     with db_conn.cursor() as db_cur:
         try:
             db_cur.execute(qry)

@@ -21,7 +21,11 @@ load_from = args.load_from
 is_analyzed = args.is_analyzed
 
 
-def w2v_training(data: list) -> bool:
+def w2v_training(data):
+    """
+    :param data: list containing words
+    :return: bool, success or fail
+    """
     from gensim.models import word2vec
 
     global config
@@ -50,7 +54,13 @@ def w2v_training(data: list) -> bool:
     return True
 
 
-def d2v_training(sentences: list, rates: list, epochs=10) -> bool:
+def d2v_training(sentences, rates, epochs=10):
+    """
+    :param sentences: list, x-data
+    :param rates: list, y-data
+    :param epochs: int
+    :return: bool, success or fail
+    """
     from gensim.models import Doc2Vec
 
     global config

@@ -39,10 +39,18 @@ class Word2VecEmbeddings:
         # zero embedding
         self.embeds[self.vocab_size - 1] = np.zeros((1, self.dims))
 
-    def word_to_vec(self, input_word: str) -> np.array:
+    def word_to_vec(self, input_word):
+        """
+        :param input_word: word, str
+        :return: numpy array
+        """
         return self.w2v_model.wv[input_word]
 
-    def words_to_index(self, input_words: list) -> list:
+    def words_to_index(self, input_words):
+        """
+        :param input_words: list
+        :return: list containing numpy arrays
+        """
         return [self.w2v_model.wv.vocab[word].index if word in self.w2v_model.wv.vocab else self.vocab_size - 1
                 for word in input_words]
 
@@ -69,7 +77,11 @@ class Doc2VecEmbeddings:
         from gensim.models import Doc2Vec
         self.d2v_model = Doc2Vec.load(self.model)
 
-    def sent_to_vec(self, input_sentence: str) -> np.array:
+    def sent_to_vec(self, input_sentence):
+        """
+        :param input_sentence: str
+        :return: numpy array
+        """
         return self.d2v_model.infer_vector(input_sentence)
 
     def __len__(self):
@@ -173,13 +185,22 @@ class EmbeddingVectorLoader:
                     print("[*] comment : ", self.x_data.shape)
                     print("[*] rate    : ", self.y_data.shape)
 
-    def mean_embedding(self, sentences: list) -> np.array:
+    def mean_embedding(self, sentences):
+        """
+        :param sentences: list
+        :return: numpy array
+        """
         return np.array([
             np.mean([self.to_vec[word] for word in sentence if self.to_vec[word]] or [np.zeros(self.n_dims)], axis=0)
             for sentence in tqdm(sentences)
         ])
 
-    def tf_idf_embedding(self, sentences: list) -> np.array:
+    def tf_idf_embedding(self, sentences):
+        """
+        :param sentences: list
+        :return: numpy array
+        """
+
         from collections import defaultdict
         from sklearn.feature_extraction.text import TfidfVectorizer
 
