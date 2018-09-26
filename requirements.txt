@@ -1,8 +1,0 @@
-tensorflow-gpu
-numpy
-gensim
-soynlp
-konlpy
-tqdm
-h5py
-pymysql
