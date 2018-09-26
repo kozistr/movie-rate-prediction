@@ -11,7 +11,7 @@
 
 ## Prerequisites
 * python 3.x
-* java 1.7+
+* (Optional) java 1.7+
 * tensorflow 1.x
 * numpy
 * gensim and konlpy and soynlp
@@ -19,7 +19,7 @@
 * pymysql
 * h5py
 * tqdm
-* PyKoSpacing
+* (Optional) PyKoSpacing
 * (Optional) MultiTSNE (for visualization)
 * (Optional) matplotlib (for visualization)
 
