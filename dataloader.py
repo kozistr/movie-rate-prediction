@@ -152,7 +152,6 @@ class EmbeddingVectorLoader:
                 print("[+] conversion finish! x_data, y_data loaded!")
 
             # delete DataSetLoader() from memory
-            ds = None
             gc.collect()
 
             if self.save_to_h5:

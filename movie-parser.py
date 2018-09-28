@@ -88,7 +88,6 @@ def fetch(idx_):
             return
     except Exception as e:
         print(e)
-        pass
 
     rs = get_comments(idx_)
 
