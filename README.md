@@ -1,6 +1,10 @@
 # Movie Rate Prediction
 영화 평점 예측 with Tensorflow
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/kozistr/movie-rate-prediction.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kozistr/movie-rate-prediction/alerts/)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/kozistr/movie-rate-prediction.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kozistr/movie-rate-prediction/context:python)
+
 ## Environments
 * OS  : Ubuntu 16.04/18.04 x86-64 ~
 * CPU : any (quad core ~)
