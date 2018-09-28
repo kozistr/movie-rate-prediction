@@ -367,13 +367,13 @@ class DataLoader:
             self.data[idx]['comment'] = spacing(self.data[idx]['comment'])
 
     def word_tokenize(self):
-        def emo(x: str, n_rep: int = 3) -> str:
+        def emo(x, n_rep=3):
             return emoticon_normalize(x, n_repeats=n_rep)
 
-        def rep(x: str, n_rep: int = 3) -> str:
+        def rep(x, n_rep=3):
             return repeat_normalize(x, n_repeats=n_rep)
 
-        def normalize(x: str, n_rep: int = 3) -> str:
+        def normalize(x, n_rep=3):
             return rep(emo(x, n_rep), n_rep) if self.use_normalize else x
 
         len_data = len(self.data)
@@ -424,7 +424,12 @@ class DataLoader:
             print("[*] the number of words in sentence : %d" % self.max_sent_len)
 
     @staticmethod
-    def to_one_hot(data, n_classes: int):
+    def to_one_hot(data, n_classes):
+        """
+        :param data: numpy data, np.array
+        :param n_classes: the number of classes, int
+        :return: one-hot-encoded data
+        """
         arr = np.eye(n_classes)
         for i in tqdm(range(len(data))):
             data[i] = arr[int(data[i]) - 1]  # 1 ~ 10

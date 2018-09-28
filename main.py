@@ -29,6 +29,7 @@ tf.set_random_seed(config.seed)
 
 # hand-made samples # data must be tokenized by Mecab
 # you can replace this part to your custom DataSet :)
+"""
 samples = [
     {'rate': 10, 'comment': "이건 10점 안줄 수 가 없다. 닥추"},
     {'rate': 9, 'comment': "대박 개쩔어요!!!"},
@@ -37,6 +38,7 @@ samples = [
     {'rate': 3, 'comment': "시간날림"},
     {'rate': 1, 'comment': "쓰레기... 에바임;;"},
 ]
+"""
 
 
 def data_distribution(y_: np.array, size: int = 10, img: str = 'dist.png') -> np.array:

@@ -1,5 +1,5 @@
-# Credited by 'bab2min', Reformatted by 'kozstr'
-#  original link : http://bab2min.tistory.com/556
+# inspired by bab2min
+# original link : http://bab2min.tistory.com/556
 
 from concurrent.futures import ThreadPoolExecutor
 from config import get_config
@@ -111,6 +111,5 @@ def fetch(idx_):
 
 if __name__ == '__main__':
     with ThreadPoolExecutor(max_workers=cfg.n_threads) as executor:
-        # 영화 고유 ID 값의 범위를 몰라서 대략 아래처럼 잡았습니다.
         for i in tqdm(range(10000, 200000)):
             executor.submit(fetch, i)

@@ -6,7 +6,7 @@ from tqdm import tqdm
 from config import get_config
 
 
-def make_db_conn(db_info: dict):
+def make_db_conn(db_info):
     """
     :param db_info: dict
     :return: pymysql db conn socket
