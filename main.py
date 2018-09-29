@@ -36,7 +36,14 @@ samples = [
 """
 
 
-def data_distribution(y_: np.array, size: int = 10, img: str = 'dist.png') -> np.array:
+def data_distribution(y_, size=10, img='dist.png'):
+    """
+    movie rate data distribution via plot chart
+    :param y_: rate data, numpy array
+    :param size: classes, int
+    :param img: save to, str
+    :return: numpy array
+    """
     from matplotlib import pyplot as plt
 
     # showing data distribution
@@ -62,7 +69,11 @@ def data_distribution(y_: np.array, size: int = 10, img: str = 'dist.png') -> np
     return y_dist
 
 
-def load_trained_embeds(embed_mode: str = 'w2v'):
+def load_trained_embeds(embed_mode='w2v'):
+    """
+    :param embed_mode: embedding mode, str
+    :return: embedding vector, numpy array
+    """
     if embed_mode == 'd2v':
         vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)  # Doc2Vec Loader
         if config.verbose:
