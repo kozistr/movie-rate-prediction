@@ -118,12 +118,11 @@
 Here's a **google drive link**. You can download pre-trained models from [here](https://drive.google.com/open?id=1yzVzYeybAgjEZ8KG7jwnxDt-eLRSusLi) !
 
 * Embedding Models
-    * Doc2Vec model : [here](https://drive.google.com/open?id=1jnf4T7lM-O37NYRF-V9ZAYCG59inyPuJ)
     * Word2Vec model : [here](https://drive.google.com/open?id=1WmKtvPIGJ5eDs0TEdSVY51qtO0JdXEcl)
 
 * M.L Models
     * TextCNN model : [here](https://drive.google.com/open?id=1z3LmaKCiW6Qg_OqOCBS-Do7qiw3m5iMS)
-    * TextRNN model : [~~here~~]()
+    * TextRNN model : [here](https://drive.google.com/open?id=1sVhfN-tpNhvZX_Ms3VXGz6qjsxqcNM8r)
 
 ## Models
 
