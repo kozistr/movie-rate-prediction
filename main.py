@@ -27,15 +27,6 @@ np.random.seed(config.seed)
 tf.set_random_seed(config.seed)
 
 
-# hand-made samples # data must be tokenized by Mecab
-# you can replace this part to your custom DataSet :)
-"""
-samples = [
-
-]
-"""
-
-
 def data_distribution(y_, size=10, img='dist.png'):
     """
     movie rate data distribution via plot chart
@@ -92,12 +83,20 @@ if __name__ == '__main__':
     vectors = load_trained_embeds(config.use_pre_trained_embeds)
 
     # Stage 2 : loading tokenize data
-    ds = DataLoader(file=config.processed_dataset,
-                    n_classes=config.n_classes,
-                    analyzer=None,
-                    is_analyzed=True,
-                    use_save=False,
-                    config=config)  # DataSet Loader
+    if config.use_pre_trained_embeds == 'char':
+        ds = DataLoader(file=None,
+                        n_classes=config.n_classes,
+                        analyzer=None,
+                        is_analyzed=False,
+                        use_save=False,
+                        config=config)  # DataSet Loader
+    else:
+        ds = DataLoader(file=config.processed_dataset,
+                        n_classes=config.n_classes,
+                        analyzer=None,
+                        is_analyzed=True,
+                        use_save=False,
+                        config=config)  # DataSet Loader
     ds_len = len(ds)
 
     # Stage 3 : to index
@@ -116,22 +115,6 @@ if __name__ == '__main__':
 
     if config.verbose:
         print("[*] sentence to w2v index conversion finish!")
-
-    """
-    sample_x_data = np.zeros((len(samples), config.sequence_length), dtype=np.int32)
-    sample_y_data = np.zeros((len(samples), config.n_classes), dtype=np.int32)
-    for i in tqdm(range(len(samples))):
-        sent = samples[i]['comment'][:config.sequence_length]
-        sample_x_data[i] = np.pad(vectors.words_to_index(sent),
-                                  (0, config.sequence_length - len(sent)), 'constant')
-        sample_y_data[i] = samples[i]['rate']
-
-    sample_x_data = np.array(sample_x_data)
-    sample_y_data = np.array(sample_y_data)
-
-    if config.verbose:
-        print("[*] sample data also loaded")
-    """
 
     if refine_data:
         # resizing the amount of rate-10 data
@@ -267,14 +250,6 @@ if __name__ == '__main__':
                         valid_loss /= valid_iter
                         valid_acc /= valid_iter
 
-                        """
-                        if config.n_classes == 1:
-                            # accuracy when binary class is used is meaningless. Because it cannot be same :)
-                            print("[*] epoch %03d global step %07d" % (epoch, global_step),
-                                  " train_mse_loss : {:.8f} ".format(loss),
-                                  " valid_mse_loss : {:.8f} ".format(valid_loss))
-                        else:
-                        """
                         print("[*] epoch %03d global step %07d" % (epoch, global_step),
                               " train_loss : {:.8f} train_acc : {:.4f}".format(loss, acc),
                               " valid_loss : {:.8f} valid_acc : {:.4f}".format(valid_loss, valid_acc))
@@ -286,7 +261,7 @@ if __name__ == '__main__':
                                             model.y: y_tr,
                                             model.do_rate: .0,
                                         })
-                        
+
                         # Summary saver
                         model.writer.add_summary(summary, global_step)
 
@@ -305,22 +280,8 @@ if __name__ == '__main__':
                     model.global_step.assign_add(tf.constant(1))
                     global_step += 1
 
-                # predictions
-                """
-                for sample_data in samples:
-                    sample = vectors.sent_to_vec(sample_data['comment']).reshape(-1, config.embed_size)
-                    predict = s.run(model.prediction,
-                                    feed_dict={
-                                        model.x: sample,
-                                        model.do_rate: .0,
-                                    })
-                    print("[*] predict %050s : %d (expected %d)" % (sample_data['comment'],
-                                                                    predict + 1,
-                                                                    sample_data['rate']))
-                """
-
             end_time = time.time()
 
             print("[+] Training Done! Elapsed {:.8f}s".format(end_time - start_time))
-    else:  # Test
+    else:  # test
         pass
