@@ -91,6 +91,18 @@ class Doc2VecEmbeddings:
         return "Doc2Vec"
 
 
+class CharVecEmbeddings:
+
+    def __init__(self, sentences, n_dims=300):
+        self.sentences = sentences
+        self.n_dims = n_dims
+
+        self.vocab_size = sentences.shape[0] + 1
+
+    def __str__(self):
+        return "Character"
+
+
 class EmbeddingVectorLoader:
 
     def __init__(self, vec=None, n_dims=300, vec_type='tf-idf',
