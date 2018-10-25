@@ -87,13 +87,14 @@ if __name__ == '__main__':
     vectors = load_trained_embeds(embed_type)
 
     # Stage 2 : loading tokenize data
-    if config.use_pre_trained_embeds == 'char':  # Char2Vec
+    if config.use_pre_trained_embeds == 'c2v':  # Char2Vec
         ds = DataLoader(file=None,
+                        fn_to_save=config.processed_dataset,
                         load_from='db',
                         n_classes=config.n_classes,
                         analyzer='char',
                         is_analyzed=False,
-                        use_save=False,
+                        use_save=True,
                         config=config)  # DataSet Loader
 
         ds_len = len(ds)
