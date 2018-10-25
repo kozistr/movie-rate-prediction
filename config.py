@@ -47,9 +47,10 @@ network_arg.add_argument('--act_threshold', type=float, default=1e-6,
 
 # DataSet
 data_arg = add_arg_group('DataSet')
-data_arg.add_argument('--embed_size', type=int, default=300,
+data_arg.add_argument('--embed_size', type=int, default=384,  # 300
                       help='the size of Doc2Vec embedding vector')
 data_arg.add_argument('--vocab_size', type=int, default=391587, help='default is w2v vocab size')
+data_arg.add_argument('--character_size', type=int, default=251, help='number of korean chars')
 data_arg.add_argument('--sequence_length', type=int, default=400,
                       help='the length of the sentence, default is c2v max words cnt')
 # For Word2Vec, sequence_length should be 140

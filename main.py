@@ -81,8 +81,10 @@ def load_trained_embeds(embed_mode='char'):
 
 
 if __name__ == '__main__':
+    embed_type = config.use_pre_trained_embeds
+
     # Stage 1 : loading trained embeddings
-    vectors = load_trained_embeds(config.use_pre_trained_embeds)
+    vectors = load_trained_embeds(embed_type)
 
     # Stage 2 : loading tokenize data
     if config.use_pre_trained_embeds == 'char':  # Char2Vec
@@ -170,13 +172,13 @@ if __name__ == '__main__':
                 # Model Loaded
                 model = TextCNN(s=s,
                                 mode=config.mode,
-                                w2v_embeds=vectors.embeds,
+                                w2v_embeds=vectors.embeds if not embed_type == 'c2v' else None,
                                 n_classes=config.n_classes,
                                 optimizer=config.optimizer,
                                 kernel_sizes=config.kernel_size,
                                 n_filters=config.filter_size,
                                 n_dims=config.embed_size,
-                                vocab_size=config.vocab_size + 1,
+                                vocab_size=config.character_size if embed_type == 'c2v' else config.vocab_size + 1,
                                 sequence_length=config.sequence_length,
                                 lr=config.lr,
                                 lr_decay=config.lr_decay,
@@ -188,14 +190,14 @@ if __name__ == '__main__':
             elif config.model == 'charrnn':
                 model = TextRNN(s=s,
                                 mode=config.mode,
-                                w2v_embeds=vectors.embeds,
+                                w2v_embeds=vectors.embeds if not embed_type == 'c2v' else None,
                                 n_classes=config.n_classes,
                                 optimizer=config.optimizer,
                                 n_gru_cells=config.n_gru_cells,
                                 n_gru_layers=config.n_gru_layers,
                                 n_attention_size=config.n_attention_size,
                                 n_dims=config.embed_size,
-                                vocab_size=config.vocab_size + 1,
+                                vocab_size=config.character_size if embed_type == 'c2v' else config.vocab_size + 1,
                                 sequence_length=config.sequence_length,
                                 lr=config.lr,
                                 lr_decay=config.lr_decay,

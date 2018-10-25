@@ -151,10 +151,10 @@ class TextRNN:
             raise NotImplementedError("[-] static or non-static or rand only! (%s)" % self.mode)
 
         if not self.mode == 'rand':
-            assert self.w2v_embeds is not None
-            self.embeddings = self.embeddings.assign(self.w2v_embeds)
+            if self.w2v_embeds:
+                self.embeddings = self.embeddings.assign(self.w2v_embeds)
 
-            print("[+] Word2Vec pre-trained model loaded!")
+                print("[+] Word2Vec pre-trained model loaded!")
 
         self.x = tf.placeholder(tf.int32, shape=[None, self.sequence_length], name='x-sentence')
         self.y = tf.placeholder(tf.float32, shape=[None, self.n_classes], name='y-label')  # one-hot or int
