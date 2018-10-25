@@ -88,13 +88,13 @@ if __name__ == '__main__':
 
     # Stage 2 : loading tokenize data
     if config.use_pre_trained_embeds == 'c2v':  # Char2Vec
-        ds = DataLoader(file=None,
-                        fn_to_save=config.processed_dataset,
+        ds = DataLoader(file=config.processed_dataset,  # None
+                        fn_to_save=None,  # config.processed_dataset,
                         load_from='db',
                         n_classes=config.n_classes,
                         analyzer='char',
-                        is_analyzed=False,
-                        use_save=True,
+                        is_analyzed=True,  # False,
+                        use_save=False,  # True,
                         config=config)  # DataSet Loader
 
         ds_len = len(ds)
@@ -102,8 +102,7 @@ if __name__ == '__main__':
         x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
         for i in tqdm(range(ds_len)):
             sent = ds.sentences[i][:config.sequence_length]
-            x_data[i] = np.pad(vectors.decompose_as_one_hot(sent, warning=False),
-                               (0, config.sequence_length - len(sent)), 'constant', constant_values=config.vocab_size)
+            x_data[i, :len(sent)] = vectors.decompose_str_as_one_hot(sent, warning=False)
     else:  # Word2Vec / Doc2Vec
         ds = DataLoader(file=config.processed_dataset,
                         n_classes=config.n_classes,
@@ -117,9 +116,7 @@ if __name__ == '__main__':
         x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
         for i in tqdm(range(ds_len)):
             sent = ds.sentences[i][:config.sequence_length]
-            x_data[i] = np.pad(vectors.words_to_index(sent),
-                               (0, config.sequence_length - len(sent)), 'constant', constant_values=config.vocab_size)
-            # index vocab_size :  # so we need to fill with meaningless number
+            x_data[i, :len(sent)] = vectors.words_to_index(sent)
 
     x_data = np.array(x_data)
     y_data = np.array(ds.labels).reshape(-1, config.n_classes)
