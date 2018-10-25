@@ -65,6 +65,7 @@ def load_trained_embeds(embed_mode='w2v'):
     :param embed_mode: embedding mode, str
     :return: embedding vector, numpy array
     """
+    vec = None
     if embed_mode == 'd2v':
         vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)  # Doc2Vec Loader
         if config.verbose:
@@ -74,7 +75,8 @@ def load_trained_embeds(embed_mode='w2v'):
         if config.verbose:
             print("[+] Word2Vec loaded! Total %d pre-trained words, %d dims" % (len(vec), config.embed_size))
     else:
-        raise NotImplementedError("[-] character-level pre-processing not yet ready :(")
+        if config.verbose:
+            print("[+] Using Char2Vec, %d dims" % config.embed_size)
     return vec
 
 
@@ -83,29 +85,33 @@ if __name__ == '__main__':
     vectors = load_trained_embeds(config.use_pre_trained_embeds)
 
     # Stage 2 : loading tokenize data
-    if config.use_pre_trained_embeds == 'char':
-        ds = DataLoader(file=None,
-                        n_classes=config.n_classes,
-                        analyzer=None,
-                        is_analyzed=False,
-                        use_save=False,
-                        config=config)  # DataSet Loader
-    else:
+    if vectors:  # Word2Vec / Doc2Vec
         ds = DataLoader(file=config.processed_dataset,
                         n_classes=config.n_classes,
                         analyzer=None,
                         is_analyzed=True,
                         use_save=False,
                         config=config)  # DataSet Loader
+    else:  # Char2Vec
+        ds = DataLoader(file=None,
+                        n_classes=config.n_classes,
+                        analyzer=None,
+                        is_analyzed=False,
+                        use_save=False,
+                        config=config)  # DataSet Loader
     ds_len = len(ds)
 
     # Stage 3 : to index
-    x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
-    for i in tqdm(range(ds_len)):
-        sent = ds.sentences[i][:config.sequence_length]
-        x_data[i] = np.pad(vectors.words_to_index(sent),
-                           (0, config.sequence_length - len(sent)), 'constant', constant_values=config.vocab_size)
-        # index vocab_size :  # so we need to fill with meaningless number
+    if vectors:
+        x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
+        for i in tqdm(range(ds_len)):
+            sent = ds.sentences[i][:config.sequence_length]
+            x_data[i] = np.pad(vectors.words_to_index(sent),
+                               (0, config.sequence_length - len(sent)), 'constant', constant_values=config.vocab_size)
+            # index vocab_size :  # so we need to fill with meaningless number
+    else:
+        x_data = None
+        y_data = None
 
     x_data = np.array(x_data)
     y_data = np.array(ds.labels).reshape(-1, config.n_classes)
