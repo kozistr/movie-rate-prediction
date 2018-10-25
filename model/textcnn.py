@@ -7,7 +7,7 @@ class TextCNN:
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
                  vocab_size=122351 + 1, sequence_length=400, n_dims=300, seed=1337, optimizer='adam',
                  kernel_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
-                 lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6,
+                 lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6, grad_clip=5.,
                  summary=None, mode='static', w2v_embeds=None):
         self.s = s
         self.n_dims = n_dims
@@ -25,6 +25,7 @@ class TextCNN:
         self.fc_unit = fc_unit
         self.l2_reg = l2_reg
         self.th = th
+        self.grad_clip = grad_clip
 
         self.optimizer = optimizer
 
@@ -70,7 +71,7 @@ class TextCNN:
             ))  # MSE loss
 
             self.prediction = self.rate
-            self.accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.prediction) < 1.0), dtype=tf.float32))
+            self.accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.prediction) <= 1.0), dtype=tf.float32))
         else:
             self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
                 logits=self.feat,
@@ -84,7 +85,7 @@ class TextCNN:
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
         learning_rate = tf.train.exponential_decay(lr,
                                                    self.global_step,
-                                                   100000,  # hard-coded
+                                                   25000,  # hard-coded
                                                    lr_decay,
                                                    staircase=True)
         self.lr = tf.clip_by_value(learning_rate,
@@ -93,13 +94,17 @@ class TextCNN:
                                    name='lr-clipped')
 
         if self.optimizer == 'adam':
-            self.opt = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss)
+            self.opt = tf.train.AdamOptimizer(learning_rate=self.lr)  # .minimize(self.loss)
         elif self.optimizer == 'sgd':
-            self.opt = tf.train.GradientDescentOptimizer(learning_rate=self.lr).minimize(self.loss)
+            self.opt = tf.train.GradientDescentOptimizer(learning_rate=self.lr)  # .minimize(self.loss)
         elif self.optimizer == 'adadelta':
-            self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr).minimize(self.loss)
+            self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr)  # .minimize(self.loss)
         else:
             raise NotImplementedError("[-] only Adam, SGD are supported!")
+
+        gradients, variables = zip(*self.opt.compute_gradients(self.loss))
+        gradients, _ = tf.clip_by_global_norm(gradients, self.grad_clip)
+        self.train_op = self.opt.apply_gradients(zip(gradients, variables), global_step=self.global_step)
 
         # Mode Saver/Summary
         tf.summary.scalar('loss/loss', self.loss)
@@ -137,8 +142,8 @@ class TextCNN:
                     padding='VALID',
                     name='conv1d'
                 )
-                # x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)  # TresholdReLU
-                x = tf.nn.relu(x)
+                x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)  # TresholdReLU
+                # x = tf.nn.relu(x)
 
                 # x = tf.layers.dropout(x, self.do_rate)
 
@@ -160,8 +165,8 @@ class TextCNN:
                 kernel_regularizer=self.reg,
                 name='fc1'
             )
-            # x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)  # TresholdReLU
-            x = tf.nn.relu(x)
+            x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)  # TresholdReLU
+            # x = tf.nn.relu(x)
 
             x = tf.layers.dense(
                 x,

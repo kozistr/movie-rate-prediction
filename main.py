@@ -8,7 +8,7 @@ from config import get_config
 from model.textcnn import TextCNN
 from model.textrnn import TextRNN
 from sklearn.model_selection import train_test_split
-from dataloader import Word2VecEmbeddings, Doc2VecEmbeddings, DataLoader, DataIterator
+from dataloader import Word2VecEmbeddings, Doc2VecEmbeddings, CharVecEmbeddings, DataLoader, DataIterator
 
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
@@ -60,12 +60,11 @@ def data_distribution(y_, size=10, img='dist.png'):
     return y_dist
 
 
-def load_trained_embeds(embed_mode='w2v'):
+def load_trained_embeds(embed_mode='char'):
     """
     :param embed_mode: embedding mode, str
     :return: embedding vector, numpy array
     """
-    vec = None
     if embed_mode == 'd2v':
         vec = Doc2VecEmbeddings(config.d2v_model, config.embed_size)  # Doc2Vec Loader
         if config.verbose:
@@ -75,6 +74,7 @@ def load_trained_embeds(embed_mode='w2v'):
         if config.verbose:
             print("[+] Word2Vec loaded! Total %d pre-trained words, %d dims" % (len(vec), config.embed_size))
     else:
+        vec = CharVecEmbeddings(config.sequence_length)
         if config.verbose:
             print("[+] Using Char2Vec, %d dims" % config.embed_size)
     return vec
@@ -85,33 +85,38 @@ if __name__ == '__main__':
     vectors = load_trained_embeds(config.use_pre_trained_embeds)
 
     # Stage 2 : loading tokenize data
-    if vectors:  # Word2Vec / Doc2Vec
+    if config.use_pre_trained_embeds == 'char':  # Char2Vec
+        ds = DataLoader(file=None,
+                        load_from='db',
+                        n_classes=config.n_classes,
+                        analyzer='char',
+                        is_analyzed=False,
+                        use_save=False,
+                        config=config)  # DataSet Loader
+
+        ds_len = len(ds)
+
+        x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
+        for i in tqdm(range(ds_len)):
+            sent = ds.sentences[i][:config.sequence_length]
+            x_data[i] = np.pad(vectors.decompose_as_one_hot(sent, warning=False),
+                               (0, config.sequence_length - len(sent)), 'constant', constant_values=config.vocab_size)
+    else:  # Word2Vec / Doc2Vec
         ds = DataLoader(file=config.processed_dataset,
                         n_classes=config.n_classes,
                         analyzer=None,
                         is_analyzed=True,
                         use_save=False,
                         config=config)  # DataSet Loader
-    else:  # Char2Vec
-        ds = DataLoader(file=None,
-                        n_classes=config.n_classes,
-                        analyzer=None,
-                        is_analyzed=False,
-                        use_save=False,
-                        config=config)  # DataSet Loader
-    ds_len = len(ds)
 
-    # Stage 3 : to index
-    if vectors:
+        ds_len = len(ds)
+
         x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
         for i in tqdm(range(ds_len)):
             sent = ds.sentences[i][:config.sequence_length]
             x_data[i] = np.pad(vectors.words_to_index(sent),
                                (0, config.sequence_length - len(sent)), 'constant', constant_values=config.vocab_size)
             # index vocab_size :  # so we need to fill with meaningless number
-    else:
-        x_data = None
-        y_data = None
 
     x_data = np.array(x_data)
     y_data = np.array(ds.labels).reshape(-1, config.n_classes)
@@ -178,6 +183,7 @@ if __name__ == '__main__':
                                 lr_lower_boundary=config.lr_lower_boundary,
                                 fc_unit=config.fc_unit,
                                 th=config.act_threshold,
+                                grad_clip=config.grad_clip,
                                 summary=config.pretrained)
             elif config.model == 'charrnn':
                 model = TextRNN(s=s,
@@ -195,6 +201,7 @@ if __name__ == '__main__':
                                 lr_decay=config.lr_decay,
                                 lr_lower_boundary=config.lr_lower_boundary,
                                 fc_unit=config.fc_unit,
+                                grad_clip=config.grad_clip,
                                 summary=config.pretrained)
             else:
                 raise NotImplementedError("[-] Not Implemented Yet")
@@ -228,7 +235,7 @@ if __name__ == '__main__':
             for epoch in range(restored_epochs, config.epochs):
                 for x_tr, y_tr in di.iterate():
                     # training
-                    _, loss, acc = s.run([model.opt, model.loss, model.accuracy],
+                    _, loss, acc = s.run([model.train_op, model.loss, model.accuracy],
                                          feed_dict={
                                              model.x: x_tr,
                                              model.y: y_tr,

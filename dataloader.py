@@ -109,11 +109,8 @@ class CharVecEmbeddings:
     OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     """
 
-    def __init__(self, sentences, n_dims=300):
-        self.sentences = sentences
+    def __init__(self, n_dims=300):
         self.n_dims = n_dims
-
-        self.vocab_size = sentences.shape[0] + 1
 
         self.cho = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ"  # len = 19
         self.jung = "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ"  # len = 21
@@ -370,9 +367,11 @@ class DataLoader:
         elif self.analyzer == 'twitter':
             from konlpy.tag import Twitter
             self.analyzer = Twitter(jvmpath=self.jvm_path)
+        elif self.analyzer == 'char':  # file = None for 'char2vec'
+            print("[*] Char2Vec is selected! There's no need to analyze context")
         else:
             # if is_analyzed is True, there's no need to analyze again.
-            if not self.is_analyzed and self.file:  # file = None for 'char2vec'
+            if not self.is_analyzed:
                 raise NotImplementedError("[-] only Mecab, Hannanum, Twitter are supported :(")
 
         # Already Analyzed Data
@@ -402,10 +401,11 @@ class DataLoader:
 
             # Stage 3 : build data (pos/morphs analyze)
             print("[*] start the analyzer")
-            if self.file:
-                self.word_tokenize()
+            if self.analyzer == 'char':
+                print("[*] skip analyzer. no need to analyze for 'char2vec'. just saving...")
+                self.char_tokenize()
             else:
-                print("[*] skip analyzer. no need to analyze for 'char2vec")
+                self.word_tokenize()
 
             del self.data  # remove unused var # for saving memory
             gc.collect()
@@ -505,7 +505,7 @@ class DataLoader:
     def char_tokenize(self):
         len_data = len(self.data)
         for idx, d in tqdm(enumerate(self.data)):
-            pos = None
+            pos = self.normalize(d['comment'])
 
             if self.use_save:
                 self.csv_file.writelines(str(d['rate']) + ',' + ' '.join(pos) + '\n')

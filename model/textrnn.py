@@ -106,7 +106,7 @@ class TextRNN:
     def __init__(self, s, n_classes=10, batch_size=128, epochs=100,
                  vocab_size=122351 + 1, sequence_length=400, n_dims=300, seed=1337, optimizer='adam',
                  n_gru_layers=2, n_gru_cells=256, n_attention_size=128, fc_unit=1024,
-                 lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.9, l2_reg=5e-4, th=1e-6,
+                 lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.9, l2_reg=5e-4, th=1e-6, grad_clip=5.,
                  summary=None, mode='static', w2v_embeds=None):
         self.s = s
         self.n_dims = n_dims
@@ -125,6 +125,7 @@ class TextRNN:
         self.fc_unit = fc_unit
         self.l2_reg = l2_reg
         self.th = th
+        self.grad_clip = grad_clip
 
         self.optimizer = optimizer
 
@@ -170,7 +171,7 @@ class TextRNN:
             ))  # MSE loss
 
             self.prediction = self.rate
-            self.accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.prediction) < 1.0), dtype=tf.float32))
+            self.accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.prediction) <= 1.0), dtype=tf.float32))
         else:
             self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
                 logits=self.feat,
@@ -193,16 +194,17 @@ class TextRNN:
                                    name='lr-clipped')
 
         if self.optimizer == 'adam':
-            self.opt = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss,
-                                                                              global_step=self.global_step)
+            self.opt = tf.train.AdamOptimizer(learning_rate=self.lr)
         elif self.optimizer == 'sgd':
-            self.opt = tf.train.GradientDescentOptimizer(learning_rate=self.lr).minimize(self.loss,
-                                                                                         global_step=self.global_step)
+            self.opt = tf.train.GradientDescentOptimizer(learning_rate=self.lr)
         elif self.optimizer == 'adadelta':
-            self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr).minimize(self.loss,
-                                                                                  global_step=self.global_step)
+            self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr)
         else:
             raise NotImplementedError("[-] only Adam, SGD are supported!")
+
+        gradients, variables = zip(*self.opt.compute_gradients(self.loss))
+        gradients, _ = tf.clip_by_global_norm(gradients, self.grad_clip)
+        self.train_op = self.opt.apply_gradients(zip(gradients, variables), global_step=self.global_step)
 
         # Mode Saver/Summary
         tf.summary.scalar('loss/loss', self.loss)

@@ -25,19 +25,21 @@ network_arg = add_arg_group('Network')
 network_arg.add_argument('--mode', type=str, default='non-static', choices=['static', 'non-static'])
 network_arg.add_argument('--model', type=str, default='charcnn', choices=['charcnn', 'charrnn'])
 network_arg.add_argument('--n_classes', type=int, default=1)
-network_arg.add_argument('--use_pre_trained_embeds', type=str, default='w2v', choices=['w2v', 'd2v', None],
-                         help='using Word/Doc2Vec/None as embedding.')
+network_arg.add_argument('--use_pre_trained_embeds', type=str, default='c2v', choices=['w2v', 'd2v', 'c2v'],
+                         help='using Word/Doc2Vec/Char2Vec as embedding.')
 network_arg.add_argument('--n_gru_cells', type=int, default=128,
                          help='the number of CuDNNGRU cells')
 network_arg.add_argument('--n_gru_layers', type=int, default=2,
                          help='the number of layers of CuDNNGRU')
 network_arg.add_argument('--n_attention_size', type=int, default=128)
-network_arg.add_argument('--kernel_size', type=list, default=[2, 3, 4, 5],
+network_arg.add_argument('--kernel_size', type=list, default=[10, 9, 7, 5, 3],
                          help='conv1d kernel size')
+# For Word2Vec, [2, 3, 4, 5] is recommended
+# For Char2Vec, [10, 9, 7, 5, 3] is recommended
 network_arg.add_argument('--filter_size', type=int, default=256,
                          help='conv1d filter size')
 network_arg.add_argument('--fc_unit', type=int, default=1024)
-network_arg.add_argument('--drop_out', type=float, default=.5,
+network_arg.add_argument('--drop_out', type=float, default=.7,
                          help='dropout rate')
 network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
 network_arg.add_argument('--act_threshold', type=float, default=1e-6,
@@ -48,9 +50,10 @@ data_arg = add_arg_group('DataSet')
 data_arg.add_argument('--embed_size', type=int, default=300,
                       help='the size of Doc2Vec embedding vector')
 data_arg.add_argument('--vocab_size', type=int, default=391587, help='default is w2v vocab size')
-data_arg.add_argument('--sequence_length', type=int, default=140,
-                      help='the length of the sentence, default is w2v max words cnt.'
-                           'In case of char-level, 400 is preferred')
+data_arg.add_argument('--sequence_length', type=int, default=400,
+                      help='the length of the sentence, default is c2v max words cnt')
+# For Word2Vec, sequence_length should be 140
+# Fro Char2Vec, sequence_length should be 400
 data_arg.add_argument('--batch_size', type=int, default=128)
 data_arg.add_argument('--n_threads', type=int, default=8,
                       help='the number of workers for speeding up')
@@ -61,6 +64,7 @@ train_arg.add_argument('--is_train', type=bool, default=True)
 train_arg.add_argument('--epochs', type=int, default=100)
 train_arg.add_argument('--logging_step', type=int, default=500)
 train_arg.add_argument('--optimizer', type=str, default='adadelta', choices=['adam', 'sgd', 'adadelta'])
+train_arg.add_argument('--grad_clip', type=float, default=5.)
 train_arg.add_argument('--lr', type=float, default=2e-4)
 train_arg.add_argument('--lr_decay', type=float, default=.95)
 train_arg.add_argument('--lr_lower_boundary', type=float, default=2e-5)
