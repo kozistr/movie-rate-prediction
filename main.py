@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
         x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
         for i in tqdm(range(ds_len)):
-            sent = ds.sentences[i][:config.sequence_length]
+            sent = list(' '.join(ds.sentences[i][:config.sequence_length]).strip('\n'))
             x_data[i, :len(sent)] = vectors.decompose_str_as_one_hot(sent, warning=False)
     else:  # Word2Vec / Doc2Vec
         ds = DataLoader(file=config.processed_dataset,
