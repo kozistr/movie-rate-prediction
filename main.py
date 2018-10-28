@@ -1,5 +1,6 @@
 import time
 import argparse
+import itertools
 import numpy as np
 import tensorflow as tf
 
@@ -8,7 +9,7 @@ from config import get_config
 from model.textcnn import TextCNN
 from model.textrnn import TextRNN
 from sklearn.model_selection import train_test_split
-from dataloader import Word2VecEmbeddings, Doc2VecEmbeddings, CharVecEmbeddings, DataLoader, DataIterator
+from dataloader import Word2VecEmbeddings, Doc2VecEmbeddings, Char2VecEmbeddings, DataLoader, DataIterator
 
 
 parser = argparse.ArgumentParser(description='train/test movie review classification model')
@@ -74,7 +75,7 @@ def load_trained_embeds(embed_mode='char'):
         if config.verbose:
             print("[+] Word2Vec loaded! Total %d pre-trained words, %d dims" % (len(vec), config.embed_size))
     else:
-        vec = CharVecEmbeddings(config.sequence_length)
+        vec = Char2VecEmbeddings(config.sequence_length)
         if config.verbose:
             print("[+] Using Char2Vec, %d dims" % config.embed_size)
     return vec
@@ -101,8 +102,9 @@ if __name__ == '__main__':
 
         x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
         for i in tqdm(range(ds_len)):
-            sent = [x.replace('', ' ') for x in ds.sentences[i][:config.sequence_length] if x == '']
+            sent = ds.sentences[i][:config.sequence_length]
             sent = vectors.decompose_str_as_one_hot(' '.join(sent).strip('\n'), warning=False)
+            sent = list(itertools.chain.from_iterable(sent))[:config.sequence_length]
             x_data[i] = np.pad(sent,
                                (0, config.sequence_length - len(sent)), 'constant', constant_values=0)
     else:  # Word2Vec / Doc2Vec

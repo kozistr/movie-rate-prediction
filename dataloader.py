@@ -91,7 +91,7 @@ class Doc2VecEmbeddings:
         return "Doc2Vec"
 
 
-class CharVecEmbeddings:
+class Char2VecEmbeddings:
     """
     Copyright 2018 NAVER Corp.
     Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
