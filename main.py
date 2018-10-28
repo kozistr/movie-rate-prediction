@@ -101,8 +101,10 @@ if __name__ == '__main__':
 
         x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
         for i in tqdm(range(ds_len)):
-            sent = list(' '.join(ds.sentences[i][:config.sequence_length]).strip('\n'))
-            x_data[i, :len(sent)] = vectors.decompose_str_as_one_hot(sent, warning=False)
+            sent = [x.replace('', ' ') for x in ds.sentences[i][:config.sequence_length] if x == '']
+            sent = vectors.decompose_str_as_one_hot(' '.join(sent).strip('\n'), warning=False)
+            x_data[i] = np.pad(sent,
+                               (0, config.sequence_length - len(sent)), 'constant', constant_values=0)
     else:  # Word2Vec / Doc2Vec
         ds = DataLoader(file=config.processed_dataset,
                         n_classes=config.n_classes,
@@ -116,7 +118,8 @@ if __name__ == '__main__':
         x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
         for i in tqdm(range(ds_len)):
             sent = ds.sentences[i][:config.sequence_length]
-            x_data[i, :len(sent)] = vectors.words_to_index(sent)
+            x_data[i] = np.pad(vectors.words_to_index(sent),
+                               (0, config.sequence_length - len(sent)), 'constant', constant_values=config.vocab_size)
 
     x_data = np.array(x_data)
     y_data = np.array(ds.labels).reshape(-1, config.n_classes)
