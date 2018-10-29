@@ -113,10 +113,9 @@ if __name__ == '__main__':
 
         x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
         for i in tqdm(range(ds_len)):
-            sent = vectors.decompose_str_as_one_hot(' '.join(ds.sentences[i]).strip('\n'), warning=False)
-            sent = list(itertools.chain.from_iterable(sent))[:config.sequence_length]
-            x_data[i] = np.pad(sent,
-                               (0, config.sequence_length - len(sent)), 'constant', constant_values=0)
+            sent = vectors.decompose_str_as_one_hot(' '.join(ds.sentences[i]).strip('\n'),
+                                                    warning=False)[:config.sequence_length]
+            x_data[i] = np.pad(sent, (0, config.sequence_length - len(sent)), 'constant', constant_values=0)
     else:  # Word2Vec / Doc2Vec
         ds = DataLoader(file=config.processed_dataset,
                         n_classes=config.n_classes,
