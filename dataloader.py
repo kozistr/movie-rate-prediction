@@ -132,7 +132,7 @@ class Char2VecEmbeddings:
         y = x // self.len_jong
         z = x % self.len_jong
         x = y // self.len_jung
-        y %= self.len_jung
+        y = y % self.len_jung
 
         zz = self.jong[z - 1] if z > 0 else ''
         if x >= len(self.cho):
@@ -186,7 +186,10 @@ class Char2VecEmbeddings:
                 return []
 
     def decompose_str_as_one_hot(self, string, warning=True):
-        return [self.decompose_as_one_hot(ord(x), warning=warning) for x in string]
+        tmp_list = []
+        for x in string:
+            tmp_list.extend(self.decompose_as_one_hot(ord(x), warning=warning))
+        return tmp_list
 
     def __str__(self):
         return "Char2Vec"
