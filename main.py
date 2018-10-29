@@ -1,3 +1,4 @@
+import os
 import time
 import argparse
 import itertools
@@ -75,7 +76,7 @@ def load_trained_embeds(embed_mode='char'):
         if config.verbose:
             print("[+] Word2Vec loaded! Total %d pre-trained words, %d dims" % (len(vec), config.embed_size))
     else:
-        vec = Char2VecEmbeddings(config.sequence_length)
+        vec = Char2VecEmbeddings()
         if config.verbose:
             print("[+] Using Char2Vec, %d dims" % config.embed_size)
     return vec
@@ -89,24 +90,33 @@ if __name__ == '__main__':
 
     # Stage 2 : loading tokenize data
     if config.use_pre_trained_embeds == 'c2v':  # Char2Vec
-        ds = DataLoader(file=config.processed_dataset,  # None
-                        fn_to_save=None,  # config.processed_dataset,
-                        load_from='db',
-                        n_classes=config.n_classes,
-                        analyzer='char',
-                        is_analyzed=True,  # False,
-                        use_save=False,  # True,
-                        config=config)  # DataSet Loader
+        if os.path.isfile(config.processed_dataset):
+            ds = DataLoader(file=config.processed_dataset,
+                            fn_to_save=None,
+                            load_from='db',
+                            n_classes=config.n_classes,
+                            analyzer='char',
+                            is_analyzed=True,
+                            use_save=False,
+                            config=config)  # DataSet Loader
+        else:
+            ds = DataLoader(file=None,
+                            fn_to_save=config.processed_dataset,
+                            load_from='db',
+                            n_classes=config.n_classes,
+                            analyzer='char',
+                            is_analyzed=False,
+                            use_save=True,
+                            config=config)  # DataSet Loader
 
         ds_len = len(ds)
 
-        x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
+        x_data = np.zeros((ds_len, config.embed_size), dtype=np.int32)
         for i in tqdm(range(ds_len)):
-            sent = ds.sentences[i][:config.sequence_length]
-            sent = vectors.decompose_str_as_one_hot(' '.join(sent).strip('\n'), warning=False)
-            sent = list(itertools.chain.from_iterable(sent))[:config.sequence_length]
+            sent = vectors.decompose_str_as_one_hot(' '.join(ds.sentences[i]).strip('\n'), warning=False)
+            sent = list(itertools.chain.from_iterable(sent))[:config.embed_size]
             x_data[i] = np.pad(sent,
-                               (0, config.sequence_length - len(sent)), 'constant', constant_values=0)
+                               (0, config.embed_size - len(sent)), 'constant', constant_values=0)
     else:  # Word2Vec / Doc2Vec
         ds = DataLoader(file=config.processed_dataset,
                         n_classes=config.n_classes,
@@ -123,14 +133,12 @@ if __name__ == '__main__':
             x_data[i] = np.pad(vectors.words_to_index(sent),
                                (0, config.sequence_length - len(sent)), 'constant', constant_values=config.vocab_size)
 
-    x_data = np.array(x_data)
     y_data = np.array(ds.labels).reshape(-1, config.n_classes)
 
     ds = None
-    del ds
 
     if config.verbose:
-        print("[*] sentence to w2v index conversion finish!")
+        print("[*] sentence to %s index conversion finish!" % config.use_pre_trained_embeds)
 
     if refine_data:
         # resizing the amount of rate-10 data
