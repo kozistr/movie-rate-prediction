@@ -8,7 +8,8 @@ class TextCNN:
                  vocab_size=122351 + 1, sequence_length=400, n_dims=300, seed=1337, optimizer='adam',
                  kernel_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
                  lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6, grad_clip=5.,
-                 summary=None, mode='static', w2v_embeds=None):
+                 summary=None, mode='static', w2v_embeds=None,
+                 use_se_module=False, se_radio=16):
         self.s = s
         self.n_dims = n_dims
         self.n_classes = n_classes
@@ -32,6 +33,10 @@ class TextCNN:
         self.summary = summary
         self.mode = mode
         self.w2v_embeds = w2v_embeds
+
+        # SE Module feature
+        self.use_se_module = use_se_module
+        self.se_ratio = se_radio
 
         # set random seed
         np.random.seed(self.seed)
@@ -93,12 +98,18 @@ class TextCNN:
                                    clip_value_max=1e-3,
                                    name='lr-clipped')
 
+        if self.w2v_embeds == 'c2v':
+            try:
+                assert not self.optimizer == 'adadelta'
+            except AssertionError:
+                raise AssertionError("[-] AdaDelta Optimizer is not supported for Char2Vec")
+
         if self.optimizer == 'adam':
-            self.opt = tf.train.AdamOptimizer(learning_rate=self.lr)  # .minimize(self.loss)
+            self.opt = tf.train.AdamOptimizer(learning_rate=self.lr)
         elif self.optimizer == 'sgd':
-            self.opt = tf.train.GradientDescentOptimizer(learning_rate=self.lr)  # .minimize(self.loss)
+            self.opt = tf.train.GradientDescentOptimizer(learning_rate=self.lr)
         elif self.optimizer == 'adadelta':
-            self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr)  # .minimize(self.loss)
+            self.opt = tf.train.AdadeltaOptimizer(learning_rate=self.lr)
         else:
             raise NotImplementedError("[-] only Adam, SGD are supported!")
 

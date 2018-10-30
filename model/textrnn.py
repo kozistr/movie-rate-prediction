@@ -193,6 +193,12 @@ class TextRNN:
                                    clip_value_max=1e-3,
                                    name='lr-clipped')
 
+        if self.w2v_embeds == 'c2v':
+            try:
+                assert not self.optimizer == 'adadelta'
+            except AssertionError:
+                raise AssertionError("[-] AdaDelta Optimizer is not supported for Char2Vec")
+
         if self.optimizer == 'adam':
             self.opt = tf.train.AdamOptimizer(learning_rate=self.lr)
         elif self.optimizer == 'sgd':
