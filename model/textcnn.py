@@ -135,7 +135,8 @@ class TextCNN:
             """ GAP-fc-fc-sigmoid """
             skip_conn = tf.identity(x, name='skip_connection')
 
-            x = tf.reduce_mean(x, axis=1)  # (x, c)
+            x = tf.reduce_mean(x, axis=[1, 2])  # (bs, c)
+
             x = tf.layers.dense(
                 x,
                 units=units // self.se_ratio,
@@ -144,6 +145,7 @@ class TextCNN:
                 name='squeeze'
             )
             x = tf.nn.relu(x)
+
             x = tf.layers.dense(
                 x,
                 units=units,
@@ -152,6 +154,8 @@ class TextCNN:
                 name='excitation'
             )
             x = tf.nn.sigmoid(x)
+
+            x = tf.reshape(x, (-1, 1, units))
 
             return skip_conn * x
 
