@@ -188,13 +188,10 @@ class TextCNN:
 
                 pooled_outs.append(x)
 
-        # pooled_outs = (batch, hw, c)
+        x = tf.concat(pooled_outs, axis=1)  # (batch, 3 * kernel_sizes, 256)
 
         if self.use_se_module:
-            x = tf.concat(pooled_outs, axis=-1)
             x = self.se_module(x, x.get_shape()[-1])
-        else:
-            x = tf.concat(pooled_outs, axis=1)
 
         x = tf.layers.flatten(x)
         x = tf.layers.dropout(x, self.do_rate)
