@@ -135,7 +135,7 @@ class TextCNN:
             """ GAP-fc-fc-sigmoid """
             skip_conn = tf.identity(x, name='skip_connection')
 
-            x = tf.reduce_mean(x, axis=[1, 2])  # (bs, c)
+            x = tf.reduce_mean(x, axis=1)  # (bs, c)
 
             x = tf.layers.dense(
                 x,
