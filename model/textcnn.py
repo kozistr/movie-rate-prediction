@@ -130,6 +130,31 @@ class TextCNN:
         self.best_saver = tf.train.Saver(max_to_keep=1)
         self.writer = tf.summary.FileWriter(self.summary, self.s.graph)
 
+    def se_module(self, x, units):
+        with tf.variable_scope('se-module'):
+            """ GAP-fc-fc-sigmoid """
+            skip_conn = tf.identity(x, name='skip_connection')
+
+            x = tf.reduce_mean(x, axis=1)  # (x, c)
+            x = tf.layers.dense(
+                x,
+                units=units // self.se_ratio,
+                kernel_initializer=self.he_uni,
+                kernel_regularizer=self.reg,
+                name='squeeze'
+            )
+            x = tf.nn.relu(x)
+            x = tf.layers.dense(
+                x,
+                units=units,
+                kernel_initializer=self.he_uni,
+                kernel_regularizer=self.reg,
+                name='excitation'
+            )
+            x = tf.nn.sigmoid(x)
+
+            return skip_conn * x
+
     def build_model(self):
         with tf.device('/cpu:0'), tf.name_scope('embeddings'):
             spatial_drop_out = tf.keras.layers.SpatialDropout1D(self.do_rate)
@@ -163,7 +188,13 @@ class TextCNN:
 
                 pooled_outs.append(x)
 
-        x = tf.concat(pooled_outs, 1)
+        # pooled_outs = (batch, hw, c)
+
+        if self.use_se_module:
+            x = tf.concat(pooled_outs, axis=-1)
+            x = self.se_module(x, x.get_shape()[-1])
+        else:
+            x = tf.concat(pooled_outs, axis=1)
 
         x = tf.layers.flatten(x)
         x = tf.layers.dropout(x, self.do_rate)

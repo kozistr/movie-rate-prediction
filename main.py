@@ -196,7 +196,9 @@ if __name__ == '__main__':
                                 fc_unit=config.fc_unit,
                                 th=config.act_threshold,
                                 grad_clip=config.grad_clip,
-                                summary=config.pretrained)
+                                summary=config.pretrained,
+                                use_se_module=config.use_se_module,
+                                se_radio=config.se_ratio)
             elif config.model == 'charrnn':
                 model = TextRNN(s=s,
                                 mode=config.mode,
