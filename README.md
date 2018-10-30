@@ -6,23 +6,23 @@
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/kozistr/movie-rate-prediction.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kozistr/movie-rate-prediction/context:python)
 
 ## Environments
-* OS  : Ubuntu 16.04/18.04 x86-64 ~
+* OS  : Ubuntu 16.04+ / Windows 10
 * CPU : any (quad core ~)
 * GPU : GTX 1060 6GB ~
 * RAM : 16GB ~
 * Library : TF 1.x with CUDA 9.0~ + cuDNN 7.0~
-* Python 3.x
 
 ## Prerequisites
-* python 3.x
-* (Optional) java 1.7+
+* python
 * tensorflow 1.x
+* (Optional) java 1.7+
 * numpy
 * gensim and konlpy and soynlp
 * mecab-ko
 * pymysql
 * h5py
 * tqdm
+* pymysql
 * (Optional) PyKoSpacing
 * (Optional) MultiTSNE (for visualization)
 * (Optional) matplotlib (for visualization)
@@ -51,7 +51,7 @@
     $ python3 movie-parse.py
 ### 3. Making DataSet DB
     $ python3 db.py
-### 4. Making w2v/d2v embeddings
+### 4. Making w2v/d2v embeddings (skip if u only wanna use Char2Vec)
     $ python3 preprocessing.py
 
     usage: preprocessing.py [-h] [--load_from {db,csv}] [--vector {d2v,w2v}]
@@ -95,8 +95,7 @@
 │    └── ...
 ├── model             (Movie Review Rate ML Models)
 │    ├── textcnn.py
-│    ├── textrnn.py
-│    └── ...
+│    └── textrnn.py
 ├── image             (explaination images)
 │    └── *.png
 ├── ml_model          (tf pre-trained model saved in here)
@@ -143,19 +142,27 @@ credited by [Toxic Comment Classification kaggle 1st solution](https://medium.co
 DataSet is not good. So, the result also isn't pretty good as i expected :( <br/>
 **Refining/Normalizing raw sentences are needed!**
 
-* TextCNN
+* TextCNN (Char2Vec)
+
+SOON!
+
+* TextCNN (Word2Vec)
 
 ![img](./image/TextCNN-loss.png)
 
 > Result : MSE 3.410 <br/>
 > Hyper-Parameter : non-static, conv kernel size [2,3,4,5], conv filters 256, drop out 0.7, fc unit 1024, adadelta
 
-* TextRNN
+* TextRNN (Word2Vec)
 
 ![img](./image/TextRNN-loss.png)
 
 > Result : MSE 3.646 <br/>
 > Hyper-Parameter : non-static, rnn cells 128, attention 128, drop out 0.7, fc unit 1024, adadelta
+
+* TextRNN (Char2Vec)
+
+SOON!
 
 ## Visualization
 
