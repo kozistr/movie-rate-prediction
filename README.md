@@ -13,9 +13,9 @@
 * Library : TF 1.x with CUDA 9.0~ + cuDNN 7.0~
 
 ## Prerequisites
-* python
+* Python
+* MySQL DB
 * tensorflow 1.x
-* (Optional) java 1.7+
 * numpy
 * gensim and konlpy and soynlp
 * mecab-ko
@@ -23,6 +23,7 @@
 * h5py
 * tqdm
 * pymysql
+* (Optional) java 1.7+
 * (Optional) PyKoSpacing
 * (Optional) MultiTSNE (for visualization)
 * (Optional) matplotlib (for visualization)
@@ -32,12 +33,10 @@
 | DataSet  |  Language  | Sentences | Words | Size |
 |:---:|:---:|:---:|:---:|:---:|
 | [NAVER Movie Review](http://movie.naver.com) | *Korean* | ```8.86M``` | ```391K``` |  ```About 1GB``` | 
-    
+
 ### Movie Review Data Distribution
 
 ![dist](./image/movie-rate-distribution.png)
-
-> data imbalance is worried... maybe rate-10 data should be downsized by 20%
 
 ## Usage
 ### 1.1 Installing Dependencies
@@ -51,7 +50,7 @@
     $ python3 movie-parse.py
 ### 3. Making DataSet DB
     $ python3 db.py
-### 4. Making w2v/d2v embeddings (skip if u only wanna use Char2Vec)
+### 4. Making w2v/d2v embeddings (**skip** if u only wanna use Char2Vec)
     $ python3 preprocessing.py
 
     usage: preprocessing.py [-h] [--load_from {db,csv}] [--vector {d2v,w2v}]
@@ -144,21 +143,24 @@ DataSet is not good. So, the result also isn't pretty good as i expected :( <br/
 
 * TextCNN (Char2Vec)
 
-SOON!
+![img](./image/TextCNN-char2vec-loss.png)
+
+> Result : MSE 1.719 <br/>
+> Hyper-Parameter : rand, conv kernel size [10,9,7,5,3], conv filters 256, drop out 0.7, fc unit 1024, adam, embed size 384
 
 * TextCNN (Word2Vec)
 
-![img](./image/TextCNN-loss.png)
+![img](./image/TextCNN-word2vec-loss.png)
 
 > Result : MSE 3.410 <br/>
-> Hyper-Parameter : non-static, conv kernel size [2,3,4,5], conv filters 256, drop out 0.7, fc unit 1024, adadelta
+> Hyper-Parameter : non-static, conv kernel size [2,3,4,5], conv filters 256, drop out 0.7, fc unit 1024, adadelta, embed size 300
 
 * TextRNN (Word2Vec)
 
-![img](./image/TextRNN-loss.png)
+![img](./image/TextRNN-word2vec-loss.png)
 
 > Result : MSE 3.646 <br/>
-> Hyper-Parameter : non-static, rnn cells 128, attention 128, drop out 0.7, fc unit 1024, adadelta
+> Hyper-Parameter : non-static, rnn cells 128, attention 128, drop out 0.7, fc unit 1024, adadelta, embed size 300
 
 * TextRNN (Char2Vec)
 
