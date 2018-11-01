@@ -1,7 +1,6 @@
 import os
 import time
 import argparse
-import itertools
 import numpy as np
 import tensorflow as tf
 
