@@ -1,3 +1,4 @@
+# lgtm [py/encoding-error]
 import gc
 import csv
 import h5py
