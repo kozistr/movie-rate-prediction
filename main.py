@@ -110,7 +110,7 @@ if __name__ == '__main__':
 
         ds_len = len(ds)
 
-        x_data = np.zeros((ds_len, config.sequence_length), dtype=np.int32)
+        x_data = np.zeros((ds_len, config.sequence_length), dtype=np.uint8)
         for i in tqdm(range(ds_len)):
             sent = vectors.decompose_str_as_one_hot(' '.join(ds.sentences[i]).strip('\n'),
                                                     warning=False)[:config.sequence_length]

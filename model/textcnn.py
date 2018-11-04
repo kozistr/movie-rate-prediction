@@ -61,7 +61,8 @@ class TextCNN:
 
                 print("[+] Word2Vec pre-trained model loaded!")
 
-        self.x = tf.placeholder(tf.int32, shape=[None, self.sequence_length], name='x-sentence')
+        self.x = tf.placeholder(tf.uint8 if self.w2v_embeds == 'c2v' else tf.int32,
+                                shape=[None, self.sequence_length], name='x-sentence')
         self.y = tf.placeholder(tf.float32, shape=[None, self.n_classes], name='y-label')  # one-hot or int
         self.do_rate = tf.placeholder(tf.float32, name='do-rate')
 
