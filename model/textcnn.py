@@ -188,15 +188,15 @@ class TextCNN:
 
                 # x = tf.layers.dropout(x, self.do_rate)
 
+                if self.use_se_module:
+                    x = self.se_module(x, x.get_shape()[-1])
+
                 x = tf.nn.top_k(tf.transpose(x, [0, 2, 1]), k=3, sorted=False)[0]
                 x = tf.transpose(x, [0, 2, 1])
 
                 pooled_outs.append(x)
 
         x = tf.concat(pooled_outs, axis=1)  # (batch, 3 * kernel_sizes, 256)
-
-        if self.use_se_module:
-            x = self.se_module(x, x.get_shape()[-1])
 
         x = tf.layers.flatten(x)
         x = tf.layers.dropout(x, self.do_rate)
