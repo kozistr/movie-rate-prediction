@@ -145,21 +145,21 @@ DataSet is not good. So, the result also isn't pretty good as i expected :( <br/
 
 ![img](./image/TextCNN-char2vec-loss.png)
 
-> Result : MSE 1.719 <br/>
+> Result : train MSE 1.553, val MSE 3.341 <br/>
 > Hyper-Parameter : rand, conv kernel size [10,9,7,5,3], conv filters 256, drop out 0.7, fc unit 1024, adam, embed size 384
 
 * TextCNN (Word2Vec)
 
 ![img](./image/TextCNN-word2vec-loss.png)
 
-> Result : MSE 3.410 <br/>
+> Result : train MSE 3.410 <br/>
 > Hyper-Parameter : non-static, conv kernel size [2,3,4,5], conv filters 256, drop out 0.7, fc unit 1024, adadelta, embed size 300
 
 * TextRNN (Word2Vec)
 
 ![img](./image/TextRNN-word2vec-loss.png)
 
-> Result : MSE 3.646 <br/>
+> Result : train MSE 3.646 <br/>
 > Hyper-Parameter : non-static, rnn cells 128, attention 128, drop out 0.7, fc unit 1024, adadelta, embed size 300
 
 * TextRNN (Char2Vec)
