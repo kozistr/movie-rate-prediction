@@ -171,9 +171,12 @@ class TextCNN:
                 embed = tf.keras.layers.SpatialDropout1D(self.do_rate)(embed)
                 embeds.append(embed)
 
-        for embed in embeds:
+        for idx, embed in enumerate(embeds):
             for i, fs in enumerate(self.kernel_sizes):
-                with tf.variable_scope("conv_layer-%d-%d" % (fs, i)):
+                scope_name = "conv_layer-%d-%d-%d" % (idx, fs, i) if self.use_multi_channel \
+                    else "conv_layer-%d-%d" % (fs, i)
+
+                with tf.variable_scope(scope_name):
                     """
                     Try 1 : Conv1D-(Threshold)ReLU-drop_out-k_max_pool
                     """
