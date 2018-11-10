@@ -9,7 +9,7 @@ class TextCNN:
                  kernel_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
                  lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6, grad_clip=5.,
                  summary=None, mode='static', w2v_embeds=None,
-                 use_se_module=False, se_radio=16):
+                 use_se_module=False, se_radio=16, use_multi_channel=False):
         self.s = s
         self.n_dims = n_dims
         self.n_classes = n_classes
@@ -38,6 +38,9 @@ class TextCNN:
         self.use_se_module = use_se_module
         self.se_ratio = se_radio
 
+        # Multichannel
+        self.use_multi_channel = use_multi_channel
+
         # set random seed
         np.random.seed(self.seed)
         tf.set_random_seed(self.seed)
@@ -45,19 +48,17 @@ class TextCNN:
         self.he_uni = tf.contrib.layers.variance_scaling_initializer(factor=1., mode='FAN_AVG', uniform=True)
         self.reg = tf.contrib.layers.l2_regularizer(self.l2_reg)
 
-        if self.mode == 'static':
-            # uncompleted feature
-            self.embeddings = tf.get_variable('embeddings', shape=[self.vocab_size, self.n_dims],
-                                              initializer=self.he_uni, trainable=False)
-        elif self.mode == 'non-static' or self.mode == 'rand':
-            self.embeddings = tf.get_variable('embeddings', shape=[self.vocab_size, self.n_dims],
-                                              initializer=self.he_uni, trainable=True)
-        else:
-            raise NotImplementedError("[-] static or non-static or rand only! (%s)" % self.mode)
+        self.n_embeds = 2 if self.use_multi_channel else 1
+
+        self.embeddings = [tf.get_variable('embeddings' if self.n_embeds == 1 else 'embeddings-%d' % i,
+                                           shape=[self.vocab_size, self.n_dims],
+                                           initializer=self.he_uni, trainable=False if self.mode == 'static' else True)
+                           for i in range(self.n_embeds)]
 
         if not self.mode == 'rand':
             if self.w2v_embeds:
-                self.embeddings = self.embeddings.assign(self.w2v_embeds)
+                for i in range(self.n_embeds):
+                    self.embeddings[i] = self.embeddings[i].assign(self.w2v_embeds)
 
                 print("[+] Word2Vec pre-trained model loaded!")
 
@@ -161,40 +162,43 @@ class TextCNN:
             return skip_conn * x
 
     def build_model(self):
-        with tf.device('/cpu:0'), tf.name_scope('embeddings'):
-            spatial_drop_out = tf.keras.layers.SpatialDropout1D(self.do_rate)
-
-            embeds = tf.nn.embedding_lookup(self.embeddings, self.x)
-            embeds = spatial_drop_out(embeds)
-
+        embeds = []
         pooled_outs = []
-        for i, fs in enumerate(self.kernel_sizes):
-            with tf.variable_scope("conv_layer-%d-%d" % (fs, i)):
-                """
-                Try 1 : Conv1D-(Threshold)ReLU-drop_out-k_max_pool
-                """
 
-                x = tf.layers.conv1d(
-                    embeds,
-                    filters=self.n_filters,
-                    kernel_size=fs,
-                    kernel_initializer=self.he_uni,
-                    kernel_regularizer=self.reg,
-                    padding='VALID',
-                    name='conv1d'
-                )
-                x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)  # TresholdReLU
-                # x = tf.nn.relu(x)
+        with tf.device('/gpu:0'), tf.name_scope('embeddings'):
+            for i in range(self.n_embeds):
+                embed = tf.nn.embedding_lookup(self.embeddings[i], self.x)
+                embed = tf.keras.layers.SpatialDropout1D(self.do_rate)(embed)
+                embeds.append(embed)
 
-                # x = tf.layers.dropout(x, self.do_rate)
+        for embed in embeds:
+            for i, fs in enumerate(self.kernel_sizes):
+                with tf.variable_scope("conv_layer-%d-%d" % (fs, i)):
+                    """
+                    Try 1 : Conv1D-(Threshold)ReLU-drop_out-k_max_pool
+                    """
 
-                if self.use_se_module:
-                    x = self.se_module(x, x.get_shape()[-1])
+                    x = tf.layers.conv1d(
+                        embed,
+                        filters=self.n_filters,
+                        kernel_size=fs,
+                        kernel_initializer=self.he_uni,
+                        kernel_regularizer=self.reg,
+                        padding='VALID',
+                        name='conv1d'
+                    )
+                    x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)  # TresholdReLU
+                    # x = tf.nn.relu(x)
 
-                x = tf.nn.top_k(tf.transpose(x, [0, 2, 1]), k=3, sorted=False)[0]
-                x = tf.transpose(x, [0, 2, 1])
+                    # x = tf.layers.dropout(x, self.do_rate)
 
-                pooled_outs.append(x)
+                    if self.use_se_module:
+                        x = self.se_module(x, x.get_shape()[-1])
+
+                    x = tf.nn.top_k(tf.transpose(x, [0, 2, 1]), k=3, sorted=False)[0]
+                    x = tf.transpose(x, [0, 2, 1])
+
+                    pooled_outs.append(x)
 
         x = tf.concat(pooled_outs, axis=1)  # (batch, 3 * kernel_sizes, 256)
 

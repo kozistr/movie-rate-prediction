@@ -197,7 +197,8 @@ if __name__ == '__main__':
                                 grad_clip=config.grad_clip,
                                 summary=config.pretrained,
                                 use_se_module=config.use_se_module,
-                                se_radio=config.se_ratio)
+                                se_radio=config.se_ratio,
+                                use_multi_channel=config.use_multi_channel)
             elif config.model == 'charrnn':
                 model = TextRNN(s=s,
                                 mode=config.mode,
