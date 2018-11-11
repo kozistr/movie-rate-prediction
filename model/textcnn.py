@@ -68,24 +68,35 @@ class TextCNN:
         self.do_rate = tf.placeholder(tf.float32, name='do-rate')
 
         # build CharCNN Model
-        self.feat, self.rate = self.build_model()
+        self.feat, self.rates = self.build_model()
 
         # loss
         if self.n_classes == 1:
-            self.loss = tf.reduce_mean(tf.losses.mean_squared_error(
+            self.sig_loss = tf.reduce_mean(tf.losses.mean_squared_error(
                 labels=self.y,
-                predictions=self.rate
+                predictions=self.rates[0]
             ))  # MSE loss
 
-            self.prediction = self.rate
-            self.accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.prediction) <= 1.0), dtype=tf.float32))
+            self.tan_loss = tf.reduce_mean(tf.losses.mean_squared_error(
+                labels=self.y,
+                predictions=self.rates[1]
+            ))  # MSE loss
+            self.loss = (self.sig_loss + self.tan_loss) / 2.
+
+            self.sig_prediction = self.rates[0]
+            self.tan_prediction = self.rates[1]
+            self.prediction = (self.sig_prediction + self.tan_prediction) / 2.
+
+            self.sig_accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.sig_prediction) <= 1.0), dtype=tf.float32))
+            self.tan_accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.tan_prediction) <= 1.0), dtype=tf.float32))
+            self.accuracy = (self.sig_accuracy / self.tan_accuracy) / 2.
         else:
             self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
                 logits=self.feat,
                 labels=self.y
             ))  # softmax cross-entropy
 
-            self.prediction = tf.argmax(self.rate, axis=1)
+            self.prediction = tf.argmax(self.rates, axis=1)
             self.accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(self.y, 1), self.prediction), dtype=tf.float32))
 
         # Optimizer
@@ -123,6 +134,9 @@ class TextCNN:
         tf.summary.scalar('loss/loss', self.loss)
         tf.summary.scalar('misc/lr', self.lr)
         tf.summary.scalar('misc/acc', self.accuracy)
+        if self.n_classes == 1:
+            tf.summary.scalar('misc/sig_acc', self.sig_accuracy)
+            tf.summary.scalar('misc/tan_acc', self.tan_accuracy)
 
         # Merge summary
         self.merged = tf.summary.merge_all()
@@ -229,8 +243,13 @@ class TextCNN:
 
             # Rate
             if self.n_classes == 1:
-                rate = tf.nn.sigmoid(x)
-                rate = rate * 9. + 1.  # To-Do : replace with another scale function to avoid saturation
+                sig_rate = tf.nn.sigmoid(x)
+                sig_rate = sig_rate * 9. + 1.  # To-Do : replace with another scale function to avoid saturation
+
+                tan_rate = tf.nn.tanh(x)
+                tan_rate = (tan_rate * 9. + 11.) / 2.
+
+                rates = (sig_rate, tan_rate)
             else:
-                rate = tf.nn.softmax(x)
-            return x, rate
+                rates = tf.nn.softmax(x)
+            return x, rates
