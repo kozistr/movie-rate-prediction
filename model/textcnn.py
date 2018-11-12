@@ -81,15 +81,15 @@ class TextCNN:
                 labels=self.y,
                 predictions=self.rates[1]
             ))  # MSE loss
-            self.loss = (self.sig_loss + self.tan_loss) / 2.
+            self.loss = self.tan_loss  # (self.sig_loss + self.tan_loss) / 2.
 
             self.sig_prediction = self.rates[0]
             self.tan_prediction = self.rates[1]
-            self.prediction = (self.sig_prediction + self.tan_prediction) / 2.
+            self.prediction = self.tan_prediction  # (self.sig_prediction + self.tan_prediction) / 2.
 
             self.sig_accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.sig_prediction) <= 1.0), dtype=tf.float32))
             self.tan_accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.tan_prediction) <= 1.0), dtype=tf.float32))
-            self.accuracy = (self.sig_accuracy / self.tan_accuracy) / 2.
+            self.accuracy = self.tan_accuracy  # (self.sig_accuracy / self.tan_accuracy) / 2.
         else:
             self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
                 logits=self.feat,
@@ -135,8 +135,8 @@ class TextCNN:
         tf.summary.scalar('misc/lr', self.lr)
         tf.summary.scalar('misc/acc', self.accuracy)
         if self.n_classes == 1:
-            tf.summary.scalar('misc/sig_acc', self.sig_accuracy)
-            tf.summary.scalar('misc/tan_acc', self.tan_accuracy)
+            tf.summary.scalar('loss/loss(sigmoid)', self.sig_loss)
+            tf.summary.scalar('misc/acc(sigmoid)', self.sig_accuracy)
 
         # Merge summary
         self.merged = tf.summary.merge_all()
