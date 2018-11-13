@@ -249,73 +249,38 @@ if __name__ == '__main__':
             for epoch in range(restored_epochs, config.epochs):
                 for x_tr, y_tr in di.iterate():
                     # training
-                    if model.n_classes == 1:
-                        _, loss, sig_acc, tan_acc = s.run([model.train_op, model.loss,
-                                                           model.sig_accuracy, model.tan_accuracy],
-                                                          feed_dict={
-                                                              model.x: x_tr,
-                                                              model.y: y_tr,
-                                                              model.do_rate: config.drop_out,
-                                                          })
-                    else:
-                        _, loss, acc = s.run([model.train_op, model.loss, model.accuracy],
-                                             feed_dict={
-                                                 model.x: x_tr,
-                                                 model.y: y_tr,
-                                                 model.do_rate: config.drop_out,
-                                             })
+                    _, loss, acc = s.run([model.train_op, model.loss, model.accuracy],
+                                         feed_dict={
+                                             model.x: x_tr,
+                                             model.y: y_tr,
+                                             model.do_rate: config.drop_out,
+                                         })
 
                     if global_step and global_step % config.logging_step == 0:
                         # validation
-                        rand_idx = np.random.choice(np.arange(len(y_valid)), len(y_valid) // 4)  # 25% of valid data
+                        rand_idx = np.random.choice(np.arange(len(y_valid)), len(y_valid) // 5)  # 20% of valid data
 
                         x_va, y_va = x_valid[rand_idx], y_valid[rand_idx]
 
-                        valid_loss = 0.
-                        if model.n_classes == 1:
-                            valid_sig_acc, valid_tan_acc = .0, .0
-                        else:
-                            valid_acc = .0
+                        valid_loss, valid_acc = 0., 0.
 
                         valid_iter = len(y_va) // batch_size
                         for i in tqdm(range(0, valid_iter)):
-                            if model.n_classes == 1:
-                                v_loss, v_sig_acc, v_tan_acc = \
-                                    s.run([model.loss, model.sig_accuracy, model.tan_accuracy],
-                                          feed_dict={
-                                              model.x: x_va[batch_size * i:batch_size * (i + 1)],
-                                              model.y: y_va[batch_size * i:batch_size * (i + 1)],
-                                              model.do_rate: .0,
-                                          })
-                                valid_sig_acc += v_sig_acc
-                                valid_tan_acc += v_tan_acc
-                            else:
-                                v_loss, v_acc = s.run([model.loss, model.accuracy],
-                                                      feed_dict={
-                                                          model.x: x_va[batch_size * i:batch_size * (i + 1)],
-                                                          model.y: y_va[batch_size * i:batch_size * (i + 1)],
-                                                          model.do_rate: .0,
-                                                      })
-                                valid_acc += v_acc
-
+                            v_loss, v_acc = s.run([model.loss, model.accuracy],
+                                                  feed_dict={
+                                                      model.x: x_va[batch_size * i:batch_size * (i + 1)],
+                                                      model.y: y_va[batch_size * i:batch_size * (i + 1)],
+                                                      model.do_rate: .0,
+                                                  })
+                            valid_acc += v_acc
                             valid_loss += v_loss
 
                         valid_loss /= valid_iter
-                        if model.n_classes == 1:
-                            valid_sig_acc /= valid_iter
-                            valid_tan_acc /= valid_iter
-                        else:
-                            valid_acc /= valid_iter
+                        valid_acc /= valid_iter
 
-                        if model.n_classes == 1:
-                            print("[*] epoch %03d global step %07d" % (epoch, global_step),
-                                  " train_loss : {:.8f} train_acc : {:.4f} {:.4f}".format(loss, sig_acc, tan_acc),
-                                  " valid_loss : {:.8f} valid_acc : {:.4f} {:.4f}".format(valid_loss,
-                                                                                          valid_sig_acc, valid_tan_acc))
-                        else:
-                            print("[*] epoch %03d global step %07d" % (epoch, global_step),
-                                  " train_loss : {:.8f} train_acc : {:.4f}".format(loss, acc),
-                                  " valid_loss : {:.8f} valid_acc : {:.4f}".format(valid_loss, valid_acc))
+                        print("[*] epoch %03d global step %07d" % (epoch, global_step),
+                              " train_loss : {:.8f} train_acc : {:.4f}".format(loss, acc),
+                              " valid_loss : {:.8f} valid_acc : {:.4f}".format(valid_loss, valid_acc))
 
                         # summary
                         summary = s.run(model.merged,

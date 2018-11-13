@@ -72,24 +72,14 @@ class TextCNN:
 
         # loss
         if self.n_classes == 1:
-            self.sig_loss = tf.reduce_mean(tf.losses.mean_squared_error(
+            self.loss = tf.reduce_mean(tf.losses.mean_squared_error(
                 labels=self.y,
-                predictions=self.rates[0]
+                predictions=self.rates
             ))  # MSE loss
 
-            self.tan_loss = tf.reduce_mean(tf.losses.mean_squared_error(
-                labels=self.y,
-                predictions=self.rates[1]
-            ))  # MSE loss
-            self.loss = self.tan_loss  # (self.sig_loss + self.tan_loss) / 2.
+            self.prediction = self.rates
 
-            self.sig_prediction = self.rates[0]
-            self.tan_prediction = self.rates[1]
-            self.prediction = self.tan_prediction  # (self.sig_prediction + self.tan_prediction) / 2.
-
-            self.sig_accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.sig_prediction) <= 1.0), dtype=tf.float32))
-            self.tan_accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.tan_prediction) <= 1.0), dtype=tf.float32))
-            self.accuracy = self.tan_accuracy  # (self.sig_accuracy / self.tan_accuracy) / 2.
+            self.accuracy = tf.reduce_mean(tf.cast((tf.abs(self.y - self.prediction) <= 1.0), dtype=tf.float32))
         else:
             self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(
                 logits=self.feat,
@@ -134,9 +124,6 @@ class TextCNN:
         tf.summary.scalar('loss/loss', self.loss)
         tf.summary.scalar('misc/lr', self.lr)
         tf.summary.scalar('misc/acc', self.accuracy)
-        if self.n_classes == 1:
-            tf.summary.scalar('loss/loss(sigmoid)', self.sig_loss)
-            tf.summary.scalar('misc/acc(sigmoid)', self.sig_accuracy)
 
         # Merge summary
         self.merged = tf.summary.merge_all()
@@ -243,13 +230,8 @@ class TextCNN:
 
             # Rate
             if self.n_classes == 1:
-                sig_rate = tf.nn.sigmoid(x)
-                sig_rate = sig_rate * 9. + 1.  # To-Do : replace with another scale function to avoid saturation
-
-                tan_rate = tf.nn.tanh(x)
-                tan_rate = (tan_rate * 9. + 11.) / 2.
-
-                rates = (sig_rate, tan_rate)
+                rate = tf.nn.tanh(x)
+                rate = (rate * 9. + 11.) / 2.
             else:
-                rates = tf.nn.softmax(x)
-            return x, rates
+                rate = tf.nn.softmax(x)
+            return x, rate

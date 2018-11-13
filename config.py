@@ -70,7 +70,7 @@ train_arg.add_argument('--logging_step', type=int, default=500)
 train_arg.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'sgd', 'adadelta'])
 train_arg.add_argument('--grad_clip', type=float, default=5.)
 train_arg.add_argument('--lr', type=float, default=2e-4)
-train_arg.add_argument('--lr_decay', type=float, default=.95)
+train_arg.add_argument('--lr_decay', type=float, default=.75)
 train_arg.add_argument('--lr_lower_boundary', type=float, default=2e-5)
 train_arg.add_argument('--test_size', type=float, default=.2)
 
