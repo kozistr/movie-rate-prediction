@@ -281,7 +281,7 @@ if __name__ == '__main__':
                         for i in tqdm(range(0, valid_iter)):
                             if model.n_classes == 1:
                                 v_loss, v_sig_acc, v_tan_acc = \
-                                    s.run([model.loss, model.sig_accuracy, model.sig_accuracy],
+                                    s.run([model.loss, model.sig_accuracy, model.tan_accuracy],
                                           feed_dict={
                                               model.x: x_va[batch_size * i:batch_size * (i + 1)],
                                               model.y: y_va[batch_size * i:batch_size * (i + 1)],
