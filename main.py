@@ -175,73 +175,73 @@ if __name__ == '__main__':
     else:
         dev_config = None
 
-    if config.is_train:
-        with tf.Session(config=dev_config) as s:
-            if config.model == 'charcnn':
-                # Model Loaded
-                model = TextCNN(s=s,
-                                mode=config.mode,
-                                w2v_embeds=vectors.embeds if not embed_type == 'c2v' else None,
-                                n_classes=config.n_classes,
-                                optimizer=config.optimizer,
-                                kernel_sizes=config.kernel_size,
-                                n_filters=config.filter_size,
-                                n_dims=config.embed_size,
-                                vocab_size=config.character_size if embed_type == 'c2v' else config.vocab_size + 1,
-                                sequence_length=config.sequence_length,
-                                lr=config.lr,
-                                lr_decay=config.lr_decay,
-                                lr_lower_boundary=config.lr_lower_boundary,
-                                fc_unit=config.fc_unit,
-                                th=config.act_threshold,
-                                grad_clip=config.grad_clip,
-                                summary=config.pretrained,
-                                use_se_module=config.use_se_module,
-                                se_radio=config.se_ratio,
-                                use_multi_channel=config.use_multi_channel)
-            elif config.model == 'charrnn':
-                model = TextRNN(s=s,
-                                mode=config.mode,
-                                w2v_embeds=vectors.embeds if not embed_type == 'c2v' else None,
-                                n_classes=config.n_classes,
-                                optimizer=config.optimizer,
-                                n_gru_cells=config.n_gru_cells,
-                                n_gru_layers=config.n_gru_layers,
-                                n_attention_size=config.n_attention_size,
-                                n_dims=config.embed_size,
-                                vocab_size=config.character_size if embed_type == 'c2v' else config.vocab_size + 1,
-                                sequence_length=config.sequence_length,
-                                lr=config.lr,
-                                lr_decay=config.lr_decay,
-                                lr_lower_boundary=config.lr_lower_boundary,
-                                fc_unit=config.fc_unit,
-                                grad_clip=config.grad_clip,
-                                summary=config.pretrained)
+    with tf.Session(config=dev_config) as s:
+        if config.model == 'charcnn':
+            # Model Loaded
+            model = TextCNN(s=s,
+                            mode=config.mode,
+                            w2v_embeds=vectors.embeds if not embed_type == 'c2v' else None,
+                            n_classes=config.n_classes,
+                            optimizer=config.optimizer,
+                            kernel_sizes=config.kernel_size,
+                            n_filters=config.filter_size,
+                            n_dims=config.embed_size,
+                            vocab_size=config.character_size if embed_type == 'c2v' else config.vocab_size + 1,
+                            sequence_length=config.sequence_length,
+                            lr=config.lr,
+                            lr_decay=config.lr_decay,
+                            lr_lower_boundary=config.lr_lower_boundary,
+                            fc_unit=config.fc_unit,
+                            th=config.act_threshold,
+                            grad_clip=config.grad_clip,
+                            summary=config.pretrained,
+                            use_se_module=config.use_se_module,
+                            se_radio=config.se_ratio,
+                            use_multi_channel=config.use_multi_channel)
+        elif config.model == 'charrnn':
+            model = TextRNN(s=s,
+                            mode=config.mode,
+                            w2v_embeds=vectors.embeds if not embed_type == 'c2v' else None,
+                            n_classes=config.n_classes,
+                            optimizer=config.optimizer,
+                            n_gru_cells=config.n_gru_cells,
+                            n_gru_layers=config.n_gru_layers,
+                            n_attention_size=config.n_attention_size,
+                            n_dims=config.embed_size,
+                            vocab_size=config.character_size if embed_type == 'c2v' else config.vocab_size + 1,
+                            sequence_length=config.sequence_length,
+                            lr=config.lr,
+                            lr_decay=config.lr_decay,
+                            lr_lower_boundary=config.lr_lower_boundary,
+                            fc_unit=config.fc_unit,
+                            grad_clip=config.grad_clip,
+                            summary=config.pretrained)
+        else:
+            raise NotImplementedError("[-] Not Implemented Yet")
+
+        if config.verbose:
+            print("[+] %s model loaded" % config.model)
+
+        # Initializing
+        s.run(tf.global_variables_initializer())
+
+        global_step = 0
+        if checkpoint:
+            print("[*] Reading checkpoints...")
+
+            ckpt = tf.train.get_checkpoint_state(config.pretrained)
+            if ckpt and ckpt.model_checkpoint_path:
+                # Restores from checkpoint
+                model.saver.restore(s, ckpt.model_checkpoint_path)
+
+                global_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+                print("[+] global step : %d" % global_step, " successfully loaded")
             else:
-                raise NotImplementedError("[-] Not Implemented Yet")
+                print('[-] No checkpoint file found')
 
-            if config.verbose:
-                print("[+] %s model loaded" % config.model)
+        start_time = time.time()
 
-            # Initializing
-            s.run(tf.global_variables_initializer())
-
-            global_step = 0
-            if checkpoint:
-                print("[*] Reading checkpoints...")
-
-                ckpt = tf.train.get_checkpoint_state(config.pretrained)
-                if ckpt and ckpt.model_checkpoint_path:
-                    # Restores from checkpoint
-                    model.saver.restore(s, ckpt.model_checkpoint_path)
-
-                    global_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
-                    print("[+] global step : %d" % global_step, " successfully loaded")
-                else:
-                    print('[-] No checkpoint file found')
-
-            start_time = time.time()
-
+        if config.is_train:
             best_loss = 1e1  # initial value
             batch_size = config.batch_size
             model.global_step.assign(tf.constant(global_step))
@@ -258,7 +258,7 @@ if __name__ == '__main__':
 
                     if global_step and global_step % config.logging_step == 0:
                         # validation
-                        rand_idx = np.random.choice(np.arange(len(y_valid)), len(y_valid) // 5)  # 20% of valid data
+                        rand_idx = np.random.choice(np.arange(len(y_valid)), len(y_valid) // 20)  # 5% of valid data
 
                         x_va, y_va = x_valid[rand_idx], y_valid[rand_idx]
 
@@ -311,5 +311,26 @@ if __name__ == '__main__':
             end_time = time.time()
 
             print("[+] Training Done! Elapsed {:.8f}s".format(end_time - start_time))
-    else:  # test
-        pass
+        else:  # test
+            x_va, y_va = x_valid, y_valid
+
+            valid_loss, valid_acc = 0., 0.
+
+            batch_size = config.batch_size
+            valid_iter = len(y_va) // config.batch_size
+            for i in tqdm(range(0, valid_iter)):
+                v_loss, v_acc = s.run([model.loss, model.accuracy],
+                                      feed_dict={
+                                          model.x: x_va[batch_size * i:batch_size * (i + 1)],
+                                          model.y: y_va[batch_size * i:batch_size * (i + 1)],
+                                          model.do_rate: .0,
+                                      })
+                valid_acc += v_acc
+                valid_loss += v_loss
+
+            valid_loss /= valid_iter
+            valid_acc /= valid_iter
+
+            print("[+] Validation Result (%s model %d global steps), total %d samples" %
+                  (config.model, global_step, x_valid.shape[0]))
+            print("    => valid_loss (MSE) : {:.8f} valid_acc (th=1.0) : {:.4f}".format(valid_loss, valid_acc))
