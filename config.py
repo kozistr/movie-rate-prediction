@@ -20,6 +20,23 @@ def get_config():
     return cfg, un_parsed
 
 
+def export_config(fn='config.txt'):
+    params, _ = get_config()
+
+    param_list = ['mode', 'model', 'n_classes', 'model', 'fc_unit', 'drop_out', 'use_leaky_relu', 'act_threshold',
+                  'score_function', 'use_multi_channel', 'use_se_module', 'se_ratio', 'se_type',
+                  'embed_size', 'sequence_length', 'batch_size',
+                  'optimizer', 'grad_clip', 'lr', 'lr_decay']
+    if getattr(params, 'model') == 'charcnn':
+        param_list.extend(['kernel_size', 'filter_size'])
+    else:
+        param_list.extend(['n_gru_cells', 'n_gru_layers', 'n_attention_size'])
+
+    with open(fn, 'w') as f:
+        for param in param_list:
+            f.write(param + " : " + getattr(params, param) + "\n")
+
+
 # Network
 network_arg = add_arg_group('Network')
 network_arg.add_argument('--mode', type=str, default='non-static', choices=['static', 'non-static'])
@@ -44,9 +61,11 @@ network_arg.add_argument('--drop_out', type=float, default=.7,
 network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
 network_arg.add_argument('--act_threshold', type=float, default=1e-6,
                          help='used at ThresholdReLU')
-network_arg.add_argument('--use_multi_channel', type=bool, default=False)
-network_arg.add_argument('--use_se_module', type=bool, default=True)
+network_arg.add_argument('--score_function', type=str, default='tanh', choices=['tanh', 'sigmoid'])
+network_arg.add_argument('--use_multi_channel', type=bool, default=True)
+network_arg.add_argument('--use_se_module', type=bool, default=False)
 network_arg.add_argument('--se_ratio', type=int, default=16)
+network_arg.add_argument('--se_type', type=str, default='A', choices=['A', 'B', 'C'])
 
 # DataSet
 data_arg = add_arg_group('DataSet')
@@ -65,7 +84,7 @@ data_arg.add_argument('--n_threads', type=int, default=8,
 # Train/Test hyper-parameters
 train_arg = add_arg_group('Training')
 train_arg.add_argument('--is_train', type=bool, default=True)
-train_arg.add_argument('--epochs', type=int, default=100)
+train_arg.add_argument('--epochs', type=int, default=10)
 train_arg.add_argument('--logging_step', type=int, default=500)
 train_arg.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'sgd', 'adadelta'])
 train_arg.add_argument('--grad_clip', type=float, default=5.)
