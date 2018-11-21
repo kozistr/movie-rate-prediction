@@ -9,7 +9,7 @@ class TextCNN:
                  kernel_sizes=(1, 2, 3, 4), n_filters=256, fc_unit=1024,
                  lr=5e-4, lr_lower_boundary=1e-5, lr_decay=.95, l2_reg=1e-3, th=1e-6, grad_clip=5.,
                  summary=None, mode='static', w2v_embeds=None,
-                 use_se_module=False, se_radio=16, use_multi_channel=False):
+                 use_se_module=False, se_radio=16, se_type='A', use_multi_channel=False, score_function='tanh'):
         self.s = s
         self.n_dims = n_dims
         self.n_classes = n_classes
@@ -34,9 +34,13 @@ class TextCNN:
         self.mode = mode
         self.w2v_embeds = w2v_embeds
 
+        # score function
+        self.score_function = score_function
+
         # SE Module feature
         self.use_se_module = use_se_module
         self.se_ratio = se_radio
+        self.se_type = se_type
 
         # Multichannel
         self.use_multi_channel = use_multi_channel
@@ -192,11 +196,8 @@ class TextCNN:
                         name='conv1d'
                     )
                     x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)  # TresholdReLU
-                    # x = tf.nn.relu(x)
 
-                    # x = tf.layers.dropout(x, self.do_rate)
-
-                    if self.use_se_module:
+                    if self.use_se_module and not self.se_type == 'B':
                         x = self.se_module(x, x.get_shape()[-1])
 
                     x = tf.nn.top_k(tf.transpose(x, [0, 2, 1]), k=3, sorted=False)[0]
@@ -205,6 +206,9 @@ class TextCNN:
                     pooled_outs.append(x)
 
         x = tf.concat(pooled_outs, axis=1)  # (batch, 3 * kernel_sizes, 256)
+
+        if self.use_se_module and not self.se_type == 'A':
+            x = self.se_module(x, x.get_shape()[-1])
 
         x = tf.layers.flatten(x)
         x = tf.layers.dropout(x, self.do_rate)
@@ -218,7 +222,6 @@ class TextCNN:
                 name='fc1'
             )
             x = tf.where(tf.less(x, self.th), tf.zeros_like(x), x)  # TresholdReLU
-            # x = tf.nn.relu(x)
 
             x = tf.layers.dense(
                 x,
@@ -230,8 +233,12 @@ class TextCNN:
 
             # Rate
             if self.n_classes == 1:
-                rate = tf.nn.tanh(x)
-                rate = (rate * 9. + 11.) / 2.
+                if self.score_function == 'tanh':
+                    rate = tf.nn.tanh(x)
+                    rate = (rate * 9. + 11.) / 2.
+                else:  # elif self.score_function == 'sigmoid':
+                    rate = tf.nn.sigmoid(x)
+                    rate = rate * 9. + 1.
             else:
                 rate = tf.nn.softmax(x)
             return x, rate
