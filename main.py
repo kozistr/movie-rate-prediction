@@ -225,6 +225,10 @@ if __name__ == '__main__':
         # Initializing
         s.run(tf.global_variables_initializer())
 
+        # exporting config
+        config.export_config()
+
+        # loading checkpoint
         global_step = 0
         if checkpoint:
             print("[*] Reading checkpoints...")
