@@ -34,7 +34,7 @@ def export_config(fn='config.txt'):
 
     with open(fn, 'w') as f:
         for param in param_list:
-            f.write(param + " : " + getattr(params, param) + "\n")
+            f.write(param + " : " + str(getattr(params, param)) + "\n")
 
 
 # Network
@@ -62,10 +62,10 @@ network_arg.add_argument('--use_leaky_relu', type=bool, default=False)
 network_arg.add_argument('--act_threshold', type=float, default=1e-6,
                          help='used at ThresholdReLU')
 network_arg.add_argument('--score_function', type=str, default='tanh', choices=['tanh', 'sigmoid'])
-network_arg.add_argument('--use_multi_channel', type=bool, default=True)
+network_arg.add_argument('--use_multi_channel', type=bool, default=False)
 network_arg.add_argument('--use_se_module', type=bool, default=False)
 network_arg.add_argument('--se_ratio', type=int, default=16)
-network_arg.add_argument('--se_type', type=str, default='A', choices=['A', 'B', 'C'])
+network_arg.add_argument('--se_type', type=str, default='B', choices=['A', 'B', 'C'])
 
 # DataSet
 data_arg = add_arg_group('DataSet')

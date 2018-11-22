@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from tqdm import tqdm
-from config import get_config
+from config import get_config, export_config
 from model.textcnn import TextCNN
 from model.textrnn import TextRNN
 from sklearn.model_selection import train_test_split
@@ -228,7 +228,7 @@ if __name__ == '__main__':
         s.run(tf.global_variables_initializer())
 
         # exporting config
-        config.export_config()
+        export_config()
 
         # loading checkpoint
         global_step = 0
