@@ -195,8 +195,10 @@ if __name__ == '__main__':
                             th=config.act_threshold,
                             grad_clip=config.grad_clip,
                             summary=config.pretrained,
+                            score_function=config.score_function,
                             use_se_module=config.use_se_module,
                             se_radio=config.se_ratio,
+                            se_type=config.se_type,
                             use_multi_channel=config.use_multi_channel)
         elif config.model == 'charrnn':
             model = TextRNN(s=s,
