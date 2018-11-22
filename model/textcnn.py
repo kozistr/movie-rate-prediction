@@ -137,6 +137,19 @@ class TextCNN:
         self.best_saver = tf.train.Saver(max_to_keep=1)
         self.writer = tf.summary.FileWriter(self.summary, self.s.graph)
 
+        # print total param of the model
+        self.count_params()
+
+    @staticmethod
+    def count_params():
+        from functools import reduce
+
+        def size(v):
+            return reduce(lambda x, y: x * y, v.get_shape().as_list())
+
+        n = sum(size(v) for v in tf.trainable_variables())
+        print("[*] Model Size : %d params" % n)
+
     def se_module(self, x, units):
         with tf.variable_scope('se-module'):
             """ GAP-fc-fc-sigmoid """
