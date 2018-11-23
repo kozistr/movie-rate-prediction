@@ -318,6 +318,7 @@ if __name__ == '__main__':
 
             print("[+] Training Done! Elapsed {:.8f}s".format(end_time - start_time))
         else:  # test
+            x_train, y_train = None, None
             x_va, y_va = x_valid, y_valid
 
             valid_loss, valid_acc = 0., 0.
