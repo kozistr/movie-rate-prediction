@@ -61,6 +61,30 @@ def data_distribution(y_, size=10, img='dist.png'):
     return y_dist
 
 
+def co_occurrence_matrix(y_pred, y_real):
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+
+    """
+    0-3: bad
+    4-7: normal
+    7-10: good
+    """
+    def labeling(y):
+        if 0 <= y < 3:
+            return 0
+        elif 3 <= y < 7:
+            return 1
+        else:
+            return 2
+
+    y_preds = [labeling(y) for y in y_pred]
+    y_reals = [labeling(y) for y in y_real]
+
+    ax = sns.heatmap([y_preds, y_reals], annot=True, fmt='d')
+    plt.show()
+
+
 def load_trained_embeds(embed_mode='char'):
     """
     :param embed_mode: embedding mode, str
