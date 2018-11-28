@@ -61,15 +61,17 @@ def data_distribution(y_, size=10, img='dist.png'):
     return y_dist
 
 
-def co_occurrence_matrix(y_pred, y_real):
-    import seaborn as sns
+def confusion_matrix(y_pred, y_true, labels, normalize=True):
+    import itertools
     import matplotlib.pyplot as plt
+    from sklearn.metrics import confusion_matrix
 
     """
     0-3: bad
     4-7: normal
     7-10: good
     """
+
     def labeling(y):
         if 0 <= y < 3:
             return 0
@@ -78,10 +80,37 @@ def co_occurrence_matrix(y_pred, y_real):
         else:
             return 2
 
-    y_preds = [labeling(y) for y in y_pred]
-    y_reals = [labeling(y) for y in y_real]
+    y_pred = np.array([labeling(y) for y in y_pred])
+    y_true = np.array([labeling(y) for y in y_true])
 
-    ax = sns.heatmap([y_preds, y_reals], annot=True, fmt='d')
+    cnf_mat = confusion_matrix(y_pred, y_true, labels=labels)
+    np.set_printoptions(precision=2)
+
+    if normalize:
+        cnf_mat = cnf_mat.astype('float') / cnf_mat.sum(axis=1)[:, np.newaxis]
+
+    plt.figure()
+
+    plt.imshow(cnf_mat, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.title("Confusion Matrix")
+    plt.colorbar()
+
+    tick_marks = np.arange(len(labels))
+    plt.xticks(tick_marks, labels, rotation=45)
+    plt.yticks(tick_marks, labels)
+
+    thresh = cnf_mat.max() / 2.
+    for i, j in itertools.product(range(cnf_mat.shape[0]), range(cnf_mat.shape[1])):
+        plt.text(j, i, format(cnf_mat[i, j], '.2f'),
+                 horizontalalignment="center",
+                 color="white" if cnf_mat[i, j] > thresh else "black")
+
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.tight_layout()
+
+    plt.imsave("./confusion_matrix.png")
+
     plt.show()
 
 
@@ -349,15 +378,17 @@ if __name__ == '__main__':
 
             batch_size = config.batch_size
             valid_iter = len(y_va) // config.batch_size
+            v_rates = []
             for i in tqdm(range(0, valid_iter)):
-                v_loss, v_acc = s.run([model.loss, model.accuracy],
-                                      feed_dict={
-                                          model.x: x_va[batch_size * i:batch_size * (i + 1)],
-                                          model.y: y_va[batch_size * i:batch_size * (i + 1)],
-                                          model.do_rate: .0,
-                                      })
+                v_loss, v_acc, v_rate = s.run([model.loss, model.accuracy, model.rates],
+                                              feed_dict={
+                                                  model.x: x_va[batch_size * i:batch_size * (i + 1)],
+                                                  model.y: y_va[batch_size * i:batch_size * (i + 1)],
+                                                  model.do_rate: .0,
+                                              })
                 valid_acc += v_acc
                 valid_loss += v_loss
+                v_rates.append(*v_rate)
 
             valid_loss /= valid_iter
             valid_acc /= valid_iter
@@ -365,3 +396,6 @@ if __name__ == '__main__':
             print("[+] Validation Result (%s model %d global steps), total %d samples" %
                   (config.model, global_step, x_valid.shape[0]))
             print("    => valid_loss (MSE) : {:.8f} valid_acc (th=1.0) : {:.4f}".format(valid_loss, valid_acc))
+
+            # confusion matrix
+            confusion_matrix(v_rates, y_va, ["bad", "normal", "good"])
