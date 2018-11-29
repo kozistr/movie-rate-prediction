@@ -83,7 +83,7 @@ def confusion_matrix(y_pred, y_true, labels, normalize=True):
     y_pred = np.array([labeling(y) for y in y_pred])
     y_true = np.array([labeling(y) for y in y_true])
 
-    cnf_mat = confusion_matrix(y_pred, y_true, labels=labels)
+    cnf_mat = confusion_matrix(y_pred, y_true)
     np.set_printoptions(precision=2)
 
     if normalize:
