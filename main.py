@@ -217,6 +217,19 @@ if __name__ == '__main__':
 
     del x_data, y_data
 
+    """
+    try:
+        import csv
+        with open("valid_set.csv", 'w', encoding='utf8', newline='') as csv_file:
+            w = csv.DictWriter(csv_file, fieldnames=['rate', 'comment'])
+            w.writeheader()
+
+            for rate, comment in tqdm(zip(y_valid, x_valid)):
+                w.writerow({'rate': rate, 'comment': ' '.join(comment)})
+    except Exception as e:
+        raise Exception(e)
+    """
+
     data_size = x_train.shape[0]
 
     # DataSet Iterator
@@ -388,7 +401,9 @@ if __name__ == '__main__':
                                               })
                 valid_acc += v_acc
                 valid_loss += v_loss
-                v_rates.append(*v_rate)
+
+                for j in v_rate:
+                    v_rates.append(j)
 
             valid_loss /= valid_iter
             valid_acc /= valid_iter
