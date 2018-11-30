@@ -109,7 +109,7 @@ def confusion_matrix(y_pred, y_true, labels, normalize=True):
     plt.xlabel('Predicted label')
     plt.tight_layout()
 
-    plt.imsave("./confusion_matrix.png")
+    plt.savefig("./confusion_matrix.png")
 
     plt.show()
 
