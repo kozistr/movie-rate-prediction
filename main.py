@@ -61,7 +61,7 @@ def data_distribution(y_, size=10, img='dist.png'):
     return y_dist
 
 
-def confusion_matrix(y_pred, y_true, labels, normalize=True):
+def data_confusion_matrix(y_pred, y_true, labels, normalize=True):
     import itertools
     import matplotlib.pyplot as plt
     from sklearn.metrics import confusion_matrix
@@ -81,7 +81,7 @@ def confusion_matrix(y_pred, y_true, labels, normalize=True):
             return 2
 
     y_pred = np.array([labeling(y) for y in y_pred])
-    y_true = np.array([labeling(*y) for y in y_true])
+    y_true = np.array([labeling(y[0]) for y in y_true])[:-20]
 
     assert y_pred.shape[0] == y_true.shape[0]
 
@@ -218,19 +218,6 @@ if __name__ == '__main__':
                                                           1. - config.test_size, config.test_size))
 
     del x_data, y_data
-
-    """
-    try:
-        import csv
-        with open("valid_set.csv", 'w', encoding='utf8', newline='') as csv_file:
-            w = csv.DictWriter(csv_file, fieldnames=['rate', 'comment'])
-            w.writeheader()
-
-            for rate, comment in tqdm(zip(y_valid, x_valid)):
-                w.writerow({'rate': rate, 'comment': ' '.join(comment)})
-    except Exception as e:
-        raise Exception(e)
-    """
 
     data_size = x_train.shape[0]
 
@@ -393,6 +380,7 @@ if __name__ == '__main__':
 
             batch_size = config.batch_size
             valid_iter = len(y_va) // config.batch_size
+
             v_rates = []
             for i in tqdm(range(0, valid_iter)):
                 v_loss, v_acc, v_rate = s.run([model.loss, model.accuracy, model.rates],
@@ -414,8 +402,10 @@ if __name__ == '__main__':
                   (config.model, global_step, x_valid.shape[0]))
             print("    => valid_loss (MSE) : {:.8f} valid_acc (th=1.0) : {:.4f}".format(valid_loss, valid_acc))
 
+            """
             with open('pred.txt', 'w') as f:
-                f.writelines([str("{.:4f}\n".format(rate)) for rate in v_rates])
+                f.writelines([str("{:.4f}\n".format(rate[0])) for rate in v_rates])
+            """
 
             # confusion matrix
-            confusion_matrix(v_rates, y_va, ["bad", "normal", "good"])
+            data_confusion_matrix(v_rates, y_va, ["bad", "normal", "good"])
