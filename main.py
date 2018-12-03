@@ -83,6 +83,8 @@ def confusion_matrix(y_pred, y_true, labels, normalize=True):
     y_pred = np.array([labeling(y) for y in y_pred])
     y_true = np.array([labeling(*y) for y in y_true])
 
+    assert y_pred.shape[0] == y_true.shape[0]
+
     cnf_mat = confusion_matrix(y_pred, y_true)
     np.set_printoptions(precision=2)
 
@@ -413,7 +415,7 @@ if __name__ == '__main__':
             print("    => valid_loss (MSE) : {:.8f} valid_acc (th=1.0) : {:.4f}".format(valid_loss, valid_acc))
 
             with open('pred.txt', 'w') as f:
-                f.writelines(["{.:4f}\n".format(rate) for rate in v_rates])
+                f.writelines([str("{.:4f}\n".format(rate)) for rate in v_rates])
 
             # confusion matrix
             confusion_matrix(v_rates, y_va, ["bad", "normal", "good"])
