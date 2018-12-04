@@ -166,10 +166,30 @@ if __name__ == '__main__':
         ds_len = len(ds)
 
         x_data = np.zeros((ds_len, config.sequence_length), dtype=np.uint8)
+
+        sen_len = list()
+        min_length, max_length, avg_length = config.sequence_length, 0, 0
         for i in tqdm(range(ds_len)):
-            sent = vectors.decompose_str_as_one_hot(' '.join(ds.sentences[i]).strip('\n'),
+            sentence = ' '.join(ds.sentences[i]).strip('\n')
+            sentence_length = len(sentence)
+
+            if sentence_length < min_length:
+                min_length = sentence_length
+            if sentence_length > max_length:
+                max_length = sentence_length
+
+            sen_len.append(sentence_length)
+
+            sent = vectors.decompose_str_as_one_hot(sentence,
                                                     warning=False)[:config.sequence_length]
             x_data[i] = np.pad(sent, (0, config.sequence_length - len(sent)), 'constant', constant_values=0)
+
+        if config.verbose:
+            print("[*] Total %d samples (training)" % x_data.shape[0])
+            print("  [*] min length of reviews : %d" % min_length)
+            print("  [*] max length of reviews : %d" % max_length)
+            avg_length = sum(sen_len) / x_data.shape[0]
+            print("  [*] avg length of reviews : %d" % avg_length)
     else:  # Word2Vec / Doc2Vec
         ds = DataLoader(file=config.processed_dataset,
                         n_classes=config.n_classes,
